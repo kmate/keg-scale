@@ -1,29 +1,28 @@
-#include <ESP8266WiFi.h>
-#include <ESP8266mDNS.h>
-#include <WiFiUdp.h>
+#include <Arduino.h>
 #include <ArduinoOTA.h>
+#include <ESP8266mDNS.h>
+#include <ESP8266WiFi.h>
+#include <ESPAsyncWebServer.h>
 
 #include "config.h"
 
-const char* ssid = STASSID;
-const char* password = STAPSK;
+AsyncWebServer server(80);
 
-void setup() {
-  Serial.begin(115200);
-  Serial.println("Booting");
+void initWiFi() {
   WiFi.mode(WIFI_STA);
-  WiFi.begin(ssid, password);
+  WiFi.begin(STASSID, STAPSK);
   while (WiFi.waitForConnectResult() != WL_CONNECTED) {
     Serial.println("Connection Failed! Rebooting...");
     delay(5000);
     ESP.restart();
   }
+  Serial.println("Ready");
+  Serial.print("IP address: ");
+  Serial.println(WiFi.localIP());
+}
 
-  // Port defaults to 8266
-  // ArduinoOTA.setPort(8266);
-
-  // Hostname defaults to esp8266-[ChipID]
-  // ArduinoOTA.setHostname("myesp8266");
+void initOTA() {
+  ArduinoOTA.setHostname(HOSTNAME);
 
   // No authentication by default
   // ArduinoOTA.setPassword("admin");
@@ -41,16 +40,16 @@ void setup() {
     }
 
     // NOTE: if updating FS this would be the place to unmount FS using FS.end()
-    Serial.println("Start updating " + type);
+    Serial.println("OTA begins for " + type);
   });
   ArduinoOTA.onEnd([]() {
-    Serial.println("\nEnd");
+    Serial.println("\nOTA finised.");
   });
   ArduinoOTA.onProgress([](unsigned int progress, unsigned int total) {
-    Serial.printf("Progress: %u%%\r", (progress / (total / 100)));
+    Serial.printf("OTA progress: %u%%\r", (progress / (total / 100)));
   });
   ArduinoOTA.onError([](ota_error_t error) {
-    Serial.printf("Error[%u]: ", error);
+    Serial.printf("OTA error[%u]: ", error);
     if (error == OTA_AUTH_ERROR) {
       Serial.println("Auth Failed");
     } else if (error == OTA_BEGIN_ERROR) {
@@ -64,19 +63,33 @@ void setup() {
     }
   });
   ArduinoOTA.begin();
-  Serial.println("Ready");
-  Serial.print("IP address: ");
-  Serial.println(WiFi.localIP());
+}
+
+void setup() {
+  Serial.begin(115200);
+  Serial.println("Booting");
+
+  initWiFi();
+  initOTA();
+
+  server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
+    request->send(200, "text/plain", "Hi! I am a keg scale.");
+  });
+
+  server.begin();
+  MDNS.addService("http", "tcp", 80);
+  Serial.println("HTTP server started");
+
   pinMode(LED_BUILTIN, OUTPUT);     // Initialize the LED_BUILTIN pin as an output
 }
 
 void loop() {
   ArduinoOTA.handle();
+
   digitalWrite(LED_BUILTIN, LOW);   // Turn the LED on (Note that LOW is the voltage level
   // but actually the LED is on; this is because
   // it is active low on the ESP-01)
   delay(1000);                      // Wait for a second
   digitalWrite(LED_BUILTIN, HIGH);  // Turn the LED off by making the voltage HIGH
   delay(2000);                      // Wait for two seconds (to demonstrate the active low LED)
-
 }
