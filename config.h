@@ -19,6 +19,7 @@ class Config {
 
 public:
   char hostname[64];
+  uint16_t httpPort;
   WiFiConfig wifi;
   OTAConfig ota;
 
@@ -35,6 +36,7 @@ public:
     }
 
     strlcpy(this->hostname, doc["hostname"] | "keg-scale", sizeof(this->hostname));
+    this->httpPort = doc["httpPort"] | 80;
 
     strlcpy(this->wifi.ssid, doc["wifi"]["ssid"], sizeof(this->wifi.ssid));
     strlcpy(this->wifi.passphrase, doc["wifi"]["passphrase"], sizeof(this->wifi.passphrase));

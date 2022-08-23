@@ -1,5 +1,6 @@
 {
   "hostname": "keg-scale",
+  "httpPort": 80,
   "wifi": {
     "ssid": "<your-wifi-ssid>",
     "passphrase": "<your-wifi-passphrase>"

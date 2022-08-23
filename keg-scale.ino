@@ -1,15 +1,14 @@
 #include <Arduino.h>
 #include <ArduinoOTA.h>
-#include <ESP8266mDNS.h>
 #include <ESP8266WiFi.h>
-#include <ESPAsyncWebServer.h>
 #include <FS.h>
 #include <LittleFS.h>
 
 #include "config.h"
+#include "webserver.h"
 
 Config config;
-AsyncWebServer server(80);
+WebServer *server;
 
 void failSetup(const char *message) {
   Serial.print(message);
@@ -90,11 +89,8 @@ void setupOTA() {
 }
 
 void setupHTTP() {
-  server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
-    request->send(LittleFS, "/index.html");
-  });
-  server.begin();
-  MDNS.addService("http", "tcp", 80);
+  server = new WebServer(config);
+  server->begin();
   Serial.println("HTTP server started.");
 }
 
