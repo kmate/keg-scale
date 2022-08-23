@@ -20,7 +20,7 @@ void failSetup(const char *message) {
 
 void setupFS() {
   if (!LittleFS.begin()) {
-    failSetup("LittleFS mount failed.");
+    failSetup("LittleFS mount failed!");
   }
 }
 
@@ -36,8 +36,7 @@ void setupWiFi() {
   while (WiFi.waitForConnectResult() != WL_CONNECTED) {
     failSetup("WiFi connection failed!");
   }
-  Serial.println("WiFi connected.");
-  Serial.print("IP address: ");
+  Serial.print("WiFi connected. IP address: ");
   Serial.print(WiFi.localIP());
   Serial.println(".");
 }
@@ -93,6 +92,15 @@ void setupOTA() {
   ArduinoOTA.begin();
 }
 
+void setupHTTP() {
+  server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
+    request->send(LittleFS, "/index.html");
+  });
+  server.begin();
+  MDNS.addService("http", "tcp", 80);
+  Serial.println("HTTP server started.");
+}
+
 void setup() {
   Serial.begin(115200);
   Serial.println("Booting...");
@@ -101,25 +109,9 @@ void setup() {
   setupConfig();
   setupWiFi();
   setupOTA();
-
-  server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
-    request->send(200, "text/plain", "Hi! I am a keg scale. SSID: " + String(config.wifi.ssid));
-  });
-
-  server.begin();
-  MDNS.addService("http", "tcp", 80);
-  Serial.println("HTTP server started");
-
-  pinMode(LED_BUILTIN, OUTPUT);     // Initialize the LED_BUILTIN pin as an output
+  setupHTTP();
 }
 
 void loop() {
   ArduinoOTA.handle();
-
-  digitalWrite(LED_BUILTIN, LOW);   // Turn the LED on (Note that LOW is the voltage level
-  // but actually the LED is on; this is because
-  // it is active low on the ESP-01)
-  delay(1000);                      // Wait for a second
-  digitalWrite(LED_BUILTIN, HIGH);  // Turn the LED off by making the voltage HIGH
-  delay(2000);                      // Wait for two seconds (to demonstrate the active low LED)
 }
