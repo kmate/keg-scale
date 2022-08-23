@@ -1,0 +1,7 @@
+{
+  "hostname": "keg-scale",
+  "wifi": {
+    "ssid": "<your-wifi-ssid>",
+    "passphrase": "<your-wifi-passphrase>"
+  }
+}
