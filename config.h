@@ -10,11 +10,17 @@ struct WiFiConfig {
   char passphrase[64];
 };
 
+struct OTAConfig {
+  uint16_t port;
+  char password[64];
+};
+
 class Config {
 
 public:
   char hostname[64];
   WiFiConfig wifi;
+  OTAConfig ota;
 
   bool load() {
     File configFile = LittleFS.open("/config.json", "r");
@@ -29,8 +35,12 @@ public:
     }
 
     strlcpy(this->hostname, doc["hostname"] | "keg-scale", sizeof(this->hostname));
+
     strlcpy(this->wifi.ssid, doc["wifi"]["ssid"], sizeof(this->wifi.ssid));
     strlcpy(this->wifi.passphrase, doc["wifi"]["passphrase"], sizeof(this->wifi.passphrase));
+
+    this->ota.port = doc["ota"]["port"] | 8266;
+    strlcpy(this->ota.password, doc["ota"]["password"] | "", sizeof(this->ota.password));
 
     configFile.close();
     return true;

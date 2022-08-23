@@ -45,13 +45,10 @@ void setupOTA() {
   static volatile bool updatingFS = false;
 
   ArduinoOTA.setHostname(config.hostname);
-
-  // No authentication by default
-  // ArduinoOTA.setPassword("admin");
-
-  // Password can be set with it's md5 value as well
-  // MD5(admin) = 21232f297a57a5a743894a0e4a801fc3
-  // ArduinoOTA.setPasswordHash("21232f297a57a5a743894a0e4a801fc3");
+  ArduinoOTA.setPort(config.ota.port);
+  if (strlen(config.ota.password) > 0) {
+    ArduinoOTA.setPassword(config.ota.password);
+  }
 
   ArduinoOTA.onStart([]() {
     String type;

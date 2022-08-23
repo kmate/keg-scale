@@ -3,5 +3,9 @@
   "wifi": {
     "ssid": "<your-wifi-ssid>",
     "passphrase": "<your-wifi-passphrase>"
+  },
+  "ota": {
+    "port": 8266,
+    "password": "<ota-password>"
   }
 }
