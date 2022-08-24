@@ -47,6 +47,12 @@ public:
     configFile.close();
     return true;
   }
+
+  void addDescriptionToDoc(DynamicJsonDocument &doc) {
+    // TODO add more properties when it makes sense
+    JsonObject wifi = doc.createNestedObject("wifi");
+    wifi["ssid"] = this->wifi.ssid;
+  }
 };
 
 #endif
