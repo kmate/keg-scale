@@ -19,9 +19,7 @@ public:
   }
 
   void begin() {
-    server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
-      request->send(LittleFS, "/index.html");
-    });
+    server.serveStatic("/", LittleFS, "/html/").setDefaultFile("index.html");
     server.on("/status", HTTP_GET, [this](AsyncWebServerRequest *request) {
       AsyncResponseStream *response = request->beginResponseStream("application/json");
       DynamicJsonDocument doc(1024);

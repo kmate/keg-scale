@@ -7,7 +7,6 @@ class App extends Component{
       <div className="App">
         <h1>Hello, Keg Scale!</h1>
         <p>TODO: set up hot code reloading</p>
-        <p>TODO: install dist to LittleFS data folder</p>
       </div>
     );
   }
