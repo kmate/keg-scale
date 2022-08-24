@@ -1,6 +1,7 @@
 #include <Arduino.h>
 #include <ArduinoOTA.h>
 #include <ESP8266WiFi.h>
+#include <ESPDateTime.h>
 #include <FS.h>
 #include <LittleFS.h>
 
@@ -88,6 +89,14 @@ void setupOTA() {
   ArduinoOTA.begin();
 }
 
+void setupDateTime() {
+  DateTime.setTimeZone("UTC0");
+  DateTime.begin();
+  if (!DateTime.isTimeValid()) {
+    failSetup("Failed to get time from server!");
+  }
+}
+
 void setupHTTP() {
   server = new WebServer(config);
   server->begin();
@@ -102,6 +111,7 @@ void setup() {
   setupConfig();
   setupWiFi();
   setupOTA();
+  setupDateTime();
   setupHTTP();
 }
 

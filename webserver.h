@@ -6,6 +6,7 @@
 
 #include <ESP8266mDNS.h>
 #include <ESPAsyncWebServer.h>
+#include <ESPDateTime.h>
 
 class WebServer {
 
@@ -26,6 +27,7 @@ public:
       // TODO add all of config + more runtime properties from ESP
       doc["heap"] = ESP.getFreeHeap();
       doc["ssid"] = this->config->wifi.ssid;
+      doc["time"] = DateTime.toString();
       serializeJson(doc, *response);
       request->send(response);
     });
