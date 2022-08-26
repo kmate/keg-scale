@@ -6,7 +6,6 @@ class App extends Component{
     return(
       <div className="App">
         <h1>Hello, Keg Scale!</h1>
-        <p>TODO: set up hot code reloading</p>
       </div>
     );
   }
