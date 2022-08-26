@@ -2,11 +2,12 @@ const path = require("path");
 const webpack = require("webpack");
 const TerserPlugin = require('terser-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
+const ESLintPlugin = require('eslint-webpack-plugin');
 
 const outputPath = path.resolve(__dirname, "../data/html/");
 
 module.exports = {
-  entry: "./src/index.js",
+  entry: "./src/index.jsx",
   mode: "development",
   module: {
     rules: [
@@ -52,7 +53,8 @@ module.exports = {
       patterns: [
         { from: 'public' }
       ]
-    })
+    }),
+    new ESLintPlugin()
   ]
 };
 
