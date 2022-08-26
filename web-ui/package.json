@@ -4,7 +4,7 @@
   "description": "Web UI for Keg Scale",
   "main": "index.js",
   "scripts": {
-    "build": "webpack --mode production",
+    "build": "NODE_ENV=production webpack --mode production",
     "start": "webpack-dev-server --mode development"
   },
   "author": "kmate",
@@ -32,10 +32,10 @@
   "dependencies": {
     "@emotion/react": "^11.10.0",
     "@emotion/styled": "^11.10.0",
-    "@fontsource/roboto": "^4.5.8",
     "@mui/icons-material": "^5.10.2",
     "@mui/material": "^5.10.2",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react-dom": "^18.2.0",
+    "react-swipeable-views-react-18-fix": "^0.14.1"
   }
 }

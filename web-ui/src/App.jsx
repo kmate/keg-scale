@@ -1,4 +1,5 @@
 import React, { Component} from "react";
+import MainTabs from "./MainTabs.jsx";
 import "./App.css";
 
 import { ThemeProvider, createTheme } from '@mui/material/styles';
@@ -15,9 +16,7 @@ class App extends Component{
     return(
       <ThemeProvider theme={darkTheme}>
         <CssBaseline />
-        <div className="App">
-          <h1>Hello, Keg Scale!</h1>
-        </div>
+        <MainTabs />
       </ThemeProvider>
     );
   }
