@@ -24,8 +24,9 @@ class WebServer {
     server.on("/status", HTTP_GET, [this](AsyncWebServerRequest *request) {
       AsyncResponseStream *response = request->beginResponseStream("application/json");
       DynamicJsonDocument doc(1024);
-      doc["compiledAt"] = compiledAt;
-      doc["currentTime"] = DateTime.toString();
+      JsonObject general = doc.createNestedObject("general");
+      general["compiledAt"] = compiledAt;
+      general["currentTime"] = DateTime.toString();
 
       config->addDescriptionToDoc(doc);
 
@@ -54,6 +55,8 @@ public:
   void begin() {
     addRootHandler();
     addStatusHandler();
+    // makes local testing of web ui easier
+    DefaultHeaders::Instance().addHeader("Access-Control-Allow-Origin", "*");
     server.begin();
   }
 };

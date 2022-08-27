@@ -5,10 +5,11 @@ import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
-import Typography from '@mui/material/Typography';
 
 import ScaleIcon from '@mui/icons-material/Scale';
-import ConstructionIcon from '@mui/icons-material/Construction';
+import PermDeviceInformationIcon from '@mui/icons-material/PermDeviceInformation';
+
+import StatusPanel from './StatusPanel';
 
 function TabPanel(props) {
   const { children, value, index, ...other } = props;
@@ -20,9 +21,7 @@ function TabPanel(props) {
       {...other}
     >
       {value === index && (
-        <Box>
-          <Typography>{children}</Typography>
-        </Box>
+        <Box>{children}</Box>
       )}
     </div>
   );
@@ -57,14 +56,14 @@ export default function MainTabs() {
           variant="fullWidth"
         >
           <Tab label="Scales" icon={<ScaleIcon />} iconPosition="start" />
-          <Tab label="Status" icon={<ConstructionIcon />} iconPosition="start" />
+          <Tab label="Status" icon={<PermDeviceInformationIcon />} iconPosition="start" />
         </Tabs>
       </AppBar>
       <TabPanel value={value} index={0} dir={theme.direction}>
         TODO scale panels
       </TabPanel>
       <TabPanel value={value} index={1} dir={theme.direction}>
-        TODO status view
+        <StatusPanel />
       </TabPanel>
     </Box>
   );
