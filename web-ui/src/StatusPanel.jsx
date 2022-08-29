@@ -2,7 +2,7 @@ import * as React from 'react';
 import useFetch from "react-fetch-hook";
 import formatBytes from './formatBytes';
 
-import { Divider, List, ListItem, ListItemIcon, ListItemText, Typography } from '@mui/material';
+import { Divider, List, ListItem, ListItemIcon, ListItemText } from '@mui/material';
 import LoadingIndicator from './LoadingIndicator';
 
 import BuildIcon from '@mui/icons-material/Build';
@@ -26,14 +26,16 @@ const groups = {
 
 const identity = (x) => x;
 
+const fromUTCDateTime = (dt) => new Date(dt + "Z").toLocaleString();
+
 const stats = {
   "compiledAt": {
     label: "Compiled at",
-    show: identity
+    show: fromUTCDateTime
   },
   "currentTime": {
     label: "Current time",
-    show: identity
+    show: fromUTCDateTime
   },
   "ssid": {
     label: "SSID",
@@ -78,32 +80,31 @@ const stats = {
 }
 
 function StatusContents(props) {
-  // FIXME key props are still not set properly, see developer console warning
   return (
     <List>
       {Object.keys(props.data).map((group) => {
         const Icon = groups[group].icon;
         return (
-          <>
-            <ListItem key={group}>
-              <ListItemIcon>{<Icon />}</ListItemIcon>
+          <React.Fragment key={group}>
+            <ListItem>
+              <ListItemIcon sx={{ minWidth: "36px" }}>{<Icon />}</ListItemIcon>
               <ListItemText primary={groups[group].label} />
             </ListItem>
-            <Divider key={group + "_divider"} />
+            <Divider />
             <List component="div" disablePadding>
               {Object.keys(props.data[group]).map((stat) => {
                 const Icon = stats[stat].icon;
                 return (
-                  <>
-                    <ListItem key={group + "." + stat} sx={{ pl: 4 }}>
+                  <React.Fragment key={group + "." + stat}>
+                    <ListItem sx={{ pl: 4 }}>
                       <ListItemText primary={stats[stat].label} secondary={stats[stat].show(props.data[group][stat])} />
                     </ListItem>
-                    <Divider key={group + "." + stat + "_divider"} />
-                  </>
+                    <Divider />
+                  </React.Fragment>
                 );
               })}
             </List>
-          </>
+          </React.Fragment>
         );
       })}
     </List>
