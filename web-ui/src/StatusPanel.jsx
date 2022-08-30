@@ -1,5 +1,6 @@
 import * as React from 'react';
 import useFetch from "react-fetch-hook";
+import { useLongPress } from 'use-long-press';
 import copy from "copy-to-clipboard";
 import formatBytes from './formatBytes';
 
@@ -90,15 +91,15 @@ const stats = {
 function ListItemCopyButton(props) {
   const [showCopyDone, setShowCopyDone] = React.useState(false);
 
-  const handleItemClick = (e) => {
+  const handleItemLongPress = useLongPress((e) => {
     copy(e.target.parentElement.innerText);
     setShowCopyDone(true);
     setTimeout(() => setShowCopyDone(false), 1000);
-  };
+  });
 
   return (
     <Tooltip open={showCopyDone} title="Copied to clipboard!" placement="top" arrow>
-      <ListItemButton onClick={handleItemClick} {...props}>
+      <ListItemButton {...handleItemLongPress()} {...props}>
         {props.children}
       </ListItemButton>
     </Tooltip>
