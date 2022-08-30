@@ -8,5 +8,15 @@
   "ota": {
     "port": 8266,
     "password": "<ota-password>"
-  }
+  },
+  "scales": [
+    {
+      "clockPin": <clock-pin-for-scale-1>,
+      "dataPin": <data-pin-for-scale-1>
+    },
+    {
+      "clockPin": <clock-pin-for-scale-2>,
+      "dataPin": <data-pin-for-scale-2>
+    }
+  ]
 }
