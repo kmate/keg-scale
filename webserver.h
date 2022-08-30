@@ -11,6 +11,43 @@
 
 const char compiledAt[] = __DATE__ " " __TIME__;
 
+class OneParamRewrite : public AsyncWebRewrite {
+
+protected:
+  String _urlPrefix;
+  int _paramIndex;
+  String _paramsBackup;
+
+public:
+  OneParamRewrite(const char* from, const char* to) : AsyncWebRewrite(from, to) {
+    _paramIndex = _from.indexOf('{');
+
+    if( _paramIndex >=0 && _from.endsWith("}")) {
+      _urlPrefix = _from.substring(0, _paramIndex);
+      int index = _params.indexOf('{');
+      if(index >= 0) {
+        _params = _params.substring(0, index);
+      }
+    } else {
+      _urlPrefix = _from;
+    }
+    _paramsBackup = _params;
+  }
+
+  bool match(AsyncWebServerRequest *request) override {
+    if(request->url().startsWith(_urlPrefix)) {
+      if(_paramIndex >= 0) {
+        _params = _paramsBackup + request->url().substring(_paramIndex);
+      } else {
+        _params = _paramsBackup;
+      }
+      return true;
+    } else {
+      return false;
+    }
+  }
+};
+
 class WebServer {
 
   AsyncWebServer server;
@@ -19,6 +56,21 @@ class WebServer {
   void addRootHandler() {
     // TODO add cache based on LittleFS upload date if possible
     server.serveStatic("/", LittleFS, "/html/").setDefaultFile("index.html");
+  }
+
+  void addScalesHandler() {
+    server.addRewrite(new OneParamRewrite("/scale/{scaleId}", "/scale?scaleId={scaleId}"));
+    server.on("/scale", HTTP_GET, [this](AsyncWebServerRequest *request) {
+      int scaleId = request->arg("scaleId").toInt();
+      request->send(200, "text/plain", "TODO return status and data for scale #" + String(scaleId));
+    });
+    server.on("/scales", HTTP_GET, [this](AsyncWebServerRequest *request) {
+      AsyncResponseStream *response = request->beginResponseStream("application/json");
+      DynamicJsonDocument doc(64);
+      doc["numScales"] = config->scales.size();
+      serializeJson(doc, *response);
+      request->send(response);
+    });
   }
 
   void addStatusHandler() {
@@ -57,9 +109,18 @@ public:
 
   void begin() {
     addRootHandler();
+    addScalesHandler();
     addStatusHandler();
     // makes local testing of web ui easier
     DefaultHeaders::Instance().addHeader("Access-Control-Allow-Origin", "*");
+    // handle OPTIONS request of CORS pre-flight
+    server.onNotFound([](AsyncWebServerRequest *request) {
+      if (request->method() == HTTP_OPTIONS) {
+        request->send(204);
+      } else {
+        request->send(404);
+     }
+    });
     server.begin();
   }
 };
