@@ -7,6 +7,7 @@
 #include <ESP8266mDNS.h>
 #include <ESPAsyncWebServer.h>
 #include <ESPDateTime.h>
+#include <ESP8266WiFi.h>
 
 const char compiledAt[] = __DATE__ " " __TIME__;
 
@@ -28,7 +29,9 @@ class WebServer {
       general["compiledAt"] = compiledAt;
       general["currentTime"] = DateTime.toString();
 
-      config->addDescriptionToDoc(doc);
+      JsonObject wifi = doc.createNestedObject("wifi");
+      wifi["ssid"] = config->wifi.ssid;
+      wifi["ip"] = WiFi.localIP();
 
       JsonObject esp  = doc.createNestedObject("esp");
       esp["chipId"] = ESP.getChipId();

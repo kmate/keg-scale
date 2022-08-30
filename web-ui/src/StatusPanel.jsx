@@ -26,12 +26,15 @@ const groups = {
 
 const identity = (x) => x;
 
-const fromUTCDateTime = (dt) => new Date(dt + "Z").toLocaleString();
+const fromDateTime = (dt) => new Date(dt).toLocaleString();
+
+const fromUTCDateTime = (dt) => new Date(dt.replace(" ", "T") + "Z").toLocaleString();
 
 const stats = {
   "compiledAt": {
     label: "Compiled at",
-    show: fromUTCDateTime
+    // compilation date is expected to be in the same time zone as the user's device
+    show: fromDateTime
   },
   "currentTime": {
     label: "Current time",
@@ -39,6 +42,10 @@ const stats = {
   },
   "ssid": {
     label: "SSID",
+    show: identity
+  },
+  "ip": {
+    label: "IP address",
     show: identity
   },
   "chipId": {
