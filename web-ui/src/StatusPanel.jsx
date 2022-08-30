@@ -5,6 +5,7 @@ import copy from "copy-to-clipboard";
 import formatBytes from './formatBytes';
 
 import { Divider, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Tooltip } from '@mui/material';
+import ErrorIndicator from './ErrorIndicator';
 import LoadingIndicator from './LoadingIndicator';
 
 import BuildIcon from '@mui/icons-material/Build';
@@ -149,7 +150,7 @@ export default function StatusPanel() {
 
   return(
     <>
-      { isLoading ? <LoadingIndicator /> : <StatusContents data={data} />}
+      { isLoading ? <LoadingIndicator /> : (error ? <ErrorIndicator error={error} /> : <StatusContents data={data} />)}
     </>
   );
 }
