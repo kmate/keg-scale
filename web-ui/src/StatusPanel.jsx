@@ -1,8 +1,9 @@
 import * as React from 'react';
 import useFetch from "react-fetch-hook";
+import copy from "copy-to-clipboard";
 import formatBytes from './formatBytes';
 
-import { Divider, List, ListItem, ListItemIcon, ListItemText } from '@mui/material';
+import { Divider, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Tooltip } from '@mui/material';
 import LoadingIndicator from './LoadingIndicator';
 
 import BuildIcon from '@mui/icons-material/Build';
@@ -86,6 +87,24 @@ const stats = {
   },
 }
 
+function ListItemCopyButton(props) {
+  const [showCopyDone, setShowCopyDone] = React.useState(false);
+
+  const handleItemClick = (e) => {
+    copy(e.target.parentElement.innerText);
+    setShowCopyDone(true);
+    setTimeout(() => setShowCopyDone(false), 1000);
+  };
+
+  return (
+    <Tooltip open={showCopyDone} title="Copied to clipboard!" placement="top" arrow>
+      <ListItemButton onClick={handleItemClick} {...props}>
+        {props.children}
+      </ListItemButton>
+    </Tooltip>
+  );
+}
+
 function StatusContents(props) {
   return (
     <List>
@@ -103,8 +122,13 @@ function StatusContents(props) {
                 const Icon = stats[stat].icon;
                 return (
                   <React.Fragment key={group + "." + stat}>
-                    <ListItem sx={{ pl: 4 }}>
-                      <ListItemText primary={stats[stat].label} secondary={stats[stat].show(props.data[group][stat])} />
+                    <ListItem disablePadding>
+                      <ListItemCopyButton sx={{ pl: 4 }}>
+                        <ListItemText
+                          primary={stats[stat].label}
+                          secondary={stats[stat].show(props.data[group][stat])}
+                        />
+                      </ListItemCopyButton>
                     </ListItem>
                     <Divider />
                   </React.Fragment>
