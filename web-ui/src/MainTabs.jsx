@@ -10,6 +10,7 @@ import ScaleIcon from '@mui/icons-material/Scale';
 import PermDeviceInformationIcon from '@mui/icons-material/PermDeviceInformation';
 
 import StatusPanel from './StatusPanel';
+import ScalesPanel from './ScalesPanel';
 
 function TabPanel(props) {
   const { children, value, index, ...other } = props;
@@ -60,7 +61,7 @@ export default function MainTabs() {
         </Tabs>
       </AppBar>
       <TabPanel value={value} index={0} dir={theme.direction}>
-        TODO scale panels
+        <ScalesPanel />
       </TabPanel>
       <TabPanel value={value} index={1} dir={theme.direction}>
         <StatusPanel />
