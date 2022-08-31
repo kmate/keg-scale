@@ -2,6 +2,7 @@ import * as React from 'react';
 import useFetch from "react-fetch-hook";
 import { useLongPress } from 'use-long-press';
 import copy from "copy-to-clipboard";
+import apiLocation from './apiLocation';
 import formatBytes from './formatBytes';
 
 import { Divider, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Tooltip } from '@mui/material';
@@ -146,7 +147,7 @@ function StatusContents(props) {
 
 export default function StatusPanel() {
 
-  const { isLoading, data, error } = useFetch("http://keg-scale.local/status");
+  const { isLoading, data, error } = useFetch(apiLocation("/status"));
 
   return(
     <>
