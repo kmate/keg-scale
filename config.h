@@ -1,5 +1,5 @@
-#ifndef __CONFIG_H
-#define __CONFIG_H
+#ifndef KEG_SCALE__CONFIG_H
+#define KEG_SCALE__CONFIG_H
 
 #include <ArduinoJson.h>
 #include <FS.h>

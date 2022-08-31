@@ -1,5 +1,5 @@
-#ifndef __WEBSERVER_H
-#define __WEBSERVER_H
+#ifndef KEG_SCALE__WEBSERVER_H
+#define KEG_SCALE__WEBSERVER_H
 
 #include "ArduinoJson.h"
 #include "AsyncJson.h"
