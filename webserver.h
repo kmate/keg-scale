@@ -65,7 +65,7 @@ class WebServer {
       int scaleId = request->arg("scaleId").toInt();
       if (scaleId >= 0 && scaleId < this->scales.size()) {
         AsyncResponseStream *response = request->beginResponseStream("application/json");
-        DynamicJsonDocument doc(256);
+        DynamicJsonDocument doc(512);
         this->scales[scaleId]->render(doc);
         serializeJson(doc, *response);
         request->send(response);

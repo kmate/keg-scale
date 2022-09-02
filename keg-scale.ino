@@ -101,8 +101,8 @@ void setupDateTime() {
 }
 
 void setupScales() {
-  for (ScaleConfig sc : config.scales) {
-    Scale *scale = new Scale(sc);
+  for (int i = 0; i < config.scales.size(); ++i) {
+    Scale *scale = new Scale(config.scales[i]);
     scales.push_back(scale);
     scale->begin();
   }

@@ -58,7 +58,7 @@ public:
       ScaleConfig currentScale;
       currentScale.clockPin = doc["scales"][i]["clockPin"];
       currentScale.dataPin = doc["scales"][i]["dataPin"];
-      currentScale.gain = doc["scales"][i]["gain"] | 64;
+      currentScale.gain = doc["scales"][i]["gain"] | 128;
       currentScale.reverse = (doc["scales"][i]["reverse"] | false);
       this->scales.push_back(currentScale);
     }
