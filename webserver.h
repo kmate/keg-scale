@@ -51,30 +51,39 @@ public:
 class WebServer {
 
   AsyncWebServer server;
-  Config *config;
+  Config &config;
+  std::vector<Scale*> &scales;
 
   void addRootHandler() {
     // TODO add cache based on LittleFS upload date if possible
-    server.serveStatic("/", LittleFS, "/html/").setDefaultFile("index.html");
+    this->server.serveStatic("/", LittleFS, "/html/").setDefaultFile("index.html");
   }
 
   void addScalesHandler() {
-    server.addRewrite(new OneParamRewrite("/scale/{scaleId}", "/scale?scaleId={scaleId}"));
-    server.on("/scale", HTTP_GET, [this](AsyncWebServerRequest *request) {
+    this->server.addRewrite(new OneParamRewrite("/scale/{scaleId}", "/scale?scaleId={scaleId}"));
+    this->server.on("/scale", HTTP_GET, [this](AsyncWebServerRequest *request) {
       int scaleId = request->arg("scaleId").toInt();
-      request->send(200, "text/plain", "TODO return status and data for scale #" + String(scaleId));
+      if (scaleId >= 0 && scaleId < this->scales.size()) {
+        AsyncResponseStream *response = request->beginResponseStream("application/json");
+        DynamicJsonDocument doc(256);
+        this->scales[scaleId]->render(doc);
+        serializeJson(doc, *response);
+        request->send(response);
+      } else {
+        request->send(404);
+      }
     });
-    server.on("/scales", HTTP_GET, [this](AsyncWebServerRequest *request) {
+    this->server.on("/scales", HTTP_GET, [this](AsyncWebServerRequest *request) {
       AsyncResponseStream *response = request->beginResponseStream("application/json");
       DynamicJsonDocument doc(64);
-      doc["numScales"] = config->scales.size();
+      doc["numScales"] = this->scales.size();
       serializeJson(doc, *response);
       request->send(response);
     });
   }
 
   void addStatusHandler() {
-    server.on("/status", HTTP_GET, [this](AsyncWebServerRequest *request) {
+    this->server.on("/status", HTTP_GET, [this](AsyncWebServerRequest *request) {
       AsyncResponseStream *response = request->beginResponseStream("application/json");
       DynamicJsonDocument doc(1024);
       JsonObject general = doc.createNestedObject("general");
@@ -82,7 +91,7 @@ class WebServer {
       general["currentTime"] = DateTime.toString();
 
       JsonObject wifi = doc.createNestedObject("wifi");
-      wifi["ssid"] = config->wifi.ssid;
+      wifi["ssid"] = this->config.wifi.ssid;
       wifi["ip"] = WiFi.localIP();
 
       JsonObject esp  = doc.createNestedObject("esp");
@@ -102,26 +111,25 @@ class WebServer {
   }
 
 public:
-  WebServer(Config &config): server(config.httpPort) {
-    this->config = &config;
-    MDNS.addService("http", "tcp", config.httpPort);
+  WebServer(Config &_config, std::vector<Scale*> &_scales): config(_config), scales(_scales), server(_config.httpPort) {
+    MDNS.addService("http", "tcp", this->config.httpPort);
   }
 
   void begin() {
-    addRootHandler();
-    addScalesHandler();
-    addStatusHandler();
+    this->addRootHandler();
+    this->addScalesHandler();
+    this->addStatusHandler();
     // makes local testing of web ui easier
     DefaultHeaders::Instance().addHeader("Access-Control-Allow-Origin", "*");
     // handle OPTIONS request of CORS pre-flight
-    server.onNotFound([](AsyncWebServerRequest *request) {
+    this->server.onNotFound([](AsyncWebServerRequest *request) {
       if (request->method() == HTTP_OPTIONS) {
         request->send(204);
       } else {
         request->send(404);
      }
     });
-    server.begin();
+    this->server.begin();
   }
 };
 

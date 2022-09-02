@@ -4,11 +4,14 @@
 #include <ESPDateTime.h>
 #include <FS.h>
 #include <LittleFS.h>
+#include <vector>
 
 #include "config.h"
+#include "scale.h"
 #include "webserver.h"
 
 Config config;
+std::vector<Scale*> scales;
 WebServer *server;
 
 void failSetup(const char *message) {
@@ -97,8 +100,17 @@ void setupDateTime() {
   }
 }
 
+void setupScales() {
+  for (ScaleConfig sc : config.scales) {
+    Scale *scale = new Scale(sc);
+    scales.push_back(scale);
+    scale->begin();
+  }
+  Serial.println("Scales initialized.");
+}
+
 void setupHTTP() {
-  server = new WebServer(config);
+  server = new WebServer(config, scales);
   server->begin();
   Serial.println("HTTP server started.");
 }
@@ -112,9 +124,13 @@ void setup() {
   setupWiFi();
   setupOTA();
   setupDateTime();
+  setupScales();
   setupHTTP();
 }
 
 void loop() {
   ArduinoOTA.handle();
+  for (Scale *scale : scales) {
+    scale->update();
+  }
 }

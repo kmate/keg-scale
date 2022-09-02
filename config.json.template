@@ -12,11 +12,15 @@
   "scales": [
     {
       "clockPin": <clock-pin-for-scale-1>,
-      "dataPin": <data-pin-for-scale-1>
+      "dataPin": <data-pin-for-scale-1>,
+      "gain": <64 or 128>,
+      "reverse": false
     },
     {
       "clockPin": <clock-pin-for-scale-2>,
-      "dataPin": <data-pin-for-scale-2>
+      "dataPin": <data-pin-for-scale-2>,
+      "gain": <64 or 128>,
+      "reverse": false
     }
   ]
 }

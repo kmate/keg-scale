@@ -19,6 +19,8 @@ struct OTAConfig {
 struct ScaleConfig {
   uint8_t clockPin;
   uint8_t dataPin;
+  uint8_t gain;
+  bool reverse;
 };
 
 class Config {
@@ -56,6 +58,8 @@ public:
       ScaleConfig currentScale;
       currentScale.clockPin = doc["scales"][i]["clockPin"];
       currentScale.dataPin = doc["scales"][i]["dataPin"];
+      currentScale.gain = doc["scales"][i]["gain"] | 64;
+      currentScale.reverse = (doc["scales"][i]["reverse"] | false);
       this->scales.push_back(currentScale);
     }
 
