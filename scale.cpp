@@ -6,23 +6,29 @@ void Scale::begin() {
 }
 
 void Scale::update() {
-  this->currentState->update();
+  if (this->nextState != nullptr) {
+    if (this->currentState != nullptr) {
+      this->currentState->exit(this->nextState);
+    }
+    yield();
+    ScaleState *prevState = this->currentState;
+    this->currentState = this->nextState;
+    this->nextState = nullptr;
+    this->currentState->enter(this, prevState);
+    // It is expected that we create new objects for nextState each time,
+    // hence we need to destroy the previous state here.
+    if (prevState != nullptr) {
+      delete prevState;
+    }
+    yield();
+  } else {
+    this->currentState->update();
+  }
 }
 
 void Scale::setState(ScaleState *newState) {
-  if (this->currentState != nullptr) {
-    this->currentState->exit(newState);
-  }
-  yield();
-  ScaleState *prevState = this->currentState;
-  this->currentState = newState;
-  this->currentState->enter(this, prevState);
-  // It is expected that we create new objects for newState each time,
-  // hence we need to destroy the previous state here.
-  if (prevState != nullptr) {
-    delete prevState;
-  }
-  yield();
+  // the actual state change is done on update()
+  this->nextState = newState;
 }
 
 void Scale::render(DynamicJsonDocument &doc) {
@@ -65,4 +71,16 @@ bool Scale::isAdcOnline() {
 
 float Scale::getAdcData() {
   return this->adc.getData();
+}
+
+void Scale::startAdcTare() {
+  this->adc.tareNoDelay();
+}
+
+bool Scale::isAdcTareDone() {
+  return this->adc.getTareStatus();
+}
+
+void Scale::calibrateAdc(float knownMass) {
+  this->adc.getNewCalibration(knownMass);
 }

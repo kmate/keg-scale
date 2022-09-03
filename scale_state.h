@@ -42,9 +42,26 @@ class AdhocScaleState : public OnlineScaleState {
 };
 
 class TareScaleState : public OnlineScaleState {
+
+public:
+  void enter(Scale *scale, ScaleState *prevState) override;
+  void update() override;
+  void exit(ScaleState *nextState) override {};
+
+  void render(JsonObject &state) const override;
 };
 
 class CalibrateScaleState : public OnlineScaleState {
+
+  float knownMass;
+
+public:
+  CalibrateScaleState(float _knownMass) : knownMass(_knownMass) {};
+  void enter(Scale *scale, ScaleState *prevState) override;
+  void update() override;
+  void exit(ScaleState *nextState) override {};
+
+  void render(JsonObject &state) const override;
 };
 
 class OfflineScaleState : public ScaleState {

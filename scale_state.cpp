@@ -25,6 +25,39 @@ void StandbyScaleState::render(JsonObject &state) const {
   OnlineScaleState::render(state);
 }
 
+void TareScaleState::enter(Scale *scale, ScaleState *prevState) {
+  OnlineScaleState::enter(scale, prevState);
+  this->scale->startAdcTare();
+}
+
+void TareScaleState::update() {
+  OnlineScaleState::update();
+  if (this->scale->isAdcTareDone()) {
+    this->scale->setState(new StandbyScaleState());
+  }
+}
+
+void TareScaleState::render(JsonObject &state) const {
+  state["name"] = "tare";
+  OnlineScaleState::render(state);
+}
+
+void CalibrateScaleState::enter(Scale *scale, ScaleState *prevState) {
+  OnlineScaleState::enter(scale, prevState);
+  this->scale->calibrateAdc(this->knownMass);
+}
+
+void CalibrateScaleState::update() {
+  OnlineScaleState::update();
+  this->scale->setState(new StandbyScaleState());
+}
+
+void CalibrateScaleState::render(JsonObject &state) const {
+  state["name"] = "calibrate";
+  state["knownMass"] = this->knownMass;
+  OnlineScaleState::render(state);
+}
+
 void OfflineScaleState::enter(Scale *scale, ScaleState *prevState) {
   ScaleState::enter(scale, prevState);
 }

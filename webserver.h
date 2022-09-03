@@ -78,7 +78,7 @@ class WebServer {
         serializeJson(doc, *response);
         request->send(response);
       } else {
-        request->send(404);
+        request->send(400);
       }
     });
 
@@ -86,9 +86,10 @@ class WebServer {
     this->server.on("/tare", HTTP_POST, [this](AsyncWebServerRequest *request) {
       int scaleId = request->arg("scaleId").toInt();
       if (scaleId >= 0 && scaleId < this->scales.size()) {
+        this->scales[scaleId]->setState(new TareScaleState());
         request->send(200, "text/plain", "tare scale " + String(scaleId));
       } else {
-        request->send(404);
+        request->send(400);
       }
     });
 
@@ -96,10 +97,11 @@ class WebServer {
     this->server.on("/calibrate", HTTP_POST, [this](AsyncWebServerRequest *request) {
       int scaleId = request->arg("scaleId").toInt();
       if (scaleId >= 0 && scaleId < this->scales.size() && request->hasParam("knownMass")) {
-        int knownMass = request->getParam("knownMass")->value().toInt();
+        float knownMass = request->getParam("knownMass")->value().toFloat();
+        this->scales[scaleId]->setState(new CalibrateScaleState(knownMass));
         request->send(200, "text/plain", "calibrate scale " + String(scaleId) + " with known mass " + String(knownMass) + "g");
       } else {
-        request->send(404);
+        request->send(400);
       }
     });
   }

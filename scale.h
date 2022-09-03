@@ -13,9 +13,10 @@ private:
   ScaleConfig &config;
   HX711_ADC adc;
   ScaleState *currentState;
+  ScaleState *nextState;
 
 public:
-  Scale(ScaleConfig &_config) : config(_config), adc(_config.dataPin, _config.clockPin), currentState(nullptr) {
+  Scale(ScaleConfig &_config) : config(_config), adc(_config.dataPin, _config.clockPin), currentState(nullptr), nextState(nullptr) {
     if (this->config.reverse) {
       this->adc.setReverseOutput();
     }
@@ -30,6 +31,11 @@ public:
   uint8_t updateAdc();
   bool isAdcOnline();
   float getAdcData();
+
+  void startAdcTare();
+  bool isAdcTareDone();
+
+  void calibrateAdc(float knownMass);
 };
 
 #endif
