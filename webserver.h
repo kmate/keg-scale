@@ -60,6 +60,14 @@ class WebServer {
   }
 
   void addScalesHandler() {
+    this->server.on("/scales", HTTP_GET, [this](AsyncWebServerRequest *request) {
+      AsyncResponseStream *response = request->beginResponseStream("application/json");
+      DynamicJsonDocument doc(64);
+      doc["numScales"] = this->scales.size();
+      serializeJson(doc, *response);
+      request->send(response);
+    });
+
     this->server.addRewrite(new OneParamRewrite("/scale/{scaleId}", "/scale?scaleId={scaleId}"));
     this->server.on("/scale", HTTP_GET, [this](AsyncWebServerRequest *request) {
       int scaleId = request->arg("scaleId").toInt();
@@ -73,12 +81,26 @@ class WebServer {
         request->send(404);
       }
     });
-    this->server.on("/scales", HTTP_GET, [this](AsyncWebServerRequest *request) {
-      AsyncResponseStream *response = request->beginResponseStream("application/json");
-      DynamicJsonDocument doc(64);
-      doc["numScales"] = this->scales.size();
-      serializeJson(doc, *response);
-      request->send(response);
+
+    this->server.addRewrite(new OneParamRewrite("/tare/{scaleId}", "/tare?scaleId={scaleId}"));
+    this->server.on("/tare", HTTP_POST, [this](AsyncWebServerRequest *request) {
+      int scaleId = request->arg("scaleId").toInt();
+      if (scaleId >= 0 && scaleId < this->scales.size()) {
+        request->send(200, "text/plain", "tare scale " + String(scaleId));
+      } else {
+        request->send(404);
+      }
+    });
+
+    this->server.addRewrite(new OneParamRewrite("/calibrate/{scaleId}", "/calibrate?scaleId={scaleId}"));
+    this->server.on("/calibrate", HTTP_POST, [this](AsyncWebServerRequest *request) {
+      int scaleId = request->arg("scaleId").toInt();
+      if (scaleId >= 0 && scaleId < this->scales.size() && request->hasParam("knownMass")) {
+        int knownMass = request->getParam("knownMass")->value().toInt();
+        request->send(200, "text/plain", "calibrate scale " + String(scaleId) + " with known mass " + String(knownMass) + "g");
+      } else {
+        request->send(404);
+      }
     });
   }
 

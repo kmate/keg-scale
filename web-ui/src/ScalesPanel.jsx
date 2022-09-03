@@ -9,7 +9,7 @@ import LoadingIndicator from './LoadingIndicator';
 
 function ScalePanel(props) {
   const [tick, setTick] = React.useState(false);
-  const [knownWeight, setKnownWeight] = React.useState(1000);
+  const [knownMass, setKnownMass] = React.useState(1000);
 
   useInterval(
     () => { setTick(!tick); },
@@ -19,13 +19,19 @@ function ScalePanel(props) {
   const { isLoading, data, error } = useFetch(apiLocation("/scale/" + props.index), { depends: [tick] });
 
   function tare() {
-    // TODO send post request to tare scale
+    // TODO show UI feedback instead
     console.log("tare scale " + props.index);
+    fetch(apiLocation("/tare/" + props.index), { method: "POST" }).then((response) => {
+      console.log("tare response:", response);
+    })
   }
 
   function calibrate() {
-    // TODO send post request to calibrate scale
-    console.log("calibrate scale " + props.index + " with known weight " + knownWeight);
+    // TODO show UI feedback instead
+    console.log("calibrate scale " + props.index + " with known mass " + knownMass);
+    fetch(apiLocation("/calibrate/" + props.index + "?knownMass=" + knownMass), { method: "POST" }).then((response) => {
+      console.log("calibrate response:", response);
+    })
   }
 
   // TODO finalize UI depending on actual scale state
@@ -34,11 +40,11 @@ function ScalePanel(props) {
       <p>scale {props.index}, body: {JSON.stringify(data)}</p>
       <Button onClick={tare}>Tare</Button>
       <FormControl variant="standard">
-          <InputLabel htmlFor="known-weight">Known weight</InputLabel>
+          <InputLabel htmlFor="known-mass">Known mass</InputLabel>
           <Input
-            id="known-weight"
-            value={knownWeight}
-            onChange={(event) => setKnownWeight(parseInt(event.target.value) || 0)}
+            id="known-mass"
+            value={knownMass}
+            onChange={(event) => setKnownMass(parseInt(event.target.value) || 0)}
             endAdornment={<InputAdornment position="end">g</InputAdornment>}
           />
         </FormControl>
