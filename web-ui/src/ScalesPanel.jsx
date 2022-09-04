@@ -3,9 +3,15 @@ import useFetch from "react-fetch-hook";
 import useInterval from 'use-interval';
 import apiLocation from './apiLocation';
 
-import { Button, FormControl, FormHelperText, Input, InputAdornment, InputLabel } from '@mui/material';
+import { styled } from '@mui/material/styles';
+import { Box, Button, FormControl, Grid, Input, InputAdornment, InputLabel, Paper } from '@mui/material';
 import ErrorIndicator from './ErrorIndicator';
 import LoadingIndicator from './LoadingIndicator';
+
+const Panel = styled(Paper)(({ theme }) => ({
+  ...theme.typography.body2,
+  padding: theme.spacing(1),
+}));
 
 function ScalePanel(props) {
   const [tick, setTick] = React.useState(false);
@@ -36,30 +42,34 @@ function ScalePanel(props) {
 
   // TODO finalize UI depending on actual scale state
   return (
-    <>
-      <p>scale {props.index}, body: {JSON.stringify(data)}</p>
-      <Button onClick={tare}>Tare</Button>
-      <FormControl variant="standard">
-          <InputLabel htmlFor="known-mass">Known mass</InputLabel>
-          <Input
-            id="known-mass"
-            value={knownMass}
-            onChange={(event) => setKnownMass(parseInt(event.target.value) || 0)}
-            endAdornment={<InputAdornment position="end">g</InputAdornment>}
-          />
-        </FormControl>
-      <Button onClick={calibrate}>Calibrate</Button>
-    </>
+    <Grid item xs={2} md={1}>
+      <Panel>
+        { (data && data.state ? <p>{data.state.name} {data.state.data}</p> : <p>no data</p>) }
+        <Button onClick={tare}>Tare</Button>
+        <FormControl variant="standard">
+            <InputLabel htmlFor="known-mass">Known mass</InputLabel>
+            <Input
+              id="known-mass"
+              value={knownMass}
+              onChange={(event) => setKnownMass(parseInt(event.target.value) || 0)}
+              endAdornment={<InputAdornment position="end">g</InputAdornment>}
+            />
+          </FormControl>
+        <Button onClick={calibrate}>Calibrate</Button>
+      </Panel>
+    </Grid>
   );
 }
 
-function IterateScalePanels(props) {
+function ScalePanelGrid(props) {
   return (
-    <>
-      {[...Array(props.numScales).keys()].map((index) => {
-        return <ScalePanel key={"scale_" + index} index={index} />;
-      })}
-    </>
+    <Box sx={{ flexGrow: 1, p: 1 }}>
+      <Grid container columns={2} spacing={1}>
+        {[...Array(props.numScales).keys()].map((index) => {
+          return <ScalePanel key={"scale_" + index} index={index} />;
+        })}
+      </Grid>
+    </Box>
   );
 }
 
@@ -69,7 +79,7 @@ export default function ScalesPanel() {
 
   return(
     <>
-      { isLoading ? <LoadingIndicator /> : (error ? <ErrorIndicator error={error} /> : <IterateScalePanels numScales={data.numScales} />)}
+      { isLoading ? <LoadingIndicator /> : (error ? <ErrorIndicator error={error} /> : <ScalePanelGrid numScales={data.numScales} />)}
     </>
   );
 }
