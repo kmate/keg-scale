@@ -82,6 +82,28 @@ class WebServer {
       }
     });
 
+    this->server.addRewrite(new OneParamRewrite("/standby/{scaleId}", "/standby?scaleId={scaleId}"));
+    this->server.on("/standby", HTTP_POST, [this](AsyncWebServerRequest *request) {
+      int scaleId = request->arg("scaleId").toInt();
+      if (scaleId >= 0 && scaleId < this->scales.size()) {
+        this->scales[scaleId]->setState(new StandbyScaleState());
+        request->send(200, "text/plain", "standby scale " + String(scaleId));
+      } else {
+        request->send(400);
+      }
+    });
+
+    this->server.addRewrite(new OneParamRewrite("/live/{scaleId}", "/live?scaleId={scaleId}"));
+    this->server.on("/live", HTTP_POST, [this](AsyncWebServerRequest *request) {
+      int scaleId = request->arg("scaleId").toInt();
+      if (scaleId >= 0 && scaleId < this->scales.size()) {
+        this->scales[scaleId]->setState(new LiveMeasurementScaleState());
+        request->send(200, "text/plain", "start live measurement on scale " + String(scaleId));
+      } else {
+        request->send(400);
+      }
+    });
+
     this->server.addRewrite(new OneParamRewrite("/tare/{scaleId}", "/tare?scaleId={scaleId}"));
     this->server.on("/tare", HTTP_POST, [this](AsyncWebServerRequest *request) {
       int scaleId = request->arg("scaleId").toInt();
