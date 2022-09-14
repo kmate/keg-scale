@@ -35,10 +35,11 @@ public:
   void render(JsonObject &state) const override;
 };
 
-class RecordedScaleState : public OnlineScaleState {
+
+class LiveMeasurementScaleState : public OnlineScaleState {
 };
 
-class AdhocScaleState : public OnlineScaleState {
+class TapMeasurementScaleState : public OnlineScaleState {
 };
 
 class TareScaleState : public OnlineScaleState {
