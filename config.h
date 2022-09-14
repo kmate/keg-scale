@@ -17,6 +17,7 @@ struct OTAConfig {
 };
 
 struct ScaleConfig {
+  char label[64];
   uint8_t clockPin;
   uint8_t dataPin;
   uint8_t gain;
@@ -56,6 +57,7 @@ public:
     uint8_t numScales = doc["scales"].size() | 0;
     for (int i = 0; i < numScales; ++i) {
       ScaleConfig currentScale;
+      strlcpy(currentScale.label, doc["scales"][i]["label"] | (String("Scale ") + String(i)).c_str(), sizeof(currentScale.label));
       currentScale.clockPin = doc["scales"][i]["clockPin"];
       currentScale.dataPin = doc["scales"][i]["dataPin"];
       currentScale.gain = doc["scales"][i]["gain"] | 128;
