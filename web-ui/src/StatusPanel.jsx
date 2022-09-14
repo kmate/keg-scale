@@ -14,15 +14,15 @@ import WifiIcon from '@mui/icons-material/Wifi';
 import DeveloperBoardIcon from '@mui/icons-material/DeveloperBoard';
 
 const groups = {
-  "general": {
+  general: {
     label: "General",
     icon: BuildIcon
   },
-  "wifi": {
+  wifi: {
     label: "WiFi",
     icon: WifiIcon
   },
-  "esp": {
+  esp: {
     label: "ESP",
     icon: DeveloperBoardIcon
   },
@@ -35,56 +35,56 @@ const fromDateTime = (dt) => new Date(dt).toLocaleString();
 const fromUTCDateTime = (dt) => new Date(dt.replace(" ", "T") + "Z").toLocaleString();
 
 const stats = {
-  "compiledAt": {
+  compiledAt: {
     label: "Compiled at",
     // compilation date is expected to be in the same time zone as the user's device
     show: fromDateTime
   },
-  "currentTime": {
+  currentTime: {
     label: "Current time",
     show: fromUTCDateTime
   },
-  "ssid": {
+  ssid: {
     label: "SSID",
     show: identity
   },
-  "ip": {
+  ip: {
     label: "IP address",
     show: identity
   },
-  "chipId": {
+  chipId: {
     label: "Chip ID",
     show: identity
   },
-  "flashChipId": {
+  flashChipId: {
     label: "Flash chip ID",
     show: identity
   },
-  "coreVersion": {
+  coreVersion: {
     label: "Arduino core version",
     show: identity
   },
-  "sdkVersion": {
+  sdkVersion: {
     label: "SDK version",
     show: identity
   },
-  "cpuFreqMHz": {
+  cpuFreqMHz: {
     label: "CPU frequency",
     show: (f) => f + " MHz"
   },
-  "sketchSize": {
+  sketchSize: {
     label: "Sketch size",
     show: formatBytes
   },
-  "freeSketchSpace": {
+  freeSketchSpace: {
     label: "Free sketch space",
     show: formatBytes
   },
-  "freeHeap": {
+  freeHeap: {
     label: "Free heap",
     show: formatBytes
   },
-  "heapFragmentation": {
+  heapFragmentation: {
     label: "Heap fragmentation",
     show: (p) => p + "%"
   },
