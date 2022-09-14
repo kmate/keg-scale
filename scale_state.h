@@ -37,6 +37,9 @@ public:
 
 
 class LiveMeasurementScaleState : public OnlineScaleState {
+
+public:
+  void render(JsonObject &state) const override;
 };
 
 class TapMeasurementScaleState : public OnlineScaleState {

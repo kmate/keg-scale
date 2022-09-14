@@ -25,6 +25,13 @@ void StandbyScaleState::render(JsonObject &state) const {
   OnlineScaleState::render(state);
 }
 
+// power down scale on standby enter, power up on standby exit - if next state is not offline
+
+void LiveMeasurementScaleState::render(JsonObject &state) const {
+  state["name"] = "liveMeasurement";
+  OnlineScaleState::render(state);
+}
+
 void TareScaleState::enter(Scale *scale, ScaleState *prevState) {
   OnlineScaleState::enter(scale, prevState);
   this->scale->startAdcTare();
