@@ -143,7 +143,15 @@ function LiveMeasurementView(props) {
   };
 
   const handleDensityChange = (e) => {
-    setDensity(Number.parseFloat(e.target.value));
+    const text = e.target.value;
+    if (text != "") {
+      const parsed = Number.parseFloat(text);
+      if (!Number.isNaN(parsed) && parsed > 0) {
+        setDensity(parsed);
+      }
+    } else {
+      setDensity(0);
+    }
   }
 
   const handleDensityUnitChange = (e) => {
@@ -153,7 +161,7 @@ function LiveMeasurementView(props) {
 
   const currentMU = measuredUnits[measuredUnit];
   const currentDU = densityUnits[densityUnit];
-  const densityQuotient = currentMU.isVolumeUnit ? currentDU.converter(density) : 1;
+  const densityQuotient = currentMU.isVolumeUnit && density > 0 ? currentDU.converter(density) : 1;
   const convertedValue = (props.data.state.data * currentMU.multiplier / densityQuotient).toFixed(currentMU.digits);
 
   return (
