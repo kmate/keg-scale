@@ -39,7 +39,7 @@ public:
       return false;
     }
 
-    StaticJsonDocument<512> doc;
+    StaticJsonDocument<768> doc;
     DeserializationError error = deserializeJson(doc, configFile);
     if (error) {
       return false;
@@ -61,7 +61,7 @@ public:
       currentScale.clockPin = doc["scales"][i]["clockPin"];
       currentScale.dataPin = doc["scales"][i]["dataPin"];
       currentScale.gain = doc["scales"][i]["gain"] | 128;
-      currentScale.reverse = (doc["scales"][i]["reverse"] | false);
+      currentScale.reverse = doc["scales"][i]["reverse"] | false;
       this->scales.push_back(currentScale);
     }
 
