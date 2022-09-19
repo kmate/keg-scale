@@ -76,7 +76,7 @@ export default function CalibrationDialog(props) {
       <DialogActions>
         <Button>Back</Button>
         <Button>Next</Button>
-        <Button>Close</Button>
+        <Button onClick={props.onClose}>Close</Button>
       </DialogActions>
     </Dialog>
   );
