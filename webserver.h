@@ -59,15 +59,29 @@ class WebServer {
     this->server.serveStatic("/", LittleFS, "/html/").setDefaultFile("index.html");
   }
 
-  void addScalesHandler() {
-    this->server.on("/scales", HTTP_GET, [this](AsyncWebServerRequest *request) {
+  void addConfigHandler() {
+    this->server.on("/config", HTTP_GET, [this](AsyncWebServerRequest *request) {
       AsyncResponseStream *response = request->beginResponseStream("application/json");
-      DynamicJsonDocument doc(64);
-      doc["numScales"] = this->scales.size();
+      DynamicJsonDocument doc(2048);
+
+      JsonArray jsc = doc.createNestedArray("scales");
+      for (ScaleConfig sc : this->config.scales) {
+        JsonObject obj = jsc.createNestedObject();
+        sc.render(obj);
+      }
+
+      JsonArray jw = doc.createNestedArray("weights");
+      for (Weight weight : this->config.weights) {
+        JsonObject obj = jw.createNestedObject();
+        weight.render(obj);
+      }
+
       serializeJson(doc, *response);
       request->send(response);
     });
+  }
 
+  void addScaleHandlers() {
     this->server.addRewrite(new OneParamRewrite("/scale/{scaleId}", "/scale?scaleId={scaleId}"));
     this->server.on("/scale", HTTP_GET, [this](AsyncWebServerRequest *request) {
       int scaleId = request->arg("scaleId").toInt();
@@ -163,7 +177,8 @@ public:
 
   void begin() {
     this->addRootHandler();
-    this->addScalesHandler();
+    this->addConfigHandler();
+    this->addScaleHandlers();
     this->addStatusHandler();
     // makes local testing of web ui easier
     DefaultHeaders::Instance().addHeader("Access-Control-Allow-Origin", "*");

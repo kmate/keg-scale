@@ -15,14 +15,22 @@
       "clockPin": <clock-pin-for-scale-1>,
       "dataPin": <data-pin-for-scale-1>,
       "gain": <64 or 128>,
-      "reverse": false
+      "reverse": <true or false>
     },
     {
       "label", <label>,
       "clockPin": <clock-pin-for-scale-2>,
       "dataPin": <data-pin-for-scale-2>,
       "gain": <64 or 128>,
-      "reverse": false
+      "reverse": <true or false>
+    }
+  ],
+  "weights": [
+    {
+      "label": <label>,
+      "mass": <mass-in-gramms>,
+      "forTare": <true or false>,
+      "forCalibration": <true or false>
     }
   ]
 }

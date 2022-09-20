@@ -60,20 +60,16 @@ function ScaleToolbar(props) {
   const Icon = props.icon;
 
   return (
-    <>
-      <Typography variant="overline" noWrap paragraph ml={1} mb={0}>{props.label}</Typography>
-      <Divider />
-      <Toolbar variant="dense" disableGutters sx={{ mr: 2 }}>
-        {<Icon sx={{ ml: 1, mr: 1 }} />}
-        <Typography variant="h6" noWrap sx={{ flexGrow: 1 }}>{props.stateName}</Typography>
-        {props.children}
-      </Toolbar>
-    </>
+    <Toolbar variant="dense" disableGutters sx={{ mr: 2 }}>
+      {<Icon sx={{ ml: 1, mr: 1 }} />}
+      <Typography variant="h6" noWrap sx={{ flexGrow: 1 }}>{props.stateName}</Typography>
+      {props.children}
+    </Toolbar>
   );
 }
 
 function OfflineView(props) {
-  return <ScaleToolbar icon={CloudOffIcon} label={props.data.label} stateName="Offline" />;
+  return <ScaleToolbar icon={CloudOffIcon} stateName="Offline" />;
 }
 
 function StandbyView(props) {
@@ -86,7 +82,7 @@ function StandbyView(props) {
   };
 
   return (
-    <ScaleToolbar icon={PowerSettingsNewIcon} label={props.data.label} stateName="Standby">
+    <ScaleToolbar icon={PowerSettingsNewIcon} stateName="Standby">
       <IconButton onClick={handleLiveMeasurementClick}>
         <BalanceIcon />
       </IconButton>
@@ -166,7 +162,7 @@ function LiveMeasurementView(props) {
 
   return (
     <>
-      <ScaleToolbar icon={BalanceIcon} label={props.data.label} stateName="Live measurement">
+      <ScaleToolbar icon={BalanceIcon} stateName="Live measurement">
         <CalibrateButton label={props.data.label} index={props.index} />
         <IconButton onClick={handleStandbyClick} edge="end">
           <PowerSettingsNewIcon />
@@ -226,6 +222,8 @@ export default function ScalePanel(props) {
     <Paper>
       { data && data.state && (
         <>
+          <Typography variant="overline" noWrap paragraph ml={1} mb={0}>{props.scale.label}</Typography>
+          <Divider />
           <TabPanel value={data.state.name} index="offline"><OfflineView index={props.index} data={data} /></TabPanel>
           <TabPanel value={data.state.name} index="standby"><StandbyView index={props.index} data={data} /></TabPanel>
           <TabPanel value={data.state.name} index="liveMeasurement"><LiveMeasurementView index={props.index} data={data} /></TabPanel>

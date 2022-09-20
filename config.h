@@ -22,6 +22,28 @@ struct ScaleConfig {
   uint8_t dataPin;
   uint8_t gain;
   bool reverse;
+
+  void render(JsonObject &obj) {
+    obj["label"] = this->label;
+    obj["clockPin"] = this->clockPin;
+    obj["dataPin"] = this->dataPin;
+    obj["gain"] = this->gain;
+    obj["reverse"] = this->reverse;
+  }
+};
+
+struct Weight {
+  char label[64];
+  uint16_t mass;
+  bool forTare;
+  bool forCalibration;
+
+  void render(JsonObject &obj) {
+    obj["label"] = this->label;
+    obj["mass"] = this->mass;
+    obj["forTare"] = this->forTare;
+    obj["forCalibration"] = this->forCalibration;
+  }
 };
 
 class Config {
@@ -32,6 +54,7 @@ public:
   WiFiConfig wifi;
   OTAConfig ota;
   std::vector<ScaleConfig> scales;
+  std::vector<Weight> weights;
 
   bool load() {
     File configFile = LittleFS.open("/config.json", "r");
@@ -39,7 +62,7 @@ public:
       return false;
     }
 
-    StaticJsonDocument<768> doc;
+    StaticJsonDocument<1536> doc;
     DeserializationError error = deserializeJson(doc, configFile);
     if (error) {
       return false;
@@ -63,6 +86,16 @@ public:
       currentScale.gain = doc["scales"][i]["gain"] | 128;
       currentScale.reverse = doc["scales"][i]["reverse"] | false;
       this->scales.push_back(currentScale);
+    }
+
+    uint8_t numWeights = doc["weights"].size() | 0;
+    for (int i = 0; i < numWeights; ++i) {
+      Weight currentWeight;
+      strlcpy(currentWeight.label, doc["weights"][i]["label"], sizeof(currentWeight.label));
+      currentWeight.mass = doc["weights"][i]["mass"];
+      currentWeight.forTare = doc["weights"][i]["forTare"] | false;
+      currentWeight.forCalibration = doc["weights"][i]["forCalibration"] | false;
+      this->weights.push_back(currentWeight);
     }
 
     configFile.close();

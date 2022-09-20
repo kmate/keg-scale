@@ -32,17 +32,10 @@ void Scale::setState(ScaleState *newState) {
 }
 
 void Scale::render(DynamicJsonDocument &doc) {
-  doc["label"] = this->config.label;
-
   JsonObject state = doc.createNestedObject("state");
   this->currentState->render(state);
 
   JsonObject adc = doc.createNestedObject("adc");
-  adc["clockPin"] = this->config.clockPin;
-  adc["dataPin"] = this->config.dataPin;
-  adc["gain"] = this->config.gain;
-  adc["reverse"] = this->config.reverse;
-
   adc["tareOffset"] = this->adc.getTareOffset();
   adc["calibrationFactor"] = this->adc.getCalFactor();
 
