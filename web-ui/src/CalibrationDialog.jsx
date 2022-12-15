@@ -4,7 +4,7 @@ import useFetch from "react-fetch-hook";
 import useMediaQuery from '@mui/material/useMediaQuery';
 import { useTheme } from '@mui/material/styles';
 
-import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Divider, Step, StepLabel, Stepper, Typography } from "@mui/material";
+import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Divider, Paper, Stack, Step, StepLabel, Stepper, Typography } from "@mui/material";
 
 /*
 // TODO use a stepper to create a wizard to first tare then calibrate
@@ -70,7 +70,9 @@ export default function CalibrationDialog(props) {
           </Step>
         </Stepper>
         <DialogContentText>
-          Please remove any weight from the scale to set zero point and then click Next.
+          <Paper component={Stack} direction="column" justifyContent="center">
+            Please remove any weight from the scale to set zero point and then click Next.
+          </Paper>
         </DialogContentText>
       </DialogContent>
       <DialogActions>
