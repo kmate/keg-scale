@@ -51,7 +51,7 @@ class Config {
 public:
   char hostname[64];
   uint16_t httpPort;
-  WiFiConfig wifi;
+  std::vector<WiFiConfig> wifis;
   OTAConfig ota;
   std::vector<ScaleConfig> scales;
   std::vector<Weight> weights;
@@ -71,8 +71,13 @@ public:
     strlcpy(this->hostname, doc["hostname"] | "keg-scale", sizeof(this->hostname));
     this->httpPort = doc["httpPort"] | 80;
 
-    strlcpy(this->wifi.ssid, doc["wifi"]["ssid"], sizeof(this->wifi.ssid));
-    strlcpy(this->wifi.passphrase, doc["wifi"]["passphrase"], sizeof(this->wifi.passphrase));
+    uint8_t numWifis = doc["wifis"].size() | 0;
+    for (int i = 0; i < numWifis; ++i) {
+      WiFiConfig currentWifi;
+      strlcpy(currentWifi.ssid, doc["wifis"][i]["ssid"], sizeof(currentWifi.ssid));
+      strlcpy(currentWifi.passphrase, doc["wifis"][i]["passphrase"], sizeof(currentWifi.passphrase));
+      this->wifis.push_back(currentWifi);
+    }
 
     this->ota.port = doc["ota"]["port"] | 8266;
     strlcpy(this->ota.password, doc["ota"]["password"] | "", sizeof(this->ota.password));

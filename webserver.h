@@ -152,7 +152,7 @@ class WebServer {
       general["bootTime"] = DateFormatter::format(DateFormatter::SIMPLE, DateTime.getBootTime());
 
       JsonObject wifi = doc.createNestedObject("wifi");
-      wifi["ssid"] = this->config.wifi.ssid;
+      wifi["ssid"] = WiFi.SSID();
       wifi["ip"] = WiFi.localIP();
 
       JsonObject esp  = doc.createNestedObject("esp");

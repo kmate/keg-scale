@@ -35,8 +35,22 @@ void setupConfig() {
 
 void setupWiFi() {
   WiFi.mode(WIFI_STA);
-  WiFi.begin(config.wifi.ssid, config.wifi.passphrase);
-  while (WiFi.waitForConnectResult() != WL_CONNECTED) {
+  WiFi.disconnect();
+  delay(100);
+
+  int numNetworks = WiFi.scanNetworks();
+  int numSSIDs = config.wifis.size();
+  for (int i = 0; i < numNetworks; ++i) {
+    for (int j = 0; j < numSSIDs; ++j) {
+      if (String(config.wifis[j].ssid) == WiFi.SSID(i)) {
+        WiFi.begin(config.wifis[j].ssid, config.wifis[j].passphrase);
+        if (WiFi.waitForConnectResult() == WL_CONNECTED) {
+          break;
+        }
+      }
+    }
+  }
+  if (WiFi.status() != WL_CONNECTED) {
     failSetup("WiFi connection failed!");
   }
   Serial.print("WiFi connected. IP address: ");

@@ -1,10 +1,12 @@
 {
   "hostname": "keg-scale",
   "httpPort": 80,
-  "wifi": {
-    "ssid": "<your-wifi-ssid>",
-    "passphrase": "<your-wifi-passphrase>"
-  },
+  "wifis": [
+    {
+      "ssid": "<your-wifi-ssid>",
+      "passphrase": "<your-wifi-passphrase>"
+    }
+  ],
   "ota": {
     "port": 8266,
     "password": "<ota-password>"
