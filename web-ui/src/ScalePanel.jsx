@@ -103,7 +103,6 @@ function LiveMeasurementView(props) {
   return (
     <>
       <ScaleToolbar icon={BalanceIcon} stateName="Live measurement">
-        <CalibrateButton label={props.data.label} index={props.index} />
         <IconButton onClick={handleStandbyClick} edge="end">
           <PowerSettingsNewIcon />
         </IconButton>
