@@ -44,6 +44,10 @@ const stats = {
     label: "Current time",
     show: fromUTCDateTime
   },
+  bootTime: {
+    label: "Boot time",
+    show: fromUTCDateTime
+  },
   ssid: {
     label: "SSID",
     show: identity

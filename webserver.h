@@ -149,6 +149,7 @@ class WebServer {
       JsonObject general = doc.createNestedObject("general");
       general["compiledAt"] = compiledAt;
       general["currentTime"] = DateTime.toString();
+      general["bootTime"] = DateFormatter::format(DateFormatter::SIMPLE, DateTime.getBootTime());
 
       JsonObject wifi = doc.createNestedObject("wifi");
       wifi["ssid"] = this->config.wifi.ssid;
