@@ -11,6 +11,7 @@ import LoadingIndicator from './LoadingIndicator';
 
 import BuildIcon from '@mui/icons-material/Build';
 import WifiIcon from '@mui/icons-material/Wifi';
+import MemoryIcon from '@mui/icons-material/Memory';
 import DeveloperBoardIcon from '@mui/icons-material/DeveloperBoard';
 
 const groups = {
@@ -21,6 +22,10 @@ const groups = {
   wifi: {
     label: "WiFi",
     icon: WifiIcon
+  },
+  eeprom: {
+    label: "EEPROM",
+    icon: MemoryIcon
   },
   esp: {
     label: "ESP",
@@ -33,6 +38,8 @@ const identity = (x) => x;
 const fromDateTime = (dt) => new Date(dt).toLocaleString();
 
 const fromUTCDateTime = (dt) => new Date(dt.replace(" ", "T") + "Z").toLocaleString();
+
+const integerPercentage = (p) => p + "%";
 
 const stats = {
   compiledAt: {
@@ -55,6 +62,10 @@ const stats = {
   ip: {
     label: "IP address",
     show: identity
+  },
+  percentUsed: {
+    label: "Space used",
+    show: integerPercentage
   },
   chipId: {
     label: "Chip ID",
@@ -90,7 +101,7 @@ const stats = {
   },
   heapFragmentation: {
     label: "Heap fragmentation",
-    show: (p) => p + "%"
+    show: integerPercentage
   },
 }
 
