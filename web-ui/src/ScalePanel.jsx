@@ -107,7 +107,7 @@ function LiveMeasurementView(props) {
           <PowerSettingsNewIcon />
         </IconButton>
       </ScaleToolbar>
-      <LiveMeasurement value={props.data.state.data} />
+      <LiveMeasurement padding={3} value={props.data.state.data} />
       <Box>
         <Button>Tare to zero</Button>
         <Button>Tare current</Button>

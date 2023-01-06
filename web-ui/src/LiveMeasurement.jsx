@@ -70,7 +70,7 @@ export default function LiveMeasurement(props) {
     <Grid
       container
       spacing={3}
-      padding={3}
+      padding={props.padding}
       direction="column"
       alignItems="center"
       justifyContent="center">
