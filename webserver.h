@@ -8,6 +8,7 @@
 #include <ESPAsyncWebServer.h>
 #include <ESPDateTime.h>
 #include <ESP8266WiFi.h>
+#include <ESP_EEPROM.h>
 
 const char compiledAt[] = __DATE__ " " __TIME__;
 
@@ -52,6 +53,7 @@ class WebServer {
 
   AsyncWebServer server;
   Config &config;
+  PersistentConfig &persistentConfig;
   std::vector<Scale*> &scales;
 
   void addRootHandler() {
@@ -78,6 +80,16 @@ class WebServer {
 
       serializeJson(doc, *response);
       request->send(response);
+    });
+  }
+
+  void addPersistHandler() {
+    this->server.on("/persist", HTTP_POST, [this](AsyncWebServerRequest *request) {
+      if (this->persistentConfig.save()) {
+        request->send(200, "text/plain", "ok");
+      } else {
+        request->send(500, "text/plain", "unable to persist configuration");
+      }
     });
   }
 
@@ -155,7 +167,10 @@ class WebServer {
       wifi["ssid"] = WiFi.SSID();
       wifi["ip"] = WiFi.localIP();
 
-      JsonObject esp  = doc.createNestedObject("esp");
+      JsonObject eeprom  = doc.createNestedObject("eeprom");
+      eeprom["percentUsed"] = EEPROM.percentUsed();
+
+      JsonObject esp = doc.createNestedObject("esp");
       esp["chipId"] = ESP.getChipId();
       esp["flashChipId"] = ESP.getFlashChipId();
       esp["coreVersion"] = ESP.getCoreVersion();
@@ -172,13 +187,14 @@ class WebServer {
   }
 
 public:
-  WebServer(Config &_config, std::vector<Scale*> &_scales): config(_config), scales(_scales), server(_config.httpPort) {
+  WebServer(Config &_config, PersistentConfig &_persistentConfig, std::vector<Scale*> &_scales): config(_config), persistentConfig(_persistentConfig), scales(_scales), server(_config.httpPort) {
     MDNS.addService("http", "tcp", this->config.httpPort);
   }
 
   void begin() {
     this->addRootHandler();
     this->addConfigHandler();
+    this->addPersistHandler();
     this->addScaleHandlers();
     this->addStatusHandler();
     // makes local testing of web ui easier

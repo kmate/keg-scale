@@ -7,10 +7,12 @@
 #include <vector>
 
 #include "config.h"
+#include "persistent_config.h"
 #include "scale.h"
 #include "webserver.h"
 
 Config config;
+PersistentConfig persistentConfig;
 std::vector<Scale*> scales;
 WebServer *server;
 
@@ -31,6 +33,8 @@ void setupConfig() {
   if (!config.load()) {
     failSetup("Loading config failed!");
   }
+
+  persistentConfig.load(config.scales.size());
 }
 
 void setupWiFi() {
@@ -116,7 +120,7 @@ void setupDateTime() {
 
 void setupScales() {
   for (int i = 0; i < config.scales.size(); ++i) {
-    Scale *scale = new Scale(config.scales[i]);
+    Scale *scale = new Scale(config.scales[i], persistentConfig.getCalibrationForScale(i));
     scales.push_back(scale);
     scale->begin();
   }
@@ -124,7 +128,7 @@ void setupScales() {
 }
 
 void setupHTTP() {
-  server = new WebServer(config, scales);
+  server = new WebServer(config, persistentConfig, scales);
   server->begin();
   Serial.println("HTTP server started.");
 }

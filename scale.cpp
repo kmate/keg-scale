@@ -54,6 +54,8 @@ void Scale::render(DynamicJsonDocument &doc) {
 void Scale::startAdc() {
   // TODO should the timeout / tare flag come from config?
   this->adc.startMultiple(1000, false);
+  this->adc.setTareOffset(this->calibration->tareOffset);
+  this->adc.setCalFactor(this->calibration->calibrationFactor);
 }
 
 uint8_t Scale::updateAdc() {
@@ -73,9 +75,16 @@ void Scale::startAdcTare() {
 }
 
 bool Scale::isAdcTareDone() {
-  return this->adc.getTareStatus();
+  bool isDone = this->adc.getTareStatus();
+
+  if (isDone) {
+    this->calibration->tareOffset = this->adc.getTareOffset();
+  }
+
+  return isDone;
 }
 
 void Scale::calibrateAdc(float knownMass) {
-  this->adc.getNewCalibration(knownMass);
+  float newCalibrationFactor = this->adc.getNewCalibration(knownMass);
+  this->calibration->calibrationFactor = newCalibrationFactor;
 }
