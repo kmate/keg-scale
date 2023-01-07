@@ -14,6 +14,9 @@ import SportsBarIcon from '@mui/icons-material/SportsBar';
 import TabPanel from './TabPanel';
 import CalibrationDialog from './CalibrationDialog';
 import LiveMeasurement from './LiveMeasurement';
+import KnownWeights from './KnownWeights';
+import { useEffect } from 'react';
+import useLocalStorage from './useLocalStorage';
 
 const states = {
   offline: {
@@ -77,23 +80,41 @@ function StandbyView(props) {
 }
 
 function LiveMeasurementView(props) {
+  const [tareOffset, setTareOffset] = useLocalStorage("tareOffset_" + props.index, 0);
+
   const handleStandbyClick = () => {
     fetch(apiLocation("/standby/" + props.index), { method: "POST" });
+  };
+
+  const handleKnownWeight = (mass) => {
+    setTareOffset(mass);
+  };
+
+  const handleReset = () => {
+    setTareOffset(0);
+  };
+
+  const handleTare = () => {
+    setTareOffset(props.data.state.data);
   };
 
   return (
     <>
       <ScaleToolbar icon={BalanceIcon} stateName="Live measurement">
+        <IconButton onClick={props.onCalibrationClick}>
+          <AdjustIcon />
+        </IconButton>
         <IconButton onClick={handleStandbyClick} edge="end">
           <PowerSettingsNewIcon />
         </IconButton>
       </ScaleToolbar>
-      <LiveMeasurement padding={3} value={props.data.state.data} />
-      <Box>
-        <Button>Tare to zero</Button>
-        <Button>Tare current</Button>
-        TODO: add tare to known weights
-      </Box>
+      <Divider />
+      <LiveMeasurement padding={3} value={props.data.state.data - tareOffset} />
+      <Divider />
+      <KnownWeights weights={props.weights} forTare={true} onClick={handleKnownWeight}>
+        <Button onClick={handleReset}>Reset</Button>
+        <Button onClick={handleTare}>Tare</Button>
+      </KnownWeights>
     </>
   );
 }
@@ -137,9 +158,15 @@ export default function ScalePanel(props) {
             <StandbyView index={props.index} data={data} onCalibrationClick={handleCalibrationClick} />
           </TabPanel>
           <TabPanel value={data.state.name} index="liveMeasurement">
-            <LiveMeasurementView index={props.index} data={data} />
+            <LiveMeasurementView index={props.index} data={data} weights={props.weights} onCalibrationClick={handleCalibrationClick} />
           </TabPanel>
-          <CalibrationDialog open={calibrationIsOpen} onClose={handleCalibrationClose} index={props.index} label={props.scale.label} />
+          <CalibrationDialog
+            open={calibrationIsOpen}
+            onClose={handleCalibrationClose}
+            index={props.index}
+            label={props.scale.label}
+            weights={props.weights}
+          />
         </>
       )}
     </Paper>

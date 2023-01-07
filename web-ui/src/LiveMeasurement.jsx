@@ -1,7 +1,6 @@
 import * as React from 'react';
 
 import { FormControl, Grid, MenuItem, Select, TextField, Typography } from '@mui/material';
-import { Box } from '@mui/system';
 
 const measuredUnits = {
   g: {
@@ -64,18 +63,17 @@ export default function LiveMeasurement(props) {
   const currentDU = densityUnits[densityUnit];
   const densityQuotient = currentMU.isVolumeUnit && density > 0 ? currentDU.converter(density) : 1;
   const convertedValue = (props.value * currentMU.multiplier / densityQuotient).toFixed(currentMU.digits);
-
+  const displayValue = 1 / convertedValue !== -Infinity ? convertedValue : 0;
 
   return (
     <Grid
       container
-      spacing={3}
       padding={props.padding}
       direction="column"
       alignItems="center"
       justifyContent="center">
       <Grid item xs={3}>
-        <Typography variant="h3" component="span" ml={1} mr={1}>{convertedValue >= 0 && 1 / convertedValue !== -Infinity ? convertedValue : 0}</Typography>
+        <Typography variant="h3" component="span" ml={1} mr={1}>{displayValue}</Typography>
         <FormControl sx={{ minWidth: "80px" }}>
           <Select value={measuredUnit} onChange={handleMeasuredUnitChange}>
             {Object.keys(measuredUnits).map(unit => {
@@ -85,7 +83,7 @@ export default function LiveMeasurement(props) {
         </FormControl>
       </Grid>
       {currentMU.isVolumeUnit && (
-        <Grid item xs={3}>
+        <Grid item xs={3} sx={{pt: 3}}>
           <TextField
             sx={{input: {textAlign: 'right'}}}
             label="Density"

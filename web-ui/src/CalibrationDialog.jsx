@@ -6,143 +6,150 @@ import apiLocation from './apiLocation';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import { useTheme } from '@mui/material/styles';
 
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle, Divider, FormControl, Grid, Input, InputAdornment, InputLabel, Step, StepLabel, Stepper, Typography } from "@mui/material";
+import { Alert, Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, Divider, FormControl, List, ListItem, MenuItem, Select, Snackbar, TextField, Typography } from "@mui/material";
+import { Stack } from '@mui/system';
+
 import LiveMeasurement from './LiveMeasurement';
+import KnownWeights from './KnownWeights';
 
-/*
-// TODO use a stepper to create a wizard to first tare then calibrate
-// show a basic measurement view during this, with unit selector
-function CalibrationView(props) {
-  const [knownMass, setKnownMass] = React.useState(1000);
-
-  function tare() {
-    // TODO show UI feedback instead
-    console.log("tare scale " + props.index);
-    fetch(apiLocation("/tare/" + props.index), { method: "POST" }).then((response) => {
-      console.log("tare response:", response);
-    })
+const weightUnits = {
+  g: {
+    multiplier: 1,
+    digits: 0
+  },
+  kg: {
+    multiplier: 1/1000,
+    digits: 2,
   }
-
-  function calibrate() {
-    // TODO show UI feedback instead
-    console.log("calibrate scale " + props.index + " with known mass " + knownMass);
-    fetch(apiLocation("/calibrate/" + props.index + "?knownMass=" + knownMass), { method: "POST" }).then((response) => {
-      console.log("calibrate response:", response);
-    })
-  }
-
-  return (
-    <>
-      <Button onClick={tare}>Tare</Button>
-      <FormControl variant="standard">
-          <InputLabel htmlFor="known-mass">Known mass</InputLabel>
-          <Input
-            id="known-mass"
-            value={knownMass}
-            onChange={(event) => setKnownMass(parseInt(event.target.value) || 0)}
-            endAdornment={<InputAdornment position="end">g</InputAdornment>}
-          />
-        </FormControl>
-      <Button onClick={calibrate}>Calibrate</Button>
-    </>
-  );
-}
-*/
+};
 
 export default function CalibrationDialog(props) {
   const theme = useTheme();
   const fullScreen = useMediaQuery(theme.breakpoints.down('md'));
-  const [doingTare, setDoingTare] = React.useState(true);
   const [knownMass, setKnownMass] = React.useState(1000);
+  const [massUnit, setMassUnit] = React.useState("g");
+  const [feedback, setFeedback] = React.useState({ isOpen: false, message: '', severity: 'success' });
 
   const [tick, setTick] = React.useState(false);
   const { isLoading, data, error } = useFetch(apiLocation("/scale/" + props.index), { depends: [tick] });
 
   useInterval(() => { setTick(!tick); }, 250, true);
 
-  const handleTare = (e) => {
-    // TODO show UI feedback instead
-    console.log("tare scale " + props.index);
+  const handleKnownMassChange = (e) => {
+    const text = e.target.value;
+    if (text != "") {
+      const parsed = Number.parseFloat(text);
+      if (!Number.isNaN(parsed) && parsed > 0) {
+        setKnownMass(parsed);
+      }
+    } else {
+      setKnownMass(0);
+    }
+  };
+
+  const handleKnownWeight = (mass) => {
+    const weightUnit = weightUnits[massUnit];
+    setKnownMass((mass * weightUnit.multiplier).toFixed(weightUnit.digits));
+  };
+
+  const handleMassUnitChange = (e) => {
+    const oldWeightUnit = weightUnits[massUnit];
+    const newUnitName = e.target.value;
+    setMassUnit(newUnitName);
+    const newWeightUnit = weightUnits[newUnitName];
+    setKnownMass((knownMass / oldWeightUnit.multiplier * newWeightUnit.multiplier).toFixed(newWeightUnit.digits));
+  };
+
+  const handleTare = () => {
     fetch(apiLocation("/tare/" + props.index), { method: "POST" }).then((response) => {
-      console.log("tare response:", response);
+      if (response.ok) {
+        setFeedback({ isOpen: true, message: 'Tare complete!', severity: 'success' });
+      } else {
+        setFeedback({ isOpen: true, message: 'Tare failed!', severity: 'error' });
+      }
     })
-  }
+  };
 
-  const handleCalibrate = (e) => {
-    // TODO show UI feedback instead
-    console.log("calibrate scale " + props.index + " with known mass " + knownMass);
+  const handleCalibrate = () => {
     fetch(apiLocation("/calibrate/" + props.index + "?knownMass=" + knownMass), { method: "POST" }).then((response) => {
-      console.log("calibrate response:", response);
+      if (response.ok) {
+        setFeedback({ isOpen: true, message: 'Calibration complete!', severity: 'success' });
+      } else {
+        setFeedback({ isOpen: true, message: 'Calibration failed!', severity: 'error' });
+      }
     })
+  };
+
+  const handleSave = () => {
+    fetch(apiLocation("/persist"), { method: "POST" }).then((response) => {
+      if (response.ok) {
+        setFeedback({ isOpen: true, message: 'Saving complete!', severity: 'success' });
+      } else {
+        setFeedback({ isOpen: true, message: 'Saving failed!', severity: 'error' });
+      }
+    })
+    props.onClose();
   }
 
-  const handleBack = (e) => {
-    setDoingTare(true);
-  }
-
-  const handleNext = (e) => {
-    setDoingTare(false);
-  }
+  const handleFeedbackClose = () => {
+    setFeedback({ ...feedback, isOpen: false });
+  };
 
   return (
-    <Dialog open={props.open} onClose={props.onClose} fullScreen={fullScreen}>
-      <DialogTitle>
-        <Typography variant="overline" sx={{ flexGrow: 1 }}>{props.label}</Typography>
-        <Divider />
-        Calibrating
-      </DialogTitle>
-      <DialogContent>
-        <Stepper>
-          <Step active={doingTare} key="tare">
-            <StepLabel>Tare</StepLabel>
-          </Step>
-          <Step active={!doingTare} key="calibrate">
-            <StepLabel>Calibrate</StepLabel>
-          </Step>
-        </Stepper>
-        <Grid
-          container
-          spacing={3}
-          padding={3}
-          direction="column"
-          alignItems="center"
-          justifyContent="center">
-          <Grid item xs={3}>
+    <>
+      <Dialog open={props.open} onClose={props.onClose} fullScreen={fullScreen} scroll="body">
+        <DialogTitle variant="h6" sx={{ flexGrow: 1 }}>
+          <Typography variant="overline" noWrap paragraph mb={0}>{props.label}</Typography>
+          <Divider />
+          Calibration
+        </DialogTitle>
+        <DialogContent>
+          <Stack spacing={3}>
+            <List>
+              <ListItem>
+                1. Please remove any weight from the scale to set zero point, then click Tare.
+              </ListItem>
+              <ListItem>
+                2. Put a known weight on the scale and enter its mass or select from the presets, then click Calibrate.
+              </ListItem>
+              <ListItem>
+                3. Repeat the above procedure until you reach the desired accuracy.
+              </ListItem>
+            </List>
+            <Divider />
             <LiveMeasurement value={data && data.state && data.state.data} />
-          </Grid>
-          {(doingTare &&
-            <>
-              <Grid item xs={3}>
-                <Typography textAlign="center">
-                Please remove any weight from the scale to set<br/>zero point and then click Tare.
-                </Typography>
-              </Grid>
-              <Grid item xs={3}>
-                <Button onClick={handleTare}>Tare</Button>
-              </Grid>
-            </>
-          )}
-          {(!doingTare &&
-            <Grid item xs={3}>
-              <FormControl variant="standard">
-                <InputLabel htmlFor="known-mass">Known mass</InputLabel>
-                <Input
-                  id="known-mass"
-                  value={knownMass}
-                  onChange={(event) => setKnownMass(parseInt(event.target.value) || 0)}
-                  endAdornment={<InputAdornment position="end">g</InputAdornment>}
-                />
+            <Divider />
+            <Box display="flex" alignItems="center" justifyContent="center">
+              <TextField
+                sx={{input: {textAlign: 'right'}}}
+                label="Known mass"
+                variant="outlined"
+                value={knownMass}
+                onChange={handleKnownMassChange} />
+              <FormControl sx={{ minWidth: "80px", ml: 1 }}>
+                <Select value={massUnit} onChange={handleMassUnitChange}>
+                  {Object.keys(weightUnits).map(unit => {
+                    return <MenuItem key={ "weight_unit_" + unit } value={unit}>{unit}</MenuItem>;
+                  })}
+                </Select>
               </FormControl>
-              <Button onClick={handleCalibrate}>Calibrate</Button>
-            </Grid>
-          )}
-        </Grid>
-      </DialogContent>
-      <DialogActions>
-        {(!doingTare && <Button onClick={handleBack}>Back</Button>)}
-        {(doingTare && <Button onClick={handleNext}>Next</Button>)}
-        <Button onClick={props.onClose}>{(!doingTare ? 'Done' : 'Close')}</Button>
-      </DialogActions>
-    </Dialog>
+            </Box>
+            <KnownWeights weights={props.weights} forCalibration={true} onClick={handleKnownWeight} />
+          </Stack>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleTare}>Tare</Button>
+          <Button onClick={handleCalibrate}>Calibrate</Button>
+          <div style={{flex: '1 0 0'}} />
+          <Button onClick={props.onClose}>Cancel</Button>
+          <Button onClick={handleSave}>Save</Button>
+        </DialogActions>
+      </Dialog>
+      <Snackbar open={feedback.isOpen} autoHideDuration={1000} onClose={handleFeedbackClose}>
+        <Alert onClose={handleFeedbackClose} severity={feedback.severity}>
+          {feedback.message}
+        </Alert>
+      </Snackbar>
+    </>
   );
 }
