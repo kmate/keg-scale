@@ -36,27 +36,6 @@ const states = {
   }
 }
 
-function CalibrateButton(props) {
-  const [dialogIsOpen, setDialogIsOpen] = React.useState(false);
-
-  const handleClick = () => {
-    setDialogIsOpen(true);
-  };
-
-  const handleDialogClose = () => {
-    setDialogIsOpen(false);
-  };
-
-  return (
-    <>
-      <IconButton onClick={handleClick} edge={props.edge}>
-        <AdjustIcon />
-      </IconButton>
-      <CalibrationDialog open={dialogIsOpen} onClose={handleDialogClose} label={props.label} index={props.index} />
-    </>
-  );
-}
-
 function ScaleToolbar(props) {
   const Icon = props.icon;
 
@@ -90,7 +69,9 @@ function StandbyView(props) {
       <IconButton onClick={handleTapMeasurementClick}>
         <SportsBarIcon />
       </IconButton>
-      <CalibrateButton label={props.data.label} index={props.index} edge="end" />
+      <IconButton onClick={props.onCalibrationClick} edge="end">
+        <AdjustIcon />
+      </IconButton>
     </ScaleToolbar>
   );
 }
@@ -124,6 +105,15 @@ function TapMeasurementView(props) {
 
 export default function ScalePanel(props) {
   const [tick, setTick] = React.useState(false);
+  const [calibrationIsOpen, setCalibrationIsOpen] = React.useState(false);
+
+  const handleCalibrationClick = () => {
+    setCalibrationIsOpen(true);
+  };
+
+  const handleCalibrationClose = () => {
+    setCalibrationIsOpen(false);
+  };
 
   const { isLoading, data, error } = useFetch(apiLocation("/scale/" + props.index), { depends: [tick] });
 
@@ -140,9 +130,16 @@ export default function ScalePanel(props) {
         <>
           <Typography variant="overline" noWrap paragraph ml={1} mb={0}>{props.scale.label}</Typography>
           <Divider />
-          <TabPanel value={data.state.name} index="offline"><OfflineView index={props.index} data={data} /></TabPanel>
-          <TabPanel value={data.state.name} index="standby"><StandbyView index={props.index} data={data} /></TabPanel>
-          <TabPanel value={data.state.name} index="liveMeasurement"><LiveMeasurementView index={props.index} data={data} /></TabPanel>
+          <TabPanel value={data.state.name} index="offline">
+            <OfflineView index={props.index} data={data} />
+          </TabPanel>
+          <TabPanel value={data.state.name} index="standby">
+            <StandbyView index={props.index} data={data} onCalibrationClick={handleCalibrationClick} />
+          </TabPanel>
+          <TabPanel value={data.state.name} index="liveMeasurement">
+            <LiveMeasurementView index={props.index} data={data} />
+          </TabPanel>
+          <CalibrationDialog open={calibrationIsOpen} onClose={handleCalibrationClose} index={props.index} label={props.scale.label} />
         </>
       )}
     </Paper>
