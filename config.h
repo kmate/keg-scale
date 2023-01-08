@@ -46,12 +46,22 @@ struct Weight {
   }
 };
 
+struct BrewfatherCatalog {
+  char userId[32];
+  char apiKey[64];
+};
+
+struct Catalog {
+  BrewfatherCatalog brewfather;
+};
+
 class Config {
 
 public:
   char hostname[64];
   uint16_t httpPort;
   std::vector<WiFiConfig> wifis;
+  Catalog catalog;
   OTAConfig ota;
   std::vector<ScaleConfig> scales;
   std::vector<Weight> weights;
@@ -62,7 +72,7 @@ public:
       return false;
     }
 
-    StaticJsonDocument<1536> doc;
+    StaticJsonDocument<2048> doc;
     DeserializationError error = deserializeJson(doc, configFile);
     if (error) {
       return false;
@@ -78,6 +88,9 @@ public:
       strlcpy(currentWifi.passphrase, doc["wifis"][i]["passphrase"], sizeof(currentWifi.passphrase));
       this->wifis.push_back(currentWifi);
     }
+
+    strlcpy(this->catalog.brewfather.userId, doc["catalog"]["brewfather"]["userId"] | "", sizeof(this->catalog.brewfather.userId));
+    strlcpy(this->catalog.brewfather.apiKey, doc["catalog"]["brewfather"]["apiKey"] | "", sizeof(this->catalog.brewfather.apiKey));
 
     this->ota.port = doc["ota"]["port"] | 8266;
     strlcpy(this->ota.password, doc["ota"]["password"] | "", sizeof(this->ota.password));

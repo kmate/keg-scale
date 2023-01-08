@@ -7,6 +7,12 @@
       "passphrase": "<your-wifi-passphrase>"
     }
   ],
+  "catalog": {
+    "brewfather": {
+      "userId": "<brewfather-user-id>",
+      "apiKey": "<brewfather-api-key>"
+    }
+  },
   "ota": {
     "port": 8266,
     "password": "<ota-password>"
