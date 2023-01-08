@@ -53,8 +53,8 @@ public:
     this->entries.clear();
   }
 
-  void refresh() {
-    // the next update will execute the request
+  void forceUpdate() {
+    // the next update will execute in the loop
     this->lastRefresh = 0;
   }
 

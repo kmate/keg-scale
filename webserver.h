@@ -111,8 +111,8 @@ class WebServer {
       serializeJson(doc, *response);
       request->send(response);
     });
-    this->server.on("/catalog/refresh", HTTP_POST, [this](AsyncWebServerRequest *request) {
-      this->catalog.refresh();
+    this->server.on("/catalog/update", HTTP_POST, [this](AsyncWebServerRequest *request) {
+      this->catalog.forceUpdate();
       request->send(200, "text/plain", "ok");
     });
   }
