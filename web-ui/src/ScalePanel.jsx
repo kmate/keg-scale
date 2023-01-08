@@ -8,6 +8,7 @@ import CloudOffIcon from '@mui/icons-material/CloudOff';
 import PowerSettingsNewIcon from '@mui/icons-material/PowerSettingsNew';
 import AdjustIcon from '@mui/icons-material/Adjust';
 import BalanceIcon from '@mui/icons-material/Balance';
+import RefreshIcon from '@mui/icons-material/Refresh';
 import SportsBarIcon from '@mui/icons-material/SportsBar';
 
 import TabPanel from './TabPanel';
@@ -18,7 +19,7 @@ import useLocalStorage from './useLocalStorage';
 
 const states = {
   offline: {
-    refreshSeconds: 10
+    refreshSeconds: 30
   },
   standby: {
     refreshSeconds: 1
@@ -50,7 +51,13 @@ function ScaleToolbar(props) {
 }
 
 function OfflineView(props) {
-  return <ScaleToolbar icon={CloudOffIcon} stateName="Offline" />;
+  return (
+    <ScaleToolbar icon={CloudOffIcon} stateName="Offline">
+      <IconButton onClick={props.onRefreshClick} edge="end">
+        <RefreshIcon />
+      </IconButton>
+    </ScaleToolbar>
+  );
 }
 
 function StandbyView(props) {
@@ -126,6 +133,14 @@ export default function ScalePanel(props) {
   const [tick, setTick] = React.useState(false);
   const [calibrationIsOpen, setCalibrationIsOpen] = React.useState(false);
 
+  const triggerFetch = () => {
+    setTick((prevTick) => !prevTick);
+  };
+
+  const handleRefreshClick = () => {
+    triggerFetch();
+  };
+
   const handleCalibrationClick = () => {
     setCalibrationIsOpen(true);
   };
@@ -136,11 +151,8 @@ export default function ScalePanel(props) {
 
   const { isLoading, data, error } = useFetch(apiLocation("/scale/" + props.index), { depends: [tick] });
 
-  useInterval(
-    () => { setTick(!tick); },
-    (data && data.state && states[data.state.name].refreshSeconds || 10) * 1000,
-    true
-  );
+  const delayInSeconds = data && data.state && states[data.state.name].refreshSeconds || 10;
+  useInterval(() => { triggerFetch(); }, calibrationIsOpen ? null : (delayInSeconds * 1000), true);
 
   // TODO figure out how to show debug data
   return (
@@ -150,7 +162,7 @@ export default function ScalePanel(props) {
           <Typography variant="overline" noWrap paragraph ml={1} mb={0}>{props.scale.label}</Typography>
           <Divider />
           <TabPanel value={data.state.name} index="offline">
-            <OfflineView index={props.index} data={data} />
+            <OfflineView index={props.index} data={data} onRefreshClick={handleRefreshClick} />
           </TabPanel>
           <TabPanel value={data.state.name} index="standby">
             <StandbyView index={props.index} data={data} onCalibrationClick={handleCalibrationClick} />
