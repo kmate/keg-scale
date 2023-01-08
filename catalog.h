@@ -95,7 +95,7 @@ public:
               strlcpy(currentEntry.name, entriesToParse[i]["recipe"]["name"], sizeof(currentEntry.name));
               currentEntry.brewDate = (int)(entriesToParse[i]["brewDate"].as<double>() / 1000l);
               currentEntry.bottlingSize = entriesToParse[i]["measuredBottlingSize"];
-              currentEntry.finalGravity = entriesToParse[i]["measuredFg"] * 1000;
+              currentEntry.finalGravity = entriesToParse[i]["measuredFg"].as<float>() * 1000.0;
               currentEntry.abv = entriesToParse[i]["measuredAbv"];
               currentEntry.srm = entriesToParse[i]["recipe"]["color"];
               this->entries.push_back(currentEntry);
