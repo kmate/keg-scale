@@ -33,7 +33,7 @@ export default function CalibrationDialog(props) {
   const [tick, setTick] = React.useState(false);
   const { isLoading, data, error } = useFetch(apiLocation("/scale/" + props.index), { depends: [tick] });
 
-  useInterval(() => { setTick(!tick); }, 250, true);
+  useInterval(() => { setTick((prevTick) => !prevTick); }, props.open ? 250 : null, true);
 
   const handleKnownMassChange = (e) => {
     const text = e.target.value;
