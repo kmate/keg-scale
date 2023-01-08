@@ -8,11 +8,13 @@
 
 #include "config.h"
 #include "persistent_config.h"
+#include "catalog.h"
 #include "scale.h"
 #include "webserver.h"
 
 Config config;
 PersistentConfig persistentConfig;
+BrewfatherCatalog catalog;
 std::vector<Scale*> scales;
 WebServer *server;
 
@@ -118,6 +120,10 @@ void setupDateTime() {
   }
 }
 
+void setupCatalog() {
+  catalog.begin(&config.catalog.brewfather);
+}
+
 void setupScales() {
   for (int i = 0; i < config.scales.size(); ++i) {
     Scale *scale = new Scale(config.scales[i], persistentConfig.getCalibrationForScale(i));
@@ -128,7 +134,7 @@ void setupScales() {
 }
 
 void setupHTTP() {
-  server = new WebServer(config, persistentConfig, scales);
+  server = new WebServer(config, persistentConfig, catalog, scales);
   server->begin();
   Serial.println("HTTP server started.");
 }
@@ -142,12 +148,14 @@ void setup() {
   setupWiFi();
   setupOTA();
   setupDateTime();
+  setupCatalog();
   setupScales();
   setupHTTP();
 }
 
 void loop() {
   ArduinoOTA.handle();
+  catalog.refresh();
   for (Scale *scale : scales) {
     scale->update();
   }

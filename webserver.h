@@ -54,6 +54,7 @@ class WebServer {
   AsyncWebServer server;
   Config &config;
   PersistentConfig &persistentConfig;
+  BrewfatherCatalog &catalog;
   std::vector<Scale*> &scales;
 
   void addRootHandler() {
@@ -67,13 +68,13 @@ class WebServer {
       DynamicJsonDocument doc(2048);
 
       JsonArray jsc = doc.createNestedArray("scales");
-      for (ScaleConfig sc : this->config.scales) {
+      for (ScaleConfig &sc : this->config.scales) {
         JsonObject obj = jsc.createNestedObject();
         sc.render(obj);
       }
 
       JsonArray jw = doc.createNestedArray("weights");
-      for (Weight weight : this->config.weights) {
+      for (Weight &weight : this->config.weights) {
         JsonObject obj = jw.createNestedObject();
         weight.render(obj);
       }
@@ -90,6 +91,25 @@ class WebServer {
       } else {
         request->send(500, "text/plain", "unable to persist configuration");
       }
+    });
+  }
+
+  void addCatalogHandler() {
+    this->server.on("/catalog", HTTP_GET, [this](AsyncWebServerRequest *request) {
+      AsyncResponseStream *response = request->beginResponseStream("application/json");
+      DynamicJsonDocument doc(4096);
+      doc["lastRefresh"] = DateFormatter::format(DateFormatter::SIMPLE, this->catalog.getLastRefresh());
+      doc["lastStatusCode"] = this->catalog.getLastStatusCode();
+      doc["lastErrorMessage"] = this->catalog.getLastErrorMessage();
+
+      JsonArray entries = doc.createNestedArray("entries");
+      for (CatalogEntry &entry : this->catalog.getEntries()) {
+        JsonObject obj = entries.createNestedObject();
+        entry.render(obj);
+      }
+
+      serializeJson(doc, *response);
+      request->send(response);
     });
   }
 
@@ -187,7 +207,8 @@ class WebServer {
   }
 
 public:
-  WebServer(Config &_config, PersistentConfig &_persistentConfig, std::vector<Scale*> &_scales): config(_config), persistentConfig(_persistentConfig), scales(_scales), server(_config.httpPort) {
+  WebServer(Config &_config, PersistentConfig &_persistentConfig, BrewfatherCatalog &_catalog, std::vector<Scale*> &_scales) :
+    config(_config), persistentConfig(_persistentConfig), catalog(_catalog), scales(_scales), server(_config.httpPort) {
     MDNS.addService("http", "tcp", this->config.httpPort);
   }
 
@@ -195,6 +216,7 @@ public:
     this->addRootHandler();
     this->addConfigHandler();
     this->addPersistHandler();
+    this->addCatalogHandler();
     this->addScaleHandlers();
     this->addStatusHandler();
     // makes local testing of web ui easier

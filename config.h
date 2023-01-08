@@ -46,13 +46,13 @@ struct Weight {
   }
 };
 
-struct BrewfatherCatalog {
+struct BrewfatherCatalogConfig {
   char userId[32];
-  char apiKey[64];
+  char apiKey[65];
 };
 
-struct Catalog {
-  BrewfatherCatalog brewfather;
+struct CatalogConfig {
+  BrewfatherCatalogConfig brewfather;
 };
 
 class Config {
@@ -61,7 +61,7 @@ public:
   char hostname[64];
   uint16_t httpPort;
   std::vector<WiFiConfig> wifis;
-  Catalog catalog;
+  CatalogConfig catalog;
   OTAConfig ota;
   std::vector<ScaleConfig> scales;
   std::vector<Weight> weights;
@@ -72,7 +72,7 @@ public:
       return false;
     }
 
-    StaticJsonDocument<2048> doc;
+    DynamicJsonDocument doc(2048);
     DeserializationError error = deserializeJson(doc, configFile);
     if (error) {
       return false;
