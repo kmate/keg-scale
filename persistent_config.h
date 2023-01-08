@@ -32,14 +32,14 @@ public:
     int offset = 0;
     for (int i = 0; i < this->numScales; ++i) {
       ScaleCalibration *current = &this->calibrationData[i];
+      current->tareOffset = 0;
+      current->calibrationFactor = 1.0;
+
       if (hasData) {
         EEPROM.get(offset, current->tareOffset);
         offset += sizeof(current->tareOffset);
         EEPROM.get(offset, current->calibrationFactor);
         offset += sizeof(current->calibrationFactor);
-      } else {
-        current->tareOffset = 0;
-        current->calibrationFactor = 1.0;
       }
     }
   }
