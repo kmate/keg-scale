@@ -4,7 +4,6 @@ import useInterval from 'use-interval';
 import apiLocation from './apiLocation';
 
 import { Button, Divider, IconButton, Paper, Toolbar, Typography } from '@mui/material';
-import { Box } from '@mui/system';
 import CloudOffIcon from '@mui/icons-material/CloudOff';
 import PowerSettingsNewIcon from '@mui/icons-material/PowerSettingsNew';
 import AdjustIcon from '@mui/icons-material/Adjust';
@@ -15,7 +14,6 @@ import TabPanel from './TabPanel';
 import CalibrationDialog from './CalibrationDialog';
 import LiveMeasurement from './LiveMeasurement';
 import KnownWeights from './KnownWeights';
-import { useEffect } from 'react';
 import useLocalStorage from './useLocalStorage';
 
 const states = {
@@ -161,7 +159,7 @@ export default function ScalePanel(props) {
             <LiveMeasurementView index={props.index} data={data} weights={props.weights} onCalibrationClick={handleCalibrationClick} />
           </TabPanel>
           <CalibrationDialog
-            open={calibrationIsOpen}
+            open={data.state.name != "offline" && calibrationIsOpen}
             onClose={handleCalibrationClose}
             index={props.index}
             label={props.scale.label}
