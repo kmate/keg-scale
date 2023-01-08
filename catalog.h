@@ -27,7 +27,7 @@ struct CatalogEntry {
     obj["id"] = this->id;
     obj["number"] = this->number;
     obj["name"] = this->name;
-    obj["brewDate"] = DateFormatter::format(DateFormatter::SIMPLE, this->brewDate);
+    obj["brewDate"] = DateFormatter::format(DateFormatter::DATE_ONLY, this->brewDate);
     obj["bottlingSize"] = this->bottlingSize;
     obj["finalGravity"] = this->finalGravity;
     obj["abv"] = this->abv;
@@ -45,7 +45,20 @@ private:
   std::vector<CatalogEntry> entries;
 
 public:
+  void begin(BrewfatherCatalogConfig *_config) {
+    this->config = _config;
+    this->lastRefresh = 0;
+    this->lastStatusCode = 0;
+    this->lastErrorMessage = String("");
+    this->entries.clear();
+  }
+
   void refresh() {
+    // the next update will execute the request
+    this->lastRefresh = 0;
+  }
+
+  void update() {
     time_t now = DateTime.now();
     time_t elapsed = now - this->lastRefresh;
     if (elapsed < CATALOG_REFRESH_SECONDS) {
@@ -99,14 +112,6 @@ public:
     } else {
       this->lastErrorMessage = String("Unable to connect to the target host.");
     }
-  }
-
-  void begin(BrewfatherCatalogConfig *_config) {
-    this->config = _config;
-    this->lastRefresh = 0;
-    this->lastStatusCode = 0;
-    this->lastErrorMessage = String("");
-    this->entries.clear();
   }
 
   time_t getLastRefresh() {

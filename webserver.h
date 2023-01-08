@@ -94,7 +94,7 @@ class WebServer {
     });
   }
 
-  void addCatalogHandler() {
+  void addCatalogHandlers() {
     this->server.on("/catalog", HTTP_GET, [this](AsyncWebServerRequest *request) {
       AsyncResponseStream *response = request->beginResponseStream("application/json");
       DynamicJsonDocument doc(4096);
@@ -110,6 +110,10 @@ class WebServer {
 
       serializeJson(doc, *response);
       request->send(response);
+    });
+    this->server.on("/catalog/refresh", HTTP_POST, [this](AsyncWebServerRequest *request) {
+      this->catalog.refresh();
+      request->send(200, "text/plain", "ok");
     });
   }
 
@@ -216,7 +220,7 @@ public:
     this->addRootHandler();
     this->addConfigHandler();
     this->addPersistHandler();
-    this->addCatalogHandler();
+    this->addCatalogHandlers();
     this->addScaleHandlers();
     this->addStatusHandler();
     // makes local testing of web ui easier

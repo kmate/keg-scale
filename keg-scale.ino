@@ -155,7 +155,7 @@ void setup() {
 
 void loop() {
   ArduinoOTA.handle();
-  catalog.refresh();
+  catalog.update();
   for (Scale *scale : scales) {
     scale->update();
   }
