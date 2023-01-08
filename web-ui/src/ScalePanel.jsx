@@ -64,14 +64,14 @@ function StandbyView(props) {
 
   return (
     <ScaleToolbar icon={PowerSettingsNewIcon} stateName="Standby">
+      <IconButton onClick={props.onCalibrationClick}>
+        <AdjustIcon />
+      </IconButton>
       <IconButton onClick={handleLiveMeasurementClick}>
         <BalanceIcon />
       </IconButton>
-      <IconButton onClick={handleTapMeasurementClick}>
+      <IconButton onClick={handleTapMeasurementClick} edge="end">
         <SportsBarIcon />
-      </IconButton>
-      <IconButton onClick={props.onCalibrationClick} edge="end">
-        <AdjustIcon />
       </IconButton>
     </ScaleToolbar>
   );
