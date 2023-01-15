@@ -11,13 +11,13 @@
 
 #define CATALOG_REFRESH_SECONDS 300
 
-const char *BREWFATHER_CATALOG_URL = "https://api.brewfather.app/v1/batches?status=Conditioning&include=batchNo,recipe.name,recipe.color,measuredBottlingSize,measuredFg,measuredAbv";
+const char *BREWFATHER_CATALOG_URL = "https://api.brewfather.app/v1/batches?status=Conditioning&include=batchNo,recipe.name,recipe.color,measuredBottlingSize,measuredFg,measuredAbv,bottlingDate";
 
 struct CatalogEntry {
   char id[32];
   uint8_t number;
   char name[128];
-  time_t brewDate;
+  time_t bottlingDate;
   float bottlingSize;
   float finalGravity;
   float abv;
@@ -27,7 +27,7 @@ struct CatalogEntry {
     obj["id"] = this->id;
     obj["number"] = this->number;
     obj["name"] = this->name;
-    obj["brewDate"] = DateFormatter::format(DateFormatter::DATE_ONLY, this->brewDate);
+    obj["bottlingDate"] = DateFormatter::format(DateFormatter::DATE_ONLY, this->bottlingDate);
     obj["bottlingSize"] = this->bottlingSize;
     obj["finalGravity"] = this->finalGravity;
     obj["abv"] = this->abv;
@@ -93,7 +93,7 @@ public:
               strlcpy(currentEntry.id, entriesToParse[i]["_id"], sizeof(currentEntry.id));
               currentEntry.number = entriesToParse[i]["batchNo"];
               strlcpy(currentEntry.name, entriesToParse[i]["recipe"]["name"], sizeof(currentEntry.name));
-              currentEntry.brewDate = (int)(entriesToParse[i]["brewDate"].as<double>() / 1000l);
+              currentEntry.bottlingDate = (int)(entriesToParse[i]["bottlingDate"].as<double>() / 1000l);
               currentEntry.bottlingSize = entriesToParse[i]["measuredBottlingSize"];
               currentEntry.finalGravity = entriesToParse[i]["measuredFg"].as<float>() * 1000.0;
               currentEntry.abv = entriesToParse[i]["measuredAbv"];
