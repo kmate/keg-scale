@@ -28,5 +28,6 @@
     },
     "rules": {
         "prettier/prettier": ["error"]
-    }
+    },
+    "ignorePatterns": ["src/srmToRgb.js"]
 }

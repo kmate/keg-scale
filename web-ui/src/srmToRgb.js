@@ -167,5 +167,5 @@ OlFarve.rgbToHex = (rgb) => {
 }
 
 export default function srmToRgb(srm) {
-  return OlFarve.srmToSRGB(srm);
+  return OlFarve.rgbToHex(OlFarve.srmToSRGB(srm));
 }

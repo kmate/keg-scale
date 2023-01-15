@@ -3,7 +3,7 @@ import useFetch from "react-fetch-hook";
 import useInterval from 'use-interval';
 import apiLocation from './apiLocation';
 
-import { Button, Divider, IconButton, Paper, Toolbar, Typography } from '@mui/material';
+import { Button, Divider, IconButton, Paper, Toolbar, Tooltip, Typography } from '@mui/material';
 import CloudOffIcon from '@mui/icons-material/CloudOff';
 import PowerSettingsNewIcon from '@mui/icons-material/PowerSettingsNew';
 import AdjustIcon from '@mui/icons-material/Adjust';
@@ -16,6 +16,7 @@ import CalibrationDialog from './CalibrationDialog';
 import LiveMeasurement from './LiveMeasurement';
 import KnownWeights from './KnownWeights';
 import useLocalStorage from './useLocalStorage';
+import TapSetupDialog from './TapSetupDialog';
 
 const states = {
   offline: {
@@ -53,9 +54,11 @@ function ScaleToolbar(props) {
 function OfflineView(props) {
   return (
     <ScaleToolbar icon={CloudOffIcon} stateName="Offline">
-      <IconButton onClick={props.onRefreshClick} edge="end">
-        <RefreshIcon />
-      </IconButton>
+      <Tooltip title="Refresh">
+        <IconButton onClick={props.onRefreshClick} edge="end">
+          <RefreshIcon />
+        </IconButton>
+      </Tooltip>
     </ScaleToolbar>
   );
 }
@@ -65,21 +68,23 @@ function StandbyView(props) {
     fetch(apiLocation("/live/" + props.index), { method: "POST" });
   };
 
-  const handleTapMeasurementClick = () => {
-
-  };
-
   return (
     <ScaleToolbar icon={PowerSettingsNewIcon} stateName="Standby">
-      <IconButton onClick={props.onCalibrationClick}>
-        <AdjustIcon />
-      </IconButton>
-      <IconButton onClick={handleLiveMeasurementClick}>
-        <BalanceIcon />
-      </IconButton>
-      <IconButton onClick={handleTapMeasurementClick} edge="end">
-        <SportsBarIcon />
-      </IconButton>
+      <Tooltip title="Calibrate">
+        <IconButton onClick={props.onCalibrationClick}>
+          <AdjustIcon />
+        </IconButton>
+      </Tooltip>
+      <Tooltip title="Live measurement">
+        <IconButton onClick={handleLiveMeasurementClick}>
+          <BalanceIcon />
+        </IconButton>
+      </Tooltip>
+      <Tooltip title="Tap setup">
+        <IconButton onClick={props.onTapSetupClick} edge="end">
+          <SportsBarIcon />
+        </IconButton>
+      </Tooltip>
     </ScaleToolbar>
   );
 }
@@ -106,12 +111,16 @@ function LiveMeasurementView(props) {
   return (
     <>
       <ScaleToolbar icon={BalanceIcon} stateName="Live measurement">
-        <IconButton onClick={props.onCalibrationClick}>
-          <AdjustIcon />
-        </IconButton>
-        <IconButton onClick={handleStandbyClick} edge="end">
-          <PowerSettingsNewIcon />
-        </IconButton>
+        <Tooltip title="Calibrate">
+          <IconButton onClick={props.onCalibrationClick}>
+            <AdjustIcon />
+          </IconButton>
+        </Tooltip>
+        <Tooltip title="Standby">
+          <IconButton onClick={handleStandbyClick} edge="end">
+            <PowerSettingsNewIcon />
+          </IconButton>
+        </Tooltip>
       </ScaleToolbar>
       <Divider />
       <LiveMeasurement padding={3} value={props.data.state.data - tareOffset} />
@@ -132,6 +141,7 @@ function TapMeasurementView(props) {
 export default function ScalePanel(props) {
   const [tick, setTick] = React.useState(false);
   const [calibrationIsOpen, setCalibrationIsOpen] = React.useState(false);
+  const [tapSetupIsOpen, setTapSetupIsOpen] = React.useState(false);
 
   const triggerFetch = () => {
     setTick((prevTick) => !prevTick);
@@ -147,6 +157,14 @@ export default function ScalePanel(props) {
 
   const handleCalibrationClose = () => {
     setCalibrationIsOpen(false);
+  };
+
+  const handleTapSetupClick = () => {
+    setTapSetupIsOpen(true);
+  };
+
+  const handleTapSetupClose = () => {
+    setTapSetupIsOpen(false);
   };
 
   const { isLoading, data, error } = useFetch(apiLocation("/scale/" + props.index), { depends: [tick] });
@@ -165,7 +183,7 @@ export default function ScalePanel(props) {
             <OfflineView index={props.index} data={data} onRefreshClick={handleRefreshClick} />
           </TabPanel>
           <TabPanel value={data.state.name} index="standby">
-            <StandbyView index={props.index} data={data} onCalibrationClick={handleCalibrationClick} />
+            <StandbyView index={props.index} data={data} onCalibrationClick={handleCalibrationClick} onTapSetupClick={handleTapSetupClick} />
           </TabPanel>
           <TabPanel value={data.state.name} index="liveMeasurement">
             <LiveMeasurementView index={props.index} data={data} weights={props.weights} onCalibrationClick={handleCalibrationClick} />
@@ -176,6 +194,12 @@ export default function ScalePanel(props) {
             index={props.index}
             label={props.scale.label}
             weights={props.weights}
+          />
+          <TapSetupDialog
+            open={data.state.name != "offline" && tapSetupIsOpen}
+            onClose={handleTapSetupClose}
+            index={props.index}
+            label={props.scale.label}
           />
         </>
       )}

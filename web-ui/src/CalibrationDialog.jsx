@@ -137,6 +137,7 @@ export default function CalibrationDialog(props) {
             <KnownWeights weights={props.weights} forCalibration={true} onClick={handleKnownWeight} />
           </Stack>
         </DialogContent>
+        <Divider />
         <DialogActions>
           <Button onClick={handleTare}>Tare</Button>
           <Button onClick={handleCalibrate}>Calibrate</Button>
