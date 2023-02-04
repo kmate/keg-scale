@@ -63,7 +63,7 @@ uint8_t Scale::updateAdc() {
 }
 
 bool Scale::isAdcOnline() {
-  return !this->adc.getTareTimeoutFlag() && !this->adc.getSignalTimeoutFlag();
+  return !this->adc.getTareTimeoutFlag() && !this->adc.getSignalTimeoutFlag() && this->adc.getSPS() < 1000;
 }
 
 float Scale::getAdcData() {
