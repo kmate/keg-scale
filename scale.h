@@ -9,7 +9,7 @@
 #include "scale_state.h"
 
 #define SCALE_SPS_THRESHOLD 5000
-#define SCALE_SPS_RESAMPLE  5
+#define SCALE_SPS_RESAMPLE  10
 
 class Scale {
 
