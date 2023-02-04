@@ -63,7 +63,22 @@ uint8_t Scale::updateAdc() {
 }
 
 bool Scale::isAdcOnline() {
-  return !this->adc.getTareTimeoutFlag() && !this->adc.getSignalTimeoutFlag() && this->adc.getSPS() < 1000;
+  if (this->adc.getTareTimeoutFlag() || this->adc.getSignalTimeoutFlag()) {
+    this->spsResampled = 0;
+    return false;
+  }
+
+  if (this->adc.getSPS() >= SCALE_SPS_THRESHOLD) {
+    if (++this->spsResampled >= SCALE_SPS_RESAMPLE) {
+      this->spsResampled = 0;
+      return false;
+    } else {
+      return true;
+    }
+  }
+
+  this->spsResampled = 0;
+  return true;
 }
 
 float Scale::getAdcData() {
