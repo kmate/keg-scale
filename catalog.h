@@ -7,11 +7,12 @@
 #include <ESPDateTime.h>
 #include <ESP8266HTTPClient.h>
 #include <WiFiClientSecureBearSSL.h>
+#include <umm_malloc/umm_heap_select.h>
 #include <vector>
 
 #define CATALOG_REFRESH_SECONDS 300
 
-const char *BREWFATHER_CATALOG_URL = "https://api.brewfather.app/v1/batches?status=Conditioning&include=batchNo,recipe.name,recipe.color,measuredBottlingSize,measuredFg,measuredAbv,bottlingDate";
+const char *BREWFATHER_CATALOG_URL = "https://api.brewfather.app/v2/batches?status=Conditioning&include=batchNo,recipe.name,recipe.color,measuredBottlingSize,measuredFg,measuredAbv,bottlingDate";
 
 struct CatalogEntry {
   char id[32];
@@ -38,6 +39,7 @@ struct CatalogEntry {
 class BrewfatherCatalog {
 
 private:
+  BearSSL::WiFiClientSecure *client;
   BrewfatherCatalogConfig *config;
   time_t lastRefresh;
   int lastStatusCode;
@@ -46,6 +48,12 @@ private:
 
 public:
   void begin(BrewfatherCatalogConfig *_config) {
+    {
+      HeapSelectIram ephemeral;
+      this->client = new BearSSL::WiFiClientSecure();
+      this->client->setInsecure();
+    }
+
     this->config = _config;
     this->lastRefresh = 0;
     this->lastStatusCode = 0;
@@ -65,8 +73,6 @@ public:
       return;
     }
 
-    std::unique_ptr<BearSSL::WiFiClientSecure> client(new BearSSL::WiFiClientSecure);
-    client->setInsecure();
     HTTPClient https;
 
     if (https.begin(*client, BREWFATHER_CATALOG_URL)) {

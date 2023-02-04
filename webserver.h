@@ -9,6 +9,7 @@
 #include <ESPDateTime.h>
 #include <ESP8266WiFi.h>
 #include <ESP_EEPROM.h>
+#include <umm_malloc/umm_heap_select.h>
 
 const char compiledAt[] = __DATE__ " " __TIME__;
 
@@ -65,7 +66,7 @@ class WebServer {
   void addConfigHandler() {
     this->server.on("/config", HTTP_GET, [this](AsyncWebServerRequest *request) {
       AsyncResponseStream *response = request->beginResponseStream("application/json");
-      DynamicJsonDocument doc(2048);
+      DynamicJsonDocument doc(1536);
 
       JsonArray jsc = doc.createNestedArray("scales");
       for (ScaleConfig &sc : this->config.scales) {
@@ -97,7 +98,7 @@ class WebServer {
   void addCatalogHandlers() {
     this->server.on("/catalog", HTTP_GET, [this](AsyncWebServerRequest *request) {
       AsyncResponseStream *response = request->beginResponseStream("application/json");
-      DynamicJsonDocument doc(4096);
+      DynamicJsonDocument doc(2048);
       doc["lastRefresh"] = DateFormatter::format(DateFormatter::SIMPLE, this->catalog.getLastRefresh());
       doc["lastStatusCode"] = this->catalog.getLastStatusCode();
       doc["lastErrorMessage"] = this->catalog.getLastErrorMessage();
@@ -181,7 +182,7 @@ class WebServer {
   void addStatusHandler() {
     this->server.on("/status", HTTP_GET, [this](AsyncWebServerRequest *request) {
       AsyncResponseStream *response = request->beginResponseStream("application/json");
-      DynamicJsonDocument doc(1024);
+      DynamicJsonDocument doc(512);
       JsonObject general = doc.createNestedObject("general");
       general["compiledAt"] = compiledAt;
       general["currentTime"] = DateTime.toString();
@@ -202,7 +203,11 @@ class WebServer {
       esp["cpuFreqMHz"] = ESP.getCpuFreqMHz();
       esp["sketchSize"] = ESP.getSketchSize();
       esp["freeSketchSpace"] = ESP.getFreeSketchSpace();
-      esp["freeHeap"] = ESP.getFreeHeap();
+      {
+        HeapSelectIram ephemeral;
+        esp["freeIramHeap"] = ESP.getFreeHeap();
+      }
+      esp["freeDramHeap"] = ESP.getFreeHeap();
       esp["heapFragmentation"] = ESP.getHeapFragmentation();
 
       serializeJson(doc, *response);

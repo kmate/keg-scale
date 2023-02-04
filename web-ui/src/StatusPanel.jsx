@@ -95,8 +95,12 @@ const stats = {
     label: "Free sketch space",
     show: formatBytes
   },
-  freeHeap: {
-    label: "Free heap",
+  freeIramHeap: {
+    label: "Free IRAM heap",
+    show: formatBytes
+  },
+  freeDramHeap: {
+    label: "Free DRAM heap",
     show: formatBytes
   },
   heapFragmentation: {
