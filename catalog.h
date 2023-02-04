@@ -67,6 +67,8 @@ public:
   }
 
   void update() {
+    HeapSelectIram ephemeral;
+
     time_t now = DateTime.now();
     time_t elapsed = now - this->lastRefresh;
     if (elapsed < CATALOG_REFRESH_SECONDS) {
