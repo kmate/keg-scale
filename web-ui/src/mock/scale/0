@@ -1,0 +1,18 @@
+{
+    "state": {
+        "name": "liveMeasurement",
+        "data": 4160.363281
+    },
+    "adc": {
+        "tareOffset": 8053707,
+        "calibrationFactor": 21.14214325,
+        "samplesPerSecond": 11.1305275,
+        "conversionTime": 89.84300232,
+        "samplesInUse": 16,
+        "settlingTime": 1439,
+        "readIndex": 16,
+        "dataSetStatus": false,
+        "tareTimeoutFlag": false,
+        "signalTimeoutFlag": false
+    }
+}

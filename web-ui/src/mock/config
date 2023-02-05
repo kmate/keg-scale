@@ -1,0 +1,70 @@
+{
+    "scales": [
+        {
+            "label": "Leftmost (tap 1)",
+            "clockPin": 5,
+            "dataPin": 4,
+            "gain": 128,
+            "reverse": true
+        },
+        {
+            "label": "Middle left (tap 2)",
+            "clockPin": 2,
+            "dataPin": 0,
+            "gain": 128,
+            "reverse": true
+        },
+        {
+            "label": "Middle right (tap 3)",
+            "clockPin": 15,
+            "dataPin": 13,
+            "gain": 128,
+            "reverse": true
+        },
+        {
+            "label": "Rightmost (tap 4)",
+            "clockPin": 12,
+            "dataPin": 14,
+            "gain": 128,
+            "reverse": true
+        }
+    ],
+    "weights": [
+        {
+            "label": "2L keg",
+            "mass": 1030,
+            "forTare": true,
+            "forCalibration": true
+        },
+        {
+            "label": "5L keg",
+            "mass": 1628,
+            "forTare": true,
+            "forCalibration": true
+        },
+        {
+            "label": "10L keg",
+            "mass": 2500,
+            "forTare": true,
+            "forCalibration": true
+        },
+        {
+            "label": "19L keg",
+            "mass": 4200,
+            "forTare": true,
+            "forCalibration": true
+        },
+        {
+            "label": "Grimbergen 0.33L",
+            "mass": 548,
+            "forTare": false,
+            "forCalibration": true
+        },
+        {
+            "label": "Flour bag",
+            "mass": 1026,
+            "forTare": false,
+            "forCalibration": true
+        }
+    ]
+}

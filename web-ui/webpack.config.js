@@ -1,38 +1,39 @@
-const path = require("path");
-const webpack = require("webpack");
+const path = require('path');
+const express = require('express');
+const webpack = require('webpack');
 const TerserPlugin = require('terser-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 const ESLintPlugin = require('eslint-webpack-plugin');
 const ReactRefreshWebpackPlugin = require('@pmmmwh/react-refresh-webpack-plugin');
 
-const outputPath = path.resolve(__dirname, "../data/html/");
+const outputPath = path.resolve(__dirname, '../data/html/');
 const isDevelopment = process.env.NODE_ENV !== 'production';
 
 module.exports = {
-  entry: "./src/index.jsx",
-  mode: isDevelopment ? "development" : "production",
+  entry: './src/index.jsx',
+  mode: isDevelopment ? 'development' : 'production',
   module: {
     rules: [
       {
         test: /\.(js|jsx)$/,
         exclude: /(node_modules|bower_components)/,
-        loader: "babel-loader",
+        loader: 'babel-loader',
         options: {
-          presets: ["@babel/env"],
+          presets: ['@babel/env'],
           plugins: [isDevelopment && require.resolve('react-refresh/babel')].filter(Boolean),
         }
       },
       {
         test: /\.css$/,
-        use: ["style-loader", "css-loader"],
+        use: ['style-loader', 'css-loader'],
       },
     ]
   },
-  resolve: { extensions: ["*", ".js", ".jsx"] },
+  resolve: { extensions: ['*', '.js', '.jsx'] },
   output: {
     path: outputPath,
-    publicPath: "",
-    filename: "bundle.js",
+    publicPath: '',
+    filename: 'bundle.js',
   },
   optimization: {
     minimize: true,
@@ -50,6 +51,10 @@ module.exports = {
   devServer: {
     static: {
       directory: outputPath,
+    },
+    setupMiddlewares: (middlewares, devServer) => {
+      devServer.app.use('/mock/', express.static(path.resolve(__dirname, 'src/mock')));
+      return middlewares;
     },
     port: 3000,
     hot: true,

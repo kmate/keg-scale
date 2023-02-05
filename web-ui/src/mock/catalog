@@ -1,0 +1,37 @@
+{
+    "lastRefresh": "2023-02-05 09:31:45",
+    "lastStatusCode": 200,
+    "lastErrorMessage": "",
+    "entries": [
+        {
+            "id": "Q7HUdbr4vt9l1D4C5Ai1SPDYJQ0dYf",
+            "number": 27,
+            "name": "Tripel Test 2",
+            "bottlingDate": "2022-12-02",
+            "bottlingSize": 18.29999924,
+            "finalGravity": 1002,
+            "abv": 10.89999962,
+            "srm": 6.699999809
+        },
+        {
+            "id": "RDxMgX48TdTPG2AIttt83BKnjwCHom",
+            "number": 28,
+            "name": "Scottish Wee Habañero",
+            "bottlingDate": "2022-12-20",
+            "bottlingSize": 19,
+            "finalGravity": 1031,
+            "abv": 6.400000095,
+            "srm": 24.89999962
+        },
+        {
+            "id": "i8R7XsnvbHYxJh7qZscHh4HC8mDZji",
+            "number": 10,
+            "name": "ColdBrew Infused Stout",
+            "bottlingDate": "2021-12-02",
+            "bottlingSize": 7,
+            "finalGravity": 1018,
+            "abv": 8,
+            "srm": 46.20000076
+        }
+    ]
+}
