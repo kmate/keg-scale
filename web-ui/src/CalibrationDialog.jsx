@@ -97,7 +97,7 @@ export default function CalibrationDialog(props) {
 
   return (
     <>
-      <Dialog open={props.open} onClose={props.onClose} fullScreen={fullScreen} scroll="body">
+      <Dialog open={props.open} onClose={props.onClose} fullScreen={fullScreen} fullWidth={true} maxWidth="md" scroll="body">
         <DialogTitle variant="h6" sx={{ flexGrow: 1 }}>
           <Typography variant="overline" noWrap paragraph mb={0}>{props.label}</Typography>
           <Divider />
