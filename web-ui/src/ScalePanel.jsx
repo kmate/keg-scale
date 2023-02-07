@@ -200,6 +200,7 @@ export default function ScalePanel(props) {
             onClose={handleTapSetupClose}
             index={props.index}
             label={props.scale.label}
+            weights={props.weights}
           />
         </>
       )}
