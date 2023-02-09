@@ -33,11 +33,11 @@ function BeerIcon(props) {
   );
 }
 
-const catalogReloadTrigger = createTrigger();
+const catalogRefreshTrigger = createTrigger();
 
 function CatalogInputPanel(props) {
-  const reload = useTrigger(catalogReloadTrigger);
-  const { isLoading, data, error } = useFetch(apiLocation("/catalog"), { depends: [reload] });
+  const refresh = useTrigger(catalogRefreshTrigger);
+  const { isLoading, data, error } = useFetch(apiLocation("/catalog"), { depends: [refresh] });
   const [ selectedEntry, setSelectedEntry ] = React.useState(null);
 
   const BREWFATHER_BATCH_PREFIX = "https://web.brewfather.app/tabs/batches/batch/";
@@ -132,7 +132,7 @@ export default function TapSetupDialog(props) {
     fetch(apiLocation("/catalog/update"), { method: "POST" }).then((response) => {
       if (response.ok) {
         setFeedback({ isOpen: true, message: 'Catalog update complete!', severity: 'success' });
-        catalogReloadTrigger();
+        catalogRefreshTrigger();
       } else {
         setFeedback({ isOpen: true, message: 'Catalog update failed!', severity: 'error' });
       }
@@ -179,7 +179,7 @@ export default function TapSetupDialog(props) {
             </Stack>
             <Divider />
             <TabPanel value={useCatalog} index={true}>
-              <CatalogInputPanel reloadTrigger={catalogReloadTrigger} updateEntry={handleUpdateEntry} />
+              <CatalogInputPanel updateEntry={handleUpdateEntry} />
             </TabPanel>
             <TabPanel value={useCatalog} index={false}>
               <ManualInputPanel />
