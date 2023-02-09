@@ -1,15 +1,20 @@
 import * as React from 'react';
 import useFetch from "react-fetch-hook";
+import createTrigger from "react-use-trigger";
+import useTrigger from "react-use-trigger/useTrigger";
+
 import apiLocation from './apiLocation';
 import srmToRgb from './srmToRgb';
 
 import useMediaQuery from '@mui/material/useMediaQuery';
 import { createTheme, useTheme } from '@mui/material/styles';
 
-import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, Divider, FormControlLabel, IconButton, List, ListItemButton, ListItemIcon, ListItemText, SvgIcon, Switch, ThemeProvider, Tooltip, Typography } from "@mui/material";
+import { Alert, Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, Divider, FormControlLabel, IconButton, List, ListItemButton, ListItemIcon, ListItemText, Snackbar, SvgIcon, Switch, ThemeProvider, Tooltip, Typography } from "@mui/material";
 import { Stack } from '@mui/system';
-import TabPanel from './TabPanel';
 import LaunchIcon from '@mui/icons-material/Launch';
+import RefreshIcon from '@mui/icons-material/Refresh';
+
+import TabPanel from './TabPanel';
 import KnownWeights from './KnownWeights';
 
 function ManualInputPanel(props) {
@@ -28,14 +33,17 @@ function BeerIcon(props) {
   );
 }
 
+const catalogReloadTrigger = createTrigger();
+
 function CatalogInputPanel(props) {
-  const [tick, setTick] = React.useState(false); // TODO add refresh button and make it work
-  const { isLoading, data, error } = useFetch(apiLocation("/catalog")/*, { depends: [tick] }*/);
+  const reload = useTrigger(catalogReloadTrigger);
+  const { isLoading, data, error } = useFetch(apiLocation("/catalog"), { depends: [reload] });
   const [ selectedEntry, setSelectedEntry ] = React.useState(null);
 
   const BREWFATHER_BATCH_PREFIX = "https://web.brewfather.app/tabs/batches/batch/";
 
   const handleOpenExternalEntry = (e) => {
+    e.stopPropagation();
     const url = BREWFATHER_BATCH_PREFIX + e.currentTarget.dataset.id;
     window.open(url, '_blank');
   };
@@ -113,10 +121,26 @@ export default function TapSetupDialog(props) {
   const theme = useTheme();
   const fullScreen = useMediaQuery(theme.breakpoints.down('md'));
   const [useCatalog, setUseCatalog] = React.useState(true);
+  const [feedback, setFeedback] = React.useState({ isOpen: false, message: '', severity: 'success' });
   const [entry, setEntry] = React.useState({});
 
   const handleUseCatalogChange = (e) => {
     setUseCatalog(e.currentTarget.checked);
+  };
+
+  const handleCatalogRefresh = () => {
+    fetch(apiLocation("/catalog/update"), { method: "POST" }).then((response) => {
+      if (response.ok) {
+        setFeedback({ isOpen: true, message: 'Catalog update complete!', severity: 'success' });
+        catalogReloadTrigger();
+      } else {
+        setFeedback({ isOpen: true, message: 'Catalog update failed!', severity: 'error' });
+      }
+    })
+  };
+
+  const handleFeedbackClose = () => {
+    setFeedback({ ...feedback, isOpen: false });
   };
 
   const handleUpdateEntry = (entry) => {
@@ -135,27 +159,43 @@ export default function TapSetupDialog(props) {
 
   // TODO disable start until entry is ready
   return (
-    <Dialog open={props.open} onClose={props.onClose} fullScreen={fullScreen} fullWidth={true} maxWidth="md" scroll="body">
-      <DialogTitle variant="h6" sx={{ flexGrow: 1 }}>
-          <Typography variant="overline" noWrap paragraph mb={0}>{props.label}</Typography>
-          <Divider />
-          Tap setup
-        </DialogTitle>
-        <DialogContent>
-          <FormControlLabel control={<Switch checked={useCatalog} onChange={handleUseCatalogChange} />} label="Use catalog" />
-          <Divider />
-          <TabPanel value={useCatalog} index={true}>
-            <CatalogInputPanel updateEntry={handleUpdateEntry} />
-          </TabPanel>
-          <TabPanel value={useCatalog} index={false}>
-            <ManualInputPanel />
-          </TabPanel>
-          <KnownWeights isToggle={true} weights={props.weights} forTare={true} onClick={handleKnownWeight} />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={props.onClose}>Cancel</Button>
-          <Button onClick={handleStart}>Start</Button>
-        </DialogActions>
-    </Dialog>
+    <>
+      <Dialog open={props.open} onClose={props.onClose} fullScreen={fullScreen} fullWidth={true} maxWidth="md" scroll="body">
+        <DialogTitle variant="h6" sx={{ flexGrow: 1 }}>
+            <Typography variant="overline" noWrap paragraph mb={0}>{props.label}</Typography>
+            <Divider />
+            Tap setup
+          </DialogTitle>
+          <DialogContent>
+            <Stack direction="row">
+              <FormControlLabel control={<Switch checked={useCatalog} onChange={handleUseCatalogChange} />} label="Use catalog" />
+              <div style={{flex: '1 0 0'}} />
+              {useCatalog &&
+                <Tooltip title="Refresh">
+                  <IconButton onClick={handleCatalogRefresh}>
+                    <RefreshIcon />
+                  </IconButton>
+                </Tooltip>}
+            </Stack>
+            <Divider />
+            <TabPanel value={useCatalog} index={true}>
+              <CatalogInputPanel reloadTrigger={catalogReloadTrigger} updateEntry={handleUpdateEntry} />
+            </TabPanel>
+            <TabPanel value={useCatalog} index={false}>
+              <ManualInputPanel />
+            </TabPanel>
+            <KnownWeights isToggle={true} weights={props.weights} forTare={true} onClick={handleKnownWeight} />
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={props.onClose}>Cancel</Button>
+            <Button onClick={handleStart}>Start</Button>
+          </DialogActions>
+      </Dialog>
+      <Snackbar open={feedback.isOpen} autoHideDuration={1000} onClose={handleFeedbackClose}>
+        <Alert onClose={handleFeedbackClose} severity={feedback.severity}>
+          {feedback.message}
+        </Alert>
+      </Snackbar>
+    </>
   );
 }
