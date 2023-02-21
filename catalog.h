@@ -10,7 +10,8 @@
 #include <umm_malloc/umm_heap_select.h>
 #include <vector>
 
-#define CATALOG_REFRESH_SECONDS 300
+#define CATALOG_REFRESH_SECONDS   300
+#define CATALOG_MAX_RESPONSE_SIZE 4096
 
 const char *BREWFATHER_CATALOG_URL = "https://api.brewfather.app/v2/batches?status=Conditioning&include=batchNo,recipe.name,recipe.color,measuredBottlingSize,measuredFg,measuredAbv,bottlingDate";
 
@@ -51,6 +52,13 @@ public:
     {
       HeapSelectIram ephemeral;
       this->client = new BearSSL::WiFiClientSecure();
+      if (this->client->probeMaxFragmentLength(BREWFATHER_CATALOG_URL, 443, 512)) {
+        Serial.println("Brewfather catalog: using MFLN.");
+        this->client->setBufferSizes(512, 512);
+      } else {
+        Serial.println("Brewfather catalog: NOT using MFLN.");
+        this->client->setBufferSizes(CATALOG_MAX_RESPONSE_SIZE, 512);
+      }
       this->client->setInsecure();
     }
 
@@ -86,7 +94,7 @@ public:
 
         if (this->lastStatusCode == HTTP_CODE_OK || this->lastStatusCode == HTTP_CODE_MOVED_PERMANENTLY) {
           String payload = https.getString();
-          DynamicJsonDocument doc(4096);
+          DynamicJsonDocument doc(CATALOG_MAX_RESPONSE_SIZE);
           DeserializationError error = deserializeJson(doc, payload);
 
           if (error) {
