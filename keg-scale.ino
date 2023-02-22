@@ -9,12 +9,14 @@
 #include "config.h"
 #include "persistent_config.h"
 #include "catalog.h"
+#include "recorder.h"
 #include "scale.h"
 #include "webserver.h"
 
 Config config;
 PersistentConfig persistentConfig;
 BrewfatherCatalog catalog;
+GithubGistRecorder recorder;
 std::vector<Scale*> scales;
 WebServer *server;
 
@@ -124,6 +126,10 @@ void setupCatalog() {
   catalog.begin(&config.catalog.brewfather);
 }
 
+void setupRecorder() {
+  recorder.begin();
+}
+
 void setupScales() {
   for (int i = 0; i < config.scales.size(); ++i) {
     Scale *scale = new Scale(config.scales[i], persistentConfig.getCalibrationForScale(i));
@@ -149,6 +155,7 @@ void setup() {
   setupOTA();
   setupDateTime();
   setupCatalog();
+  setupRecorder();
   setupScales();
   setupHTTP();
 }
