@@ -8,8 +8,8 @@
 #include "persistent_config.h"
 #include "scale_state.h"
 
-#define SCALE_SPS_THRESHOLD 5000
-#define SCALE_SPS_RESAMPLE  10
+#define SCALE_SPS_THRESHOLD   1000
+#define SCALE_OFFLINE_RETRIES 5
 
 class Scale {
 
@@ -17,12 +17,12 @@ private:
   ScaleConfig &config;
   ScaleCalibration *calibration;
   HX711_ADC adc;
-  int spsResampled;
+  int offlineAttempt;
   ScaleState *currentState;
   ScaleState *nextState;
 
 public:
-  Scale(ScaleConfig &_config, ScaleCalibration *_calibration) : config(_config), calibration(_calibration), adc(_config.dataPin, _config.clockPin), spsResampled(0), currentState(nullptr), nextState(nullptr) {
+  Scale(ScaleConfig &_config, ScaleCalibration *_calibration) : config(_config), calibration(_calibration), adc(_config.dataPin, _config.clockPin), offlineAttempt(0), currentState(nullptr), nextState(nullptr) {
     if (this->config.reverse) {
       this->adc.setReverseOutput();
     }

@@ -53,7 +53,7 @@ void Scale::render(DynamicJsonDocument &doc) {
 
 void Scale::startAdc() {
   // TODO should the timeout / tare flag come from config?
-  this->adc.startMultiple(1000, false);
+  this->adc.startMultiple(5000, false);
   this->adc.setTareOffset(this->calibration->tareOffset);
   this->adc.setCalFactor(this->calibration->calibrationFactor);
 }
@@ -63,21 +63,16 @@ uint8_t Scale::updateAdc() {
 }
 
 bool Scale::isAdcOnline() {
-  if (this->adc.getTareTimeoutFlag() || this->adc.getSignalTimeoutFlag()) {
-    this->spsResampled = 0;
-    return false;
-  }
-
-  if (this->adc.getSPS() >= SCALE_SPS_THRESHOLD) {
-    if (++this->spsResampled >= SCALE_SPS_RESAMPLE) {
-      this->spsResampled = 0;
+  if (this->adc.getTareTimeoutFlag() || this->adc.getSignalTimeoutFlag() || this->adc.getSPS() >= SCALE_SPS_THRESHOLD) {
+    if (++this->offlineAttempt >= SCALE_OFFLINE_RETRIES) {
+      this->offlineAttempt = 0;
       return false;
     } else {
       return true;
     }
   }
 
-  this->spsResampled = 0;
+  this->offlineAttempt = 0;
   return true;
 }
 
