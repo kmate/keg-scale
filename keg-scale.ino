@@ -8,6 +8,7 @@
 
 #include "config.h"
 #include "persistent_config.h"
+#include "logger.h"
 #include "catalog.h"
 #include "recorder.h"
 #include "scale.h"
@@ -85,6 +86,9 @@ void setupOTA() {
       updatingFS = true;
       LittleFS.end();
     }
+
+    Logger.println("OTA in progress, closing connection.");
+    Logger.end();
 
     Serial.println("OTA begins for " + type);
   });

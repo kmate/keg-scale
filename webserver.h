@@ -215,6 +215,10 @@ class WebServer {
     });
   }
 
+  void addLogHandler() {
+    this->server.addHandler(Logger.getSocket());
+  }
+
 public:
   WebServer(Config &_config, PersistentConfig &_persistentConfig, BrewfatherCatalog &_catalog, std::vector<Scale*> &_scales) :
     config(_config), persistentConfig(_persistentConfig), catalog(_catalog), scales(_scales), server(_config.httpPort) {
@@ -228,6 +232,7 @@ public:
     this->addCatalogHandlers();
     this->addScaleHandlers();
     this->addStatusHandler();
+    this->addLogHandler();
     // makes local testing of web ui easier
     DefaultHeaders::Instance().addHeader("Access-Control-Allow-Origin", "*");
     // handle OPTIONS request of CORS pre-flight

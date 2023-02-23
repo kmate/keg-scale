@@ -5,7 +5,7 @@ import copy from "copy-to-clipboard";
 import apiLocation from './apiLocation';
 import formatBytes from './formatBytes';
 
-import { Divider, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Tooltip } from '@mui/material';
+import { Divider, FormControlLabel, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Stack, Switch, Tooltip } from '@mui/material';
 import ErrorIndicator from './ErrorIndicator';
 import LoadingIndicator from './LoadingIndicator';
 
@@ -164,13 +164,22 @@ function StatusContents(props) {
   );
 }
 
-export default function StatusPanel() {
+export default function StatusPanel({ debugLog, setDebugLog }) {
 
   const { isLoading, data, error } = useFetch(apiLocation("/status"));
 
+  const handleDebugLogChange = (e) => {
+    setDebugLog(e.currentTarget.checked);
+  }
+
   return(
-    <>
+    <Stack>
+      <FormControlLabel
+        control={<Switch checked={debugLog} onChange={handleDebugLogChange} />}
+        label="Debug log"
+        sx={{m: 1}} />
+      <Divider />
       { isLoading ? <LoadingIndicator /> : (error ? <ErrorIndicator error={error} /> : <StatusContents data={data} />)}
-    </>
+    </Stack>
   );
 }
