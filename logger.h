@@ -18,9 +18,8 @@ public:
     });
   }
 
-  void end() {
-    this->logSocket.enable(false);
-    this->logSocket.closeAll();
+  void update() {
+    this->logSocket.cleanupClients();
   }
 
   AsyncWebSocket* getSocket() {

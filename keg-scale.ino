@@ -87,8 +87,6 @@ void setupOTA() {
       LittleFS.end();
     }
 
-    Logger.end();
-
     Serial.println("OTA begins for " + type);
   });
   ArduinoOTA.onEnd([]() {
@@ -135,7 +133,7 @@ void setupRecorder() {
 
 void setupScales() {
   for (int i = 0; i < config.scales.size(); ++i) {
-    Scale *scale = new Scale(config.scales[i], persistentConfig.getCalibrationForScale(i));
+    Scale *scale = new Scale(i, config.scales[i], persistentConfig.getCalibrationForScale(i));
     scales.push_back(scale);
     scale->begin();
   }
@@ -172,4 +170,5 @@ void loop() {
     scale->update();
     yield();
   }
+  Logger.update();
 }
