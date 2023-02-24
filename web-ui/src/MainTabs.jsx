@@ -50,7 +50,7 @@ export default function MainTabs() {
     }
 
     newSocket.onmessage = e => {
-      console.debug(e.data);
+      console.debug(`[${new Date().toLocaleString()}] ${e.data}`);
     };
 
     logSocket.current = newSocket;
