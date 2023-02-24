@@ -204,12 +204,15 @@ class WebServer {
       esp["sketchSize"] = ESP.getSketchSize();
       esp["freeSketchSpace"] = ESP.getFreeSketchSpace();
       {
+        HeapSelectDram ephemeral;
+        esp["freeDramHeap"] = ESP.getFreeHeap();
+        esp["dramHeapFragmentation"] = ESP.getHeapFragmentation();
+      }
+      {
         HeapSelectIram ephemeral;
         esp["freeIramHeap"] = ESP.getFreeHeap();
+        esp["iramHeapFragmentation"] = ESP.getHeapFragmentation();
       }
-      esp["freeDramHeap"] = ESP.getFreeHeap();
-      esp["heapFragmentation"] = ESP.getHeapFragmentation();
-
       serializeJson(doc, *response);
       request->send(response);
     });
