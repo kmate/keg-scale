@@ -2,6 +2,7 @@
 #define KEG_SCALE__LOGGER_H
 
 #include <ESPAsyncWebServer.h>
+#include <umm_malloc/umm_heap_select.h>
 
 class LoggerClass : public Print {
 
@@ -35,6 +36,20 @@ public:
     this->logSocket.textAll((const char *) buffer, len);
     return len;
   }
+
+  void printWithFreeHeaps(const char* message) {
+    uint32_t freeDramHeap;
+    uint32_t freeIramHeap;
+    {
+      HeapSelectDram ephemeral;
+      freeDramHeap = ESP.getFreeHeap();
+    }
+    {
+      HeapSelectIram ephemeral;
+      freeIramHeap = ESP.getFreeHeap();
+    }
+    this->printf("%s (free DRAM heap: %d, free IRAM heap: %d).\n", message, freeDramHeap, freeIramHeap);
+  };
 };
 
 extern LoggerClass Logger;

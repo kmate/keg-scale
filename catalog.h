@@ -2,6 +2,7 @@
 #define KEG_SCALE__CATALOG_H
 
 #include "config.h"
+#include "logger.h"
 
 #include <ArduinoJson.h>
 #include <ESPDateTime.h>
@@ -83,6 +84,8 @@ public:
       return;
     }
 
+    Logger.printWithFreeHeaps("Brewfather catalog update started");
+
     HTTPClient https;
 
     if (https.begin(*client, BREWFATHER_CATALOG_URL)) {
@@ -102,6 +105,8 @@ public:
           } else {
             JsonArray entriesToParse = doc.as<JsonArray>();
             this->entries.clear();
+
+            Logger.printWithFreeHeaps("Brewfather catalog update in progress");
 
             uint8_t numEntries = entriesToParse.size();
             for (int i = 0; i < numEntries; ++i) {
@@ -128,6 +133,8 @@ public:
     } else {
       this->lastErrorMessage = String("Unable to connect to the target host.");
     }
+
+    Logger.printWithFreeHeaps("Brewfather catalog update done");
   }
 
   time_t getLastRefresh() {
