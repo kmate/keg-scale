@@ -1,4 +1,6 @@
 import * as React from 'react';
+import ReconnectingWebSocket from 'reconnecting-websocket';
+
 import { useTheme } from '@mui/material/styles';
 import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
@@ -23,63 +25,21 @@ export default function MainTabs() {
     setValue(newValue);
   };
 
-  const logConnectionSeconds = 5;
-  const logReconnectSeconds = 5;
-  const logPingSeconds = 10;
-  const logSocket = React.useRef(null);
-  const connectTimeout = React.useRef(null);
-  const pingInterval = React.useRef(null);
-
-  const connectLogSocket = () => {
-    if (!debugLog) return;
-
-    console.info('Trying to connect log socket...');
-    const newSocket = new WebSocket(apiLocation('/log').replace(/^http/, 'ws'));
-
-    connectTimeout.current = setTimeout(() => {
-      console.warn('Log socket connection timed out.');
-      newSocket.close();
-    }, logConnectionSeconds * 1000);
-
-    newSocket.onopen = () => {
-      cleanupLogSocketTimers();
-      pingInterval.current = setInterval(() => {
-        newSocket.send('ping');
-      }, logPingSeconds * 1000);
-    };
-
-    newSocket.onerror = (e) => {
-      console.warn('Log socket error.', e);
-    };
-
-    newSocket.onclose = () => {
-      cleanupLogSocketTimers();
-      console.warn('Log socket disconnected.');
-      connectTimeout.current = setTimeout(connectLogSocket, logReconnectSeconds * 1000);
-    }
-
-    newSocket.onmessage = e => {
-      console.debug(`[${new Date().toLocaleString()}] ${e.data}`);
-    };
-
-    logSocket.current = newSocket;
-  }
-
-  const cleanupLogSocketTimers = () => {
-    if (connectTimeout.current) clearTimeout(connectTimeout.current);
-    if (pingInterval.current) clearInterval(pingInterval.current);
-  }
-
   React.useEffect(() => {
     if (debugLog) {
-      connectLogSocket();
+      console.info('Opening log socket...');
+      const logSocket = new ReconnectingWebSocket(apiLocation('/log').replace(/^http/, 'ws'));
 
-      const currentLogSocket = logSocket.current;
+      logSocket.onerror = (e) => {
+        console.warn('Log socket error.', e);
+      };
+
+      logSocket.onmessage = e => {
+        console.debug(`[${new Date().toLocaleString()}] ${e.data}`);
+      };
 
       return () => {
-        cleanupLogSocketTimers();
-        currentLogSocket.onclose = null;
-        currentLogSocket.close();
+        logSocket.close();
         console.info('Log socket closed.');
       };
     }
