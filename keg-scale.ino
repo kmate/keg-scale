@@ -87,7 +87,6 @@ void setupOTA() {
       LittleFS.end();
     }
 
-    Logger.println("OTA in progress, closing connection.");
     Logger.end();
 
     Serial.println("OTA begins for " + type);
