@@ -1,4 +1,7 @@
 #include "scale.h"
+#include "logger.h"
+
+#define btoa(x) ((x)?"true":"false")
 
 void Scale::begin() {
   this->adc.begin(this->config.gain);
@@ -59,21 +62,28 @@ void Scale::startAdc() {
 }
 
 uint8_t Scale::updateAdc() {
-  return this->adc.update();
+  uint8_t updateResult = this->adc.update();
+
+  bool isSignalTimeout = this->adc.getSignalTimeoutFlag();
+  bool isTareTimeout = this->adc.getTareTimeoutFlag();
+  bool newOnlineFlag = !isSignalTimeout && !isTareTimeout;
+
+  if (newOnlineFlag != this->adcOnlineFlag) {
+    Logger.printf(
+      "Scale %d went %s (signal timeout: %s, tare timeout: %s).\n",
+      this->index,
+      newOnlineFlag ? "online" : "offline",
+      btoa(isSignalTimeout),
+      btoa(isTareTimeout)
+    );
+    this->adcOnlineFlag = newOnlineFlag;
+  }
+
+  return updateResult;
 }
 
 bool Scale::isAdcOnline() {
-  if (this->adc.getTareTimeoutFlag() || this->adc.getSignalTimeoutFlag() || this->adc.getSPS() >= SCALE_SPS_THRESHOLD) {
-    if (++this->offlineAttempt >= SCALE_OFFLINE_RETRIES) {
-      this->offlineAttempt = 0;
-      return false;
-    } else {
-      return true;
-    }
-  }
-
-  this->offlineAttempt = 0;
-  return true;
+  return this->adcOnlineFlag;
 }
 
 float Scale::getAdcData() {
