@@ -23,20 +23,29 @@ export default function MainTabs() {
     setValue(newValue);
   };
 
+  const logConnectionSeconds = 5;
   const logReconnectSeconds = 5;
+  const logPingSeconds = 10;
   const logSocket = React.useRef(null);
+  const connectTimeout = React.useRef(null);
+  const pingInterval = React.useRef(null);
 
   const connectLogSocket = () => {
+    if (!debugLog) return;
+
     console.info('Trying to connect log socket...');
     const newSocket = new WebSocket(apiLocation('/log').replace(/^http/, 'ws'));
 
-    const connectTimeout = setTimeout(() => {
+    connectTimeout.current = setTimeout(() => {
       console.warn('Log socket connection timed out.');
       newSocket.close();
-    }, logReconnectSeconds * 1000);
+    }, logConnectionSeconds * 1000);
 
     newSocket.onopen = () => {
-      clearTimeout(connectTimeout);
+      cleanupLogSocketTimers();
+      pingInterval.current = setInterval(() => {
+        newSocket.send('ping');
+      }, logPingSeconds * 1000);
     };
 
     newSocket.onerror = (e) => {
@@ -44,9 +53,9 @@ export default function MainTabs() {
     };
 
     newSocket.onclose = () => {
-      clearTimeout(connectTimeout);
+      cleanupLogSocketTimers();
       console.warn('Log socket disconnected.');
-      setTimeout(connectLogSocket, logReconnectSeconds * 1000);
+      connectTimeout.current = setTimeout(connectLogSocket, logReconnectSeconds * 1000);
     }
 
     newSocket.onmessage = e => {
@@ -56,6 +65,11 @@ export default function MainTabs() {
     logSocket.current = newSocket;
   }
 
+  const cleanupLogSocketTimers = () => {
+    if (connectTimeout.current) clearTimeout(connectTimeout.current);
+    if (pingInterval.current) clearInterval(pingInterval.current);
+  }
+
   React.useEffect(() => {
     if (debugLog) {
       connectLogSocket();
@@ -63,6 +77,7 @@ export default function MainTabs() {
       const currentLogSocket = logSocket.current;
 
       return () => {
+        cleanupLogSocketTimers();
         currentLogSocket.onclose = null;
         currentLogSocket.close();
         console.info('Log socket closed.');
