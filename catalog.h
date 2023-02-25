@@ -42,31 +42,26 @@ class BrewfatherCatalog {
 
 private:
   BearSSL::WiFiClientSecure *client;
-  BrewfatherCatalogConfig *config;
-  time_t lastRefresh;
+  bool useMFL;
   int lastStatusCode;
   String lastErrorMessage;
+
+  BrewfatherCatalogConfig *config;
+  time_t lastRefresh;
   std::vector<CatalogEntry> entries;
 
 public:
-  void begin(BrewfatherCatalogConfig *_config) {
+  void begin(BrewfatherCatalogConfig *_config, BearSSL::WiFiClientSecure *_client) {
+    this->config = _config;
+    this->client = _client;
     {
       HeapSelectIram ephemeral;
-      this->client = new BearSSL::WiFiClientSecure();
-      if (this->client->probeMaxFragmentLength(BREWFATHER_CATALOG_URL, 443, 512)) {
-        Serial.println("Brewfather catalog: using MFLN.");
-        this->client->setBufferSizes(512, 512);
-      } else {
-        Serial.println("Brewfather catalog: NOT using MFLN.");
-        this->client->setBufferSizes(CATALOG_MAX_RESPONSE_SIZE, 512);
-      }
-      this->client->setInsecure();
+      this->useMFL = this->client->probeMaxFragmentLength(BREWFATHER_CATALOG_URL, 443, 512);
+      Serial.printf("Brewfather catalog:%s using MFLN.\n", this->useMFL ? "" : " NOT");
     }
-
-    this->config = _config;
-    this->lastRefresh = 0;
     this->lastStatusCode = 0;
     this->lastErrorMessage = String("");
+    this->lastRefresh = 0;
     this->entries.clear();
   }
 
@@ -85,6 +80,8 @@ public:
     }
 
     Logger.printWithFreeHeaps("Brewfather catalog update started");
+
+    this->client->setBufferSizes(this->useMFL ? CATALOG_MAX_RESPONSE_SIZE : 512, 512);
 
     HTTPClient https;
 

@@ -13,6 +13,13 @@
       "apiKey": "<brewfather-api-key>"
     }
   },
+  "recorder": {
+    "githubGist": {
+      "userId": "<github-user-id>",
+      "apiKey": "<github-api-key>",
+      "rootNodeId": "<node-id-of-root-gist>"
+    }
+  },
   "ota": {
     "port": 8266,
     "password": "<ota-password>"

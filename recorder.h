@@ -16,29 +16,28 @@ const char *GITHUB_GIST_RECORDER_GQL_URL = "https://api.github.com/graphql";
 class GithubGistRecorder {
 
 private:
-  // TODO share client with catalog?
   BearSSL::WiFiClientSecure *client;
+  bool useMFL;
+  int lastStatusCode;
+  String lastErrorMessage;
+
+  GithubGistRecorderConfig *config;
 
 public:
-  void begin() {
-    // TODO save if we can use MFLN to a flag and set buffer size on shared client each time?
-    // TODO load all recording data (root + scales), fail if cannot download (reset ESP in setup then)
+  void begin(GithubGistRecorderConfig *_config, BearSSL::WiFiClientSecure *_client) {
+    this->config = _config;
+    this->client = _client;
     {
       HeapSelectIram ephemeral;
-      this->client = new BearSSL::WiFiClientSecure();
-      if (this->client->probeMaxFragmentLength(GITHUB_GIST_RECORDER_GQL_URL, 443, 512)) {
-        Serial.println("Github gist recorder: using MFLN.");
-        this->client->setBufferSizes(512, 512);
-      } else {
-        Serial.println("Github gist recorder: NOT using MFLN.");
-        this->client->setBufferSizes(RECORDER_MAX_RESPONSE_SIZE, 512);
-      }
-      this->client->setInsecure();
+      this->useMFL = this->client->probeMaxFragmentLength(GITHUB_GIST_RECORDER_GQL_URL, 443, 512);
+      Serial.printf("Github gist recorder:%s using MFLN.\n", this->useMFL ? "" : " NOT");
     }
+    this->lastStatusCode = 0;
+    this->lastErrorMessage = String("");
   }
   // TODO: implement an update method and call it in the loop
   //  - maintain flag(s?) if the current in-memory data is saved properly; save if not
-  //  - try to save root data immediately
+  //  - try to save root data immediately on change
   //  - but only save scale data periodically (sync with catalog; schedule to different minutes)
   // TODO
   //  - we might be ok with the if from the Location header on create; but don't read the body - a smaller buffer could be sufficient?

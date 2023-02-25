@@ -4,7 +4,9 @@
 #include <ESPDateTime.h>
 #include <FS.h>
 #include <LittleFS.h>
+#include <umm_malloc/umm_heap_select.h>
 #include <vector>
+#include <WiFiClientSecureBearSSL.h>
 
 #include "config.h"
 #include "persistent_config.h"
@@ -16,8 +18,11 @@
 
 Config config;
 PersistentConfig persistentConfig;
+
+BearSSL::WiFiClientSecure *sslClient;
 BrewfatherCatalog catalog;
 GithubGistRecorder recorder;
+
 std::vector<Scale*> scales;
 WebServer *server;
 
@@ -123,12 +128,18 @@ void setupDateTime() {
   }
 }
 
+void setupSslClient() {
+  HeapSelectIram ephemeral;
+  sslClient = new BearSSL::WiFiClientSecure();
+  sslClient->setInsecure();
+}
+
 void setupCatalog() {
-  catalog.begin(&config.catalog.brewfather);
+  catalog.begin(&config.catalog.brewfather, sslClient);
 }
 
 void setupRecorder() {
-  recorder.begin();
+  recorder.begin(&config.recorder.githubGist, sslClient);
 }
 
 void setupScales() {
@@ -155,6 +166,7 @@ void setup() {
   setupWiFi();
   setupOTA();
   setupDateTime();
+  setupSslClient();
   setupCatalog();
   setupRecorder();
   setupScales();
