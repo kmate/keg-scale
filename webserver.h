@@ -192,6 +192,18 @@ class WebServer {
       wifi["ssid"] = WiFi.SSID();
       wifi["ip"] = WiFi.localIP();
 
+      JsonObject heap = doc.createNestedObject("heap");
+      {
+        HeapSelectDram ephemeral;
+        heap["freeDramHeap"] = ESP.getFreeHeap();
+        heap["dramHeapFragmentation"] = ESP.getHeapFragmentation();
+      }
+      {
+        HeapSelectIram ephemeral;
+        heap["freeIramHeap"] = ESP.getFreeHeap();
+        heap["iramHeapFragmentation"] = ESP.getHeapFragmentation();
+      }
+
       JsonObject eeprom  = doc.createNestedObject("eeprom");
       eeprom["percentUsed"] = EEPROM.percentUsed();
 
@@ -203,16 +215,6 @@ class WebServer {
       esp["cpuFreqMHz"] = ESP.getCpuFreqMHz();
       esp["sketchSize"] = ESP.getSketchSize();
       esp["freeSketchSpace"] = ESP.getFreeSketchSpace();
-      {
-        HeapSelectDram ephemeral;
-        esp["freeDramHeap"] = ESP.getFreeHeap();
-        esp["dramHeapFragmentation"] = ESP.getHeapFragmentation();
-      }
-      {
-        HeapSelectIram ephemeral;
-        esp["freeIramHeap"] = ESP.getFreeHeap();
-        esp["iramHeapFragmentation"] = ESP.getHeapFragmentation();
-      }
       serializeJson(doc, *response);
       request->send(response);
     });

@@ -12,6 +12,7 @@ import LoadingIndicator from './LoadingIndicator';
 import BuildIcon from '@mui/icons-material/Build';
 import WifiIcon from '@mui/icons-material/Wifi';
 import MemoryIcon from '@mui/icons-material/Memory';
+import SdCardIcon from '@mui/icons-material/SdCard';
 import DeveloperBoardIcon from '@mui/icons-material/DeveloperBoard';
 
 const groups = {
@@ -23,9 +24,13 @@ const groups = {
     label: "WiFi",
     icon: WifiIcon
   },
+  heap: {
+    label: "Heap",
+    icon: MemoryIcon
+  },
   eeprom: {
     label: "EEPROM",
-    icon: MemoryIcon
+    icon: SdCardIcon
   },
   esp: {
     label: "ESP",
