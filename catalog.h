@@ -11,7 +11,7 @@
 #include <umm_malloc/umm_heap_select.h>
 #include <vector>
 
-#define CATALOG_REFRESH_SECONDS   300
+#define CATALOG_REFRESH_SECONDS   86400 // once a day - could be forced if needed anyways
 #define CATALOG_MAX_RESPONSE_SIZE 4096
 
 const char *BREWFATHER_CATALOG_URL = "https://api.brewfather.app/v2/batches?status=Conditioning&include=batchNo,recipe.name,recipe.color,measuredBottlingSize,measuredFg,measuredAbv,bottlingDate";
