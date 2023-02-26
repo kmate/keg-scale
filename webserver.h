@@ -9,6 +9,8 @@
 #include <ESPDateTime.h>
 #include <ESP8266WiFi.h>
 #include <ESP_EEPROM.h>
+#include <FS.h>
+#include <LittleFS.h>
 #include <umm_malloc/umm_heap_select.h>
 
 const char compiledAt[] = __DATE__ " " __TIME__;
@@ -182,7 +184,7 @@ class WebServer {
   void addStatusHandler() {
     this->server.on("/status", HTTP_GET, [this](AsyncWebServerRequest *request) {
       AsyncResponseStream *response = request->beginResponseStream("application/json");
-      DynamicJsonDocument doc(512);
+      DynamicJsonDocument doc(768);
       JsonObject general = doc.createNestedObject("general");
       general["compiledAt"] = compiledAt;
       general["currentTime"] = DateTime.toString();
@@ -204,8 +206,16 @@ class WebServer {
         heap["iramHeapFragmentation"] = ESP.getHeapFragmentation();
       }
 
-      JsonObject eeprom  = doc.createNestedObject("eeprom");
+      JsonObject eeprom = doc.createNestedObject("eeprom");
       eeprom["percentUsed"] = EEPROM.percentUsed();
+
+      JsonObject fs = doc.createNestedObject("fs");
+      FSInfo fsInfo;
+      LittleFS.info(fsInfo);
+      fs["totalBytes"] = fsInfo.totalBytes;
+      fs["freeBytes"] = fsInfo.totalBytes - fsInfo.usedBytes;
+      fs["blockSize"] = fsInfo.blockSize;
+      fs["pageSize"] = fsInfo.pageSize;
 
       JsonObject esp = doc.createNestedObject("esp");
       esp["chipId"] = ESP.getChipId();

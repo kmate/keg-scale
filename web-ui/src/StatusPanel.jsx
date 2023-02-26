@@ -10,10 +10,11 @@ import ErrorIndicator from './ErrorIndicator';
 import LoadingIndicator from './LoadingIndicator';
 
 import BuildIcon from '@mui/icons-material/Build';
-import WifiIcon from '@mui/icons-material/Wifi';
+import DeveloperBoardIcon from '@mui/icons-material/DeveloperBoard';
 import MemoryIcon from '@mui/icons-material/Memory';
 import SdCardIcon from '@mui/icons-material/SdCard';
-import DeveloperBoardIcon from '@mui/icons-material/DeveloperBoard';
+import StorageIcon from '@mui/icons-material/Storage';
+import WifiIcon from '@mui/icons-material/Wifi';
 
 const groups = {
   general: {
@@ -27,6 +28,10 @@ const groups = {
   heap: {
     label: "Heap",
     icon: MemoryIcon
+  },
+  fs: {
+    label: "File system",
+    icon: StorageIcon
   },
   eeprom: {
     label: "EEPROM",
@@ -115,6 +120,22 @@ const stats = {
   iramHeapFragmentation: {
     label: "IRAM heap fragmentation",
     show: integerPercentage
+  },
+  totalBytes: {
+    label: "Total bytes",
+    show: formatBytes
+  },
+  freeBytes: {
+    label: "Free bytes",
+    show: formatBytes
+  },
+  blockSize: {
+    label: "Block size",
+    show: formatBytes
+  },
+  pageSize: {
+    label: "Page size",
+    show: formatBytes
   },
 }
 
