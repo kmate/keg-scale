@@ -4,7 +4,7 @@ import { FormControl, Grid, MenuItem, Select, TextField, Typography } from '@mui
 
 const measuredUnits = {
   g: {
-    multiplier: 1,
+    multiplier: 1, // g is the default mass unit
     digits: 0,
     isVolumeUnit: false
   },
@@ -13,24 +13,59 @@ const measuredUnits = {
     digits: 2,
     isVolumeUnit: false
   },
+  lb: {
+    multiplier: 1/453.59237,
+    digits: 2,
+    isVolumeUnit: false
+  },
   dl: {
-    multiplier: 10, // g/L is the default
+    multiplier: 10,
     digits: 1,
     isVolumeUnit: true
   },
   l: {
-    multiplier: 1, // g/L is the default
+    multiplier: 1, // L is the default volume unit
     digits: 2,
     isVolumeUnit: true
   },
-  // TODO add lbs, oz, uk/us galon and other units
+  "US fl oz": {
+    multiplier: 1/0.0295735296,
+    digits: 1,
+    isVolumeUnit: true
+  },
+  "UK fl oz": {
+    multiplier: 1/0.02841306,
+    digits: 1,
+    isVolumeUnit: true
+  },
+  "US gallon": {
+    multiplier: 1/3.785411784,
+    digits: 1,
+    isVolumeUnit: true
+  },
+  "UK gallon": {
+    multiplier: 1/4.54609,
+    digits: 1,
+    isVolumeUnit: true
+  }
 }
 
 const densityUnits = {
   "g/L": {
-    converter: (d) => d
+    from: (d) => d,
+    to: (d) => d,
+    digits: 0
   },
-  // TODO add Plato, Brix and other density units
+  "SG points": {
+    from: (d) => d - 1000,
+    to: (d) => d + 1000,
+    digits: 0
+  },
+  "°P": {
+    from: (d) => 259 - (259 / (d / 1000)),
+    to: (d) => 259 / (259 - d) * 1000,
+    digits: 1
+  }
 }
 
 export default function LiveMeasurement(props) {
@@ -55,13 +90,17 @@ export default function LiveMeasurement(props) {
   }
 
   const handleDensityUnitChange = (e) => {
-    setDensityUnit(e.target.value);
-    // TODO set density based on conversion
+    const newUnit = e.target.value;
+    const densityInGperL = densityUnits[densityUnit].to(density);
+    const densityInNewUnit = densityUnits[newUnit].from(densityInGperL);
+    const roundedDensity = Number.parseFloat(densityInNewUnit.toFixed(densityUnits[newUnit].digits));
+    setDensity(roundedDensity);
+    setDensityUnit(newUnit);
   };
 
   const currentMU = measuredUnits[measuredUnit];
   const currentDU = densityUnits[densityUnit];
-  const densityQuotient = currentMU.isVolumeUnit && density > 0 ? currentDU.converter(density) : 1;
+  const densityQuotient = currentMU.isVolumeUnit ? currentDU.to(density) : 1;
   const convertedValue = (props.value * currentMU.multiplier / densityQuotient).toFixed(currentMU.digits);
   const displayValue = 1 / convertedValue !== -Infinity ? convertedValue : 0;
 
