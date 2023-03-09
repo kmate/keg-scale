@@ -1,41 +1,19 @@
 import * as React from 'react';
-import { measuredUnits, densityUnits } from './units';
+import { measuredUnits } from './units';
 
-import { FormControl, Grid, MenuItem, Select, TextField, Typography } from '@mui/material';
+import { FormControl, Grid, MenuItem, Select, Typography } from '@mui/material';
+import DensityInput from './DensityInput';
 
 export default function LiveMeasurement(props) {
   const [measuredUnit, setMeasuredUnit] = React.useState("g");
-  const [density, setDensity] = React.useState(1000);
-  const [densityUnit, setDensityUnit] = React.useState("g/L");
+  const [density, setDensity] = React.useState(1000); // always in g/L
 
   const handleMeasuredUnitChange = (e) => {
     setMeasuredUnit(e.target.value);
   };
 
-  const handleDensityChange = (e) => {
-    const text = e.target.value;
-    if (text != "") {
-      const parsed = Number.parseFloat(text);
-      if (!Number.isNaN(parsed) && parsed > 0) {
-        setDensity(parsed);
-      }
-    } else {
-      setDensity(0);
-    }
-  }
-
-  const handleDensityUnitChange = (e) => {
-    const newUnit = e.target.value;
-    const densityInGperL = densityUnits[densityUnit].to(density);
-    const densityInNewUnit = densityUnits[newUnit].from(densityInGperL);
-    const roundedDensity = Number.parseFloat(densityInNewUnit.toFixed(densityUnits[newUnit].digits));
-    setDensity(roundedDensity);
-    setDensityUnit(newUnit);
-  };
-
   const currentMU = measuredUnits[measuredUnit];
-  const currentDU = densityUnits[densityUnit];
-  const densityQuotient = currentMU.isVolumeUnit ? currentDU.to(density) : 1;
+  const densityQuotient = currentMU.isVolumeUnit && density != 0 ? density : 1;
   const convertedValue = (props.value * currentMU.multiplier / densityQuotient).toFixed(currentMU.digits);
   const displayValue = 1 / convertedValue !== -Infinity ? convertedValue : 0;
 
@@ -56,23 +34,7 @@ export default function LiveMeasurement(props) {
           </Select>
         </FormControl>
       </Grid>
-      {currentMU.isVolumeUnit && /* TODO separate density input so we can reuse it for tap entry input */ (
-        <Grid item xs={3} sx={{pt: 3}}>
-          <TextField
-            sx={{input: {textAlign: 'right'}}}
-            label="Density"
-            variant="outlined"
-            value={density}
-            onChange={handleDensityChange} />
-          <FormControl sx={{ minWidth: "80px", ml: 1 }}>
-            <Select value={densityUnit} onChange={handleDensityUnitChange}>
-              {Object.keys(densityUnits).map(unit => {
-                return <MenuItem key={ "density_unit_" + unit } value={unit}>{unit}</MenuItem>;
-              })}
-            </Select>
-          </FormControl>
-        </Grid>
-      )}
+      {currentMU.isVolumeUnit && <DensityInput value={density} onValueChange={setDensity} />}
     </Grid>
   );
 }
