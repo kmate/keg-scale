@@ -23,7 +23,7 @@ const weightUnits = {
   }
 };
 
-export default function CalibrationDialog(props) {
+export default function CalibrationDialog({ index, label, weights, open, onClose }) {
   const theme = useTheme();
   const fullScreen = useMediaQuery(theme.breakpoints.down('md'));
   const [knownMass, setKnownMass] = React.useState(1000);
@@ -31,9 +31,9 @@ export default function CalibrationDialog(props) {
   const [feedback, setFeedback] = React.useState({ isOpen: false, message: '', severity: 'success' });
 
   const [tick, setTick] = React.useState(false);
-  const { isLoading, data, error } = useFetch(apiLocation("/scale/" + props.index), { depends: [tick] });
+  const { isLoading, data, error } = useFetch(apiLocation("/scale/" + index), { depends: [tick] });
 
-  useInterval(() => { setTick((prevTick) => !prevTick); }, props.open ? 250 : null, true);
+  useInterval(() => { setTick((prevTick) => !prevTick); }, open ? 250 : null, true);
 
   const handleKnownMassChange = (e) => {
     const text = e.target.value;
@@ -61,7 +61,7 @@ export default function CalibrationDialog(props) {
   };
 
   const handleTare = () => {
-    fetch(apiLocation("/tare/" + props.index), { method: "POST" }).then((response) => {
+    fetch(apiLocation("/tare/" + index), { method: "POST" }).then((response) => {
       if (response.ok) {
         setFeedback({ isOpen: true, message: 'Tare complete!', severity: 'success' });
       } else {
@@ -71,7 +71,7 @@ export default function CalibrationDialog(props) {
   };
 
   const handleCalibrate = () => {
-    fetch(apiLocation("/calibrate/" + props.index + "?knownMass=" + knownMass), { method: "POST" }).then((response) => {
+    fetch(apiLocation("/calibrate/" + index + "?knownMass=" + knownMass), { method: "POST" }).then((response) => {
       if (response.ok) {
         setFeedback({ isOpen: true, message: 'Calibration complete!', severity: 'success' });
       } else {
@@ -88,7 +88,7 @@ export default function CalibrationDialog(props) {
         setFeedback({ isOpen: true, message: 'Saving failed!', severity: 'error' });
       }
     })
-    props.onClose();
+    onClose();
   }
 
   const handleFeedbackClose = () => {
@@ -97,9 +97,9 @@ export default function CalibrationDialog(props) {
 
   return (
     <>
-      <Dialog open={props.open} onClose={props.onClose} fullScreen={fullScreen} fullWidth={true} maxWidth="md" scroll="body">
+      <Dialog open={open} onClose={onClose} fullScreen={fullScreen} fullWidth={true} maxWidth="md" scroll="body">
         <DialogTitle variant="h6" sx={{ flexGrow: 1 }}>
-          <Typography variant="overline" noWrap paragraph mb={0}>{props.label}</Typography>
+          <Typography variant="overline" noWrap paragraph mb={0}>{label}</Typography>
           <Divider />
           Calibration
         </DialogTitle>
@@ -134,7 +134,7 @@ export default function CalibrationDialog(props) {
                 </Select>
               </FormControl>
             </Box>
-            <KnownWeights weights={props.weights} forCalibration={true} onClick={handleKnownWeight} />
+            <KnownWeights weights={weights} forCalibration={true} onClick={handleKnownWeight} />
           </Stack>
         </DialogContent>
         <Divider />
@@ -142,7 +142,7 @@ export default function CalibrationDialog(props) {
           <Button onClick={handleTare}>Tare</Button>
           <Button onClick={handleCalibrate}>Calibrate</Button>
           <div style={{flex: '1 0 0'}} />
-          <Button onClick={props.onClose}>Cancel</Button>
+          <Button onClick={onClose}>Cancel</Button>
           <Button onClick={handleSave}>Save</Button>
         </DialogActions>
       </Dialog>

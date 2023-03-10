@@ -4,7 +4,7 @@ import { measuredUnits } from './units';
 import { FormControl, Grid, MenuItem, Select, Typography } from '@mui/material';
 import DensityInput from './DensityInput';
 
-export default function LiveMeasurement(props) {
+export default function LiveMeasurement({ value, padding }) {
   const [measuredUnit, setMeasuredUnit] = React.useState("g");
   const [density, setDensity] = React.useState(1000); // always in g/L
 
@@ -14,13 +14,13 @@ export default function LiveMeasurement(props) {
 
   const currentMU = measuredUnits[measuredUnit];
   const densityQuotient = currentMU.isVolumeUnit && density != 0 ? density : 1;
-  const convertedValue = (props.value * currentMU.multiplier / densityQuotient).toFixed(currentMU.digits);
+  const convertedValue = (value * currentMU.multiplier / densityQuotient).toFixed(currentMU.digits);
   const displayValue = 1 / convertedValue !== -Infinity ? convertedValue : 0;
 
   return (
     <Grid
       container
-      padding={props.padding}
+      padding={padding}
       direction="column"
       alignItems="center"
       justifyContent="center">

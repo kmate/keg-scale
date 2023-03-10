@@ -157,10 +157,10 @@ function ListItemCopyButton(props) {
   );
 }
 
-function StatusContents(props) {
+function StatusContents({ data }) {
   return (
     <List>
-      {Object.keys(props.data).map((group) => {
+      {Object.keys(data).map((group) => {
         const Icon = groups[group].icon;
         return (
           <React.Fragment key={group}>
@@ -170,7 +170,7 @@ function StatusContents(props) {
             </ListItem>
             <Divider />
             <List component="div" disablePadding>
-              {Object.keys(props.data[group]).map((stat) => {
+              {Object.keys(data[group]).map((stat) => {
                 const Icon = stats[stat].icon;
                 return (
                   <React.Fragment key={group + "." + stat}>
@@ -178,7 +178,7 @@ function StatusContents(props) {
                       <ListItemCopyButton sx={{ pl: 4 }}>
                         <ListItemText
                           primary={stats[stat].label}
-                          secondary={stats[stat].show(props.data[group][stat])}
+                          secondary={stats[stat].show(data[group][stat])}
                         />
                       </ListItemCopyButton>
                     </ListItem>
