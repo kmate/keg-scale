@@ -2,7 +2,7 @@ import * as React from 'react';
 import { densityUnits } from './units';
 import { FormControl, Grid, MenuItem, Select, TextField } from '@mui/material';
 
-export default function DensityInput({ value, onValueChange }) {
+export default function DensityInput({ value, onChange }) {
   const densityTextToValue = (text) => {
     const du = densityUnits[densityUnit];
     return Number(du.to(Number(text)).toFixed(du.digits));
@@ -22,7 +22,7 @@ export default function DensityInput({ value, onValueChange }) {
         setInputError(false);
 
         const densityInGperL = densityTextToValue(text);
-        onValueChange(densityInGperL);
+        onChange(densityInGperL);
       } else {
         setInputError(true);
       }
@@ -40,7 +40,7 @@ export default function DensityInput({ value, onValueChange }) {
     setDensityText(roundedDensity);
     setDensityUnit(newUnit);
 
-    onValueChange(densityInGperL);
+    onChange(densityInGperL);
   };
 
   return (
