@@ -14,8 +14,8 @@ export default function LiveMeasurement({ value, padding }) {
 
   const currentMU = measuredUnits[measuredUnit];
   const densityQuotient = currentMU.isVolumeUnit && density != 0 ? density : 1;
-  const convertedValue = (value * currentMU.multiplier / densityQuotient).toFixed(currentMU.digits);
-  const displayValue = 1 / convertedValue !== -Infinity ? convertedValue : 0;
+  const convertedValue = Number((value * currentMU.multiplier / densityQuotient).toFixed(currentMU.digits));
+  const displayValue = 1 / convertedValue !== -Infinity && !Number.isNaN(convertedValue) ? convertedValue : 0;
 
   return (
     <Grid
