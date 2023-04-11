@@ -171,6 +171,8 @@ void setup() {
   setupRecorder();
   setupScales();
   setupHTTP();
+
+  Serial.println("Setup finished at " + DateTime.toString());
 }
 
 void loop() {
