@@ -17,12 +17,12 @@ export const massUnits = {
 };
 
 export const volumeUnits = {
-  dl: {
+  dL: {
     multiplier: 10,
     digits: 1,
     isVolumeUnit: true,
   },
-  l: {
+  L: {
     multiplier: 1, // L is the default volume unit
     digits: 2,
     isVolumeUnit: true,

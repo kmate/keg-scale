@@ -1,5 +1,4 @@
 import * as React from 'react';
-import dayjs from 'dayjs';
 
 import SquareIcon from '@mui/icons-material/Square';
 import { InputAdornment, TextField } from '@mui/material';
@@ -56,12 +55,7 @@ function ColorInput({ value, onChange }) {
       value={value}
       onChange={onChange}
       isValid={(parsed) => parsed >= 0 && parsed <= 100}
-      InputProps={{
-        endAdornment:
-          <InputAdornment position="end">
-            <SquareIcon sx={{ backgroundColor: "white" }} htmlColor={srmToRgb(value)}></SquareIcon>
-          </InputAdornment>
-      }}/>
+      startAdornment={<SquareIcon sx={{ backgroundColor: "white" }} htmlColor={srmToRgb(value)}></SquareIcon>} />
   );
 }
 
@@ -71,7 +65,7 @@ function BottlingSizeInput({ value, onChange }) {
       label="Bottling volume"
       units={volumeUnits}
       unitMinWidth={150}
-      defaultUnit="l"
+      defaultUnit="L"
       defaultValue="19"
       value={value}
       onChange={onChange}
