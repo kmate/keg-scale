@@ -12,41 +12,21 @@ import RefreshIcon from '@mui/icons-material/Refresh';
 
 import KnownWeights from './KnownWeights';
 import CatalogInputPanel from './CatalogInputPanel';
-
-function EntryInputPanel(props) {
-  return (
-    <Stack direction="column">
-      <TextField
-        label="Name"
-        variant="outlined" /> { /* TODO the outlined variant might not be the best for this form? */ }
-      <TextField
-        sx={{input: {textAlign: 'right'}}}
-        label="ABV"
-        variant="outlined" /> { /* TODO add unit designation % V/V */ }
-      <TextField
-        sx={{input: {textAlign: 'right'}}}
-        label="Density"
-        variant="outlined" /> { /* TODO add unit - separate control from LiveMeasurement? */ }
-      <TextField
-        sx={{input: {textAlign: 'right'}}}
-        label="Bottling size"
-        variant="outlined" /> { /* TODO add unit selector */ }
-      <TextField
-        sx={{input: {textAlign: 'right'}}}
-        label="Bottling date"
-        variant="outlined" /> { /* TODO change to calendar day select */ }
-    </Stack>
-  );
-}
+import EntryInputPanel from './EntryInputPanel';
 
 const catalogRefreshTrigger = createTrigger();
 
-export default function TapSetupDialog(props) {
+const defaultEntry = {
+  abv: 5,
+  finalGravity: 1010
+}
+
+export default function TapSetupDialog({ label, weights, open, onClose }) {
   const theme = useTheme();
   const fullScreen = useMediaQuery(theme.breakpoints.down('md'));
   const [useCatalog, setUseCatalog] = React.useState(true);
   const [feedback, setFeedback] = React.useState({ isOpen: false, message: '', severity: 'success' });
-  const [entry, setEntry] = React.useState({});
+  const [entry, setEntry] = React.useState(defaultEntry);
 
   const handleUseCatalogChange = (e) => {
     setUseCatalog(e.currentTarget.checked);
@@ -67,10 +47,6 @@ export default function TapSetupDialog(props) {
     setFeedback({ ...feedback, isOpen: false });
   };
 
-  const handleUpdateEntry = (entry) => {
-    setEntry(entry);
-  }
-
   const handleKnownWeight = (mass) => {
     entry.tareOffset = mass;
     setEntry(entry);
@@ -84,9 +60,9 @@ export default function TapSetupDialog(props) {
   // TODO disable start until entry is ready
   return (
     <>
-      <Dialog open={props.open} onClose={props.onClose} fullScreen={fullScreen} fullWidth={true} maxWidth="md" scroll="body">
+      <Dialog open={open} onClose={onClose} fullScreen={fullScreen} fullWidth={true} maxWidth="md" scroll="body">
         <DialogTitle variant="h6" sx={{ flexGrow: 1 }}>
-            <Typography variant="overline" noWrap paragraph mb={0}>{props.label}</Typography>
+            <Typography variant="overline" noWrap paragraph mb={0}>{label}</Typography>
             <Divider />
             Tap setup
           </DialogTitle>
@@ -102,12 +78,14 @@ export default function TapSetupDialog(props) {
                 </Tooltip>}
             </Stack>
             <Divider />
-            {useCatalog && <CatalogInputPanel updateEntry={handleUpdateEntry} catalogRefreshTrigger={catalogRefreshTrigger} />}
-            <EntryInputPanel entry={entry} updateEntry={handleUpdateEntry} />
-            <KnownWeights isToggle={true} weights={props.weights} forTare={true} onClick={handleKnownWeight} />
+            {useCatalog && <CatalogInputPanel onEntryChange={setEntry} catalogRefreshTrigger={catalogRefreshTrigger} />}
+            { /* TODO if catalog entry is used, add a read-only input that shows the catalog entry id! */ }
+            <EntryInputPanel entry={entry} onEntryChange={setEntry} />
+            <Divider sx={{my: 2}} />
+            <KnownWeights isToggle={true} weights={weights} forTare={true} onClick={handleKnownWeight} />
           </DialogContent>
           <DialogActions>
-            <Button onClick={props.onClose}>Cancel</Button>
+            <Button onClick={onClose}>Cancel</Button>
             <Button onClick={handleStart}>Start</Button>
           </DialogActions>
       </Dialog>

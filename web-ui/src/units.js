@@ -71,3 +71,21 @@ export const densityUnits = {
     digits: 1,
   },
 };
+
+export const colorUnits = {
+  SRM: {
+    from: (srm) => srm,
+    to: (srm) => srm,
+    digits: 1,
+  },
+  EBC: {
+    from: (srm) => srm * 1.97,
+    to: (ebc) => ebc * 0.508,
+    digits: 1,
+  },
+  "°L": {
+    from: (srm) => (srm + 0.76) / 1.3546,
+    to: (l) => 1.3546 * l - 0.76,
+    digits: 1,
+  },
+};
