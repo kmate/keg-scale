@@ -34,7 +34,10 @@ export default function LiveMeasurement({ value, padding }) {
           </Select>
         </FormControl>
       </Grid>
-      {currentMU.isVolumeUnit && <DensityInput value={density} onChange={setDensity} />}
+      {currentMU.isVolumeUnit &&
+        <Grid item xs={3} sx={{pt: 3}}>
+          <DensityInput value={density} onChange={setDensity} />
+        </Grid>}
     </Grid>
   );
 }
