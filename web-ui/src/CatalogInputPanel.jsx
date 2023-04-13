@@ -21,7 +21,7 @@ function BeerIcon(props) {
   );
 }
 
-export default function CatalogInputPanel({ catalogRefreshTrigger, updateEntry }) {
+export default function CatalogInputPanel({ catalogRefreshTrigger, onEntryChange }) {
   const refresh = useTrigger(catalogRefreshTrigger);
   const { isLoading, data, error } = useFetch(apiLocation("/catalog"), { depends: [refresh] });
   const [ selectedEntry, setSelectedEntry ] = React.useState(null);
@@ -40,7 +40,7 @@ export default function CatalogInputPanel({ catalogRefreshTrigger, updateEntry }
       const original = data.entries[selectedIndex];
       const cloned = JSON.parse(JSON.stringify(original));
       setSelectedEntry(cloned);
-      updateEntry(cloned);
+      onEntryChange(cloned);
     }
   }
 
