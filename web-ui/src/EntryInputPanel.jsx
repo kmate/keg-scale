@@ -11,7 +11,7 @@ import srmToRgb from './srmToRgb';
 import { colorUnits, volumeUnits } from './units';
 
 function AbvInput({ value, onChange }) {
-  const [abvText, setAbvText] = React.useState(value ? value.toFixed(1) : "5.0");
+  const [abvText, setAbvText] = React.useState(value ? Number(value).toFixed(1) : "5.0");
   const [inputError, setInputError] = React.useState(false);
 
   const handleAbvChange = (e) => {
@@ -20,7 +20,7 @@ function AbvInput({ value, onChange }) {
 
     if (text != "") {
       const parsed = Number(text);
-      if (!Number.isNaN(parsed) && parsed > 0 && parsed < 50) {
+      if (!Number.isNaN(parsed) && parsed >= 0 && parsed < 50) {
         setInputError(false);
         onChange(parsed);
       } else {
@@ -33,7 +33,7 @@ function AbvInput({ value, onChange }) {
 
   return (
     <TextField
-      sx={{input: {textAlign: 'right'}}}
+      sx={{input: {textAlign: "right"}}}
       label="ABV"
       variant="outlined"
       error={inputError}
@@ -75,11 +75,16 @@ function BottlingSizeInput({ value, onChange }) {
       defaultValue="19"
       value={value}
       onChange={onChange}
-      isValid={(parsed) => parsed >= 0 && parsed <= 1000} />
+      isValid={(parsed) => parsed >= 0 && parsed <= 100} />
   );
 }
 
 export default function EntryInputPanel({ entry, onEntryChange }) {
+
+  const handleNameChange = (e) => {
+    entry.name = e.target.value;
+    onEntryChange(entry);
+  };
 
   const handleAbvChange = (abv) => {
     entry.abv = abv;
@@ -101,12 +106,21 @@ export default function EntryInputPanel({ entry, onEntryChange }) {
     onEntryChange(entry);
   };
 
+  const handleBottlingDateChange = (e) => {
+    console.log("bottling date change!", e);
+  };
+
   return (
     <Stack direction="column" paddingTop={2} spacing={2}>
-      <TextField
-        label="Name"
-        variant="outlined"
-        value={entry.name} />
+      <Stack direction="row" spacing={2}>
+        {entry.id && <TextField label="Catalog id" value={entry.id} disabled={true} sx={{ minWidth: 200 }} />}
+        <TextField
+          label="Name"
+          variant="outlined"
+          fullWidth={true}
+          value={entry.name}
+          onChange={handleNameChange} />
+      </Stack>
       <Stack direction="row" spacing={2}>
         <AbvInput
           value={entry.abv}
@@ -125,7 +139,8 @@ export default function EntryInputPanel({ entry, onEntryChange }) {
         <DatePicker
           label="Bottling date"
           variant="outlined"
-          value={dayjs(entry.bottlingDate)} />
+          value={entry.bottlingDate}
+          onChange={handleBottlingDateChange} />
       </Stack>
     </Stack>
   );

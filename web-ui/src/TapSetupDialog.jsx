@@ -13,12 +13,18 @@ import RefreshIcon from '@mui/icons-material/Refresh';
 import KnownWeights from './KnownWeights';
 import CatalogInputPanel from './CatalogInputPanel';
 import EntryInputPanel from './EntryInputPanel';
+import dayjs from 'dayjs';
 
 const catalogRefreshTrigger = createTrigger();
 
 const defaultEntry = {
+  id: null,
+  name: "",
   abv: 5,
-  finalGravity: 1010
+  finalGravity: 1010,
+  srm: 9,
+  bottlingSize: 19,
+  bottlingDate: dayjs()
 }
 
 export default function TapSetupDialog({ label, weights, open, onClose }) {
@@ -29,7 +35,11 @@ export default function TapSetupDialog({ label, weights, open, onClose }) {
   const [entry, setEntry] = React.useState(defaultEntry);
 
   const handleUseCatalogChange = (e) => {
-    setUseCatalog(e.currentTarget.checked);
+    const newUseCatalog = e.currentTarget.checked;
+    setUseCatalog(newUseCatalog);
+    if (!newUseCatalog) {
+      entry.id = null;
+    }
   };
 
   const handleCatalogRefresh = () => {
@@ -79,7 +89,6 @@ export default function TapSetupDialog({ label, weights, open, onClose }) {
             </Stack>
             <Divider />
             {useCatalog && <CatalogInputPanel onEntryChange={setEntry} catalogRefreshTrigger={catalogRefreshTrigger} />}
-            { /* TODO if catalog entry is used, add a read-only input that shows the catalog entry id! */ }
             <EntryInputPanel entry={entry} onEntryChange={setEntry} />
             <Divider sx={{my: 2}} />
             <KnownWeights isToggle={true} weights={weights} forTare={true} onClick={handleKnownWeight} />

@@ -36,7 +36,7 @@ export default function InputWithUnit({ label, units, unitMinWidth, defaultUnit,
     const newUnit = e.target.value;
     const valueInDefaultUnit = textToValue(text);
     const u = units[newUnit];
-    const valueInNewUnit = u.from ? u.from(valueInDefaultUnit) : (valueInDefaultUnit * u.multiplier);
+    const valueInNewUnit = Number(u.from ? u.from(valueInDefaultUnit) : (valueInDefaultUnit * u.multiplier));
     const roundedValue = valueInNewUnit.toFixed(u.digits);
 
     setText(roundedValue);

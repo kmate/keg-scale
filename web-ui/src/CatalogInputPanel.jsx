@@ -10,6 +10,7 @@ import { createTheme, useTheme } from '@mui/material/styles';
 import { Box, Divider, IconButton, List, ListItemButton, ListItemIcon, ListItemText, SvgIcon, ThemeProvider, Tooltip, Typography } from "@mui/material";
 import { Stack } from '@mui/system';
 import LaunchIcon from '@mui/icons-material/Launch';
+import dayjs from 'dayjs';
 
 function BeerIcon(props) {
   return (
@@ -39,6 +40,7 @@ export default function CatalogInputPanel({ catalogRefreshTrigger, onEntryChange
     if (selectedIndex >= 0 && selectedIndex < data.entries.length) {
       const original = data.entries[selectedIndex];
       const cloned = JSON.parse(JSON.stringify(original));
+      cloned.bottlingDate = dayjs(cloned.bottlingDate);
       setSelectedEntry(cloned);
       onEntryChange(cloned);
     }
