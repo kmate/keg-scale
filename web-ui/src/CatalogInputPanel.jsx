@@ -39,8 +39,11 @@ export default function CatalogInputPanel({ catalogRefreshTrigger, onEntryChange
     const selectedIndex = e.currentTarget.dataset.index;
     if (selectedIndex >= 0 && selectedIndex < data.entries.length) {
       const original = data.entries[selectedIndex];
-      const cloned = JSON.parse(JSON.stringify(original));
-      cloned.bottlingDate = dayjs(cloned.bottlingDate);
+
+      const cloned = selectedEntry && selectedEntry.id == original.id
+        ? { ...selectedEntry, id: null }
+        : { ...original, bottlingDate: dayjs(original.bottlingDate) };
+
       setSelectedEntry(cloned);
       onEntryChange(cloned);
     }
