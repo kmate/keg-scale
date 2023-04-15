@@ -1,48 +1,75 @@
 import * as React from 'react';
 
-import { InputAdornment, MenuItem, Select, Stack, TextField } from '@mui/material';
+import { InputAdornment, MenuItem, Select, TextField } from '@mui/material';
 
 export default function InputWithUnit({ label, units, defaultUnit, value, defaultValue, onChange, isValid, startAdornment }) {
-  const textToValue = (text) => {
+  const [prevValue, setPrevValue] = React.useState();
+  const [unit, setUnit] = React.useState(defaultUnit);
+  const [text, setText] = React.useState(defaultValue);
+  const [inputError, setInputError] = React.useState(false);
+
+  const toDefaultUnit = (value) => {
     const u = units[unit];
-    const parsed = Number(text);
-    return Number((u.to ? u.to(parsed) : (parsed / u.multiplier)).toFixed(u.digits));
+    return Number((u.to ? u.to(value) : (value / u.multiplier)));
   };
 
-  const [unit, setUnit] = React.useState(defaultUnit);
-  const [text, setText] = React.useState(textToValue((value ? value : defaultValue).toString()));
-  const [inputError, setInputError] = React.useState(false);
+  const valueToText = (valueInDefaultUnit, unit) => {
+    const u = units[unit];
+    const valueInNewUnit = u.from ? u.from(valueInDefaultUnit) : (valueInDefaultUnit * u.multiplier);
+    return valueInNewUnit.toFixed(u.digits);
+  };
+
+  const textToValue = (text) => {
+    if (!text) {
+      return null;
+    }
+
+    const parsed = Number(text);
+    if (Number.isNaN(parsed)) {
+      return null;
+    }
+
+    const value = toDefaultUnit(parsed);
+    if(!isValid(value)) {
+      return null;
+    }
+
+    return parsed;
+  };
+
+  const updateText = (text) => {
+    setText(text);
+
+    const parsed = textToValue(text);
+    setInputError(!parsed);
+  }
+
+  if (prevValue != value) {
+    updateText(valueToText(value, unit));
+    setPrevValue(value);
+  }
 
   const handleChange = (e) => {
     const text = e.target.value;
-    setText(text);
+    updateText(text);
+  }
 
-    if (text != "") {
-      const parsed = Number(text);
-      if (!Number.isNaN(parsed) && isValid(parsed)) {
-        setInputError(false);
-
-        const valueInDefaultUnit = textToValue(text);
-        onChange(valueInDefaultUnit);
-      } else {
-        setInputError(true);
-      }
-    } else {
-      setInputError(true);
+  const handleBlur = (e) => {
+    const text = e.target.value;
+    const parsed = textToValue(text);
+    if (!!parsed) {
+      onChange(toDefaultUnit(parsed));
     }
   };
 
   const handleUnitChange = (e) => {
     const newUnit = e.target.value;
-    const valueInDefaultUnit = textToValue(text);
-    const u = units[newUnit];
-    const valueInNewUnit = u.from ? u.from(valueInDefaultUnit) : (valueInDefaultUnit * u.multiplier);
-    const roundedValue = valueInNewUnit.toFixed(u.digits);
+    const value = textToValue(text);
+    const valueInDefaultUnit = toDefaultUnit(value);
+    const roundedValue = valueToText(valueInDefaultUnit, newUnit);
 
     setText(roundedValue);
     setUnit(newUnit);
-
-    onChange(valueInDefaultUnit);
   };
 
   return (
@@ -53,6 +80,7 @@ export default function InputWithUnit({ label, units, defaultUnit, value, defaul
       error={inputError}
       value={text}
       onChange={handleChange}
+      onBlur={handleBlur}
       InputProps={{
         startAdornment: <InputAdornment position="start">{startAdornment}</InputAdornment>,
         endAdornment:
