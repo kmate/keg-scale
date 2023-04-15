@@ -1,10 +1,11 @@
 import * as React from 'react';
 
 import { InputAdornment, MenuItem, Select, TextField } from '@mui/material';
+import useLocalStorage from './useLocalStorage';
 
 export default function InputWithUnit({ label, units, defaultUnit, value, defaultValue, onChange, isValid, startAdornment }) {
   const [prevValue, setPrevValue] = React.useState();
-  const [unit, setUnit] = React.useState(defaultUnit);
+  const [unit, setUnit] = useLocalStorage("inputWithUnit_" + label.replace(/\s/, "_").toLowerCase(), defaultUnit);
   const [text, setText] = React.useState(defaultValue);
   const [inputError, setInputError] = React.useState(false);
 
@@ -41,7 +42,7 @@ export default function InputWithUnit({ label, units, defaultUnit, value, defaul
     setText(text);
 
     const parsed = textToValue(text);
-    setInputError(!parsed);
+    setInputError(parsed == null);
   }
 
   if (prevValue != value) {

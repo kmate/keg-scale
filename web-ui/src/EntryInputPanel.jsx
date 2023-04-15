@@ -32,7 +32,7 @@ function AbvInput({ value, onChange }) {
     setAbvText(text);
 
     const parsed = textToValue(text);
-    setInputError(!parsed);
+    setInputError(parsed == null);
   }
 
   if (prevValue != value) {
