@@ -79,7 +79,7 @@ export default function CatalogInputPanel({ catalogRefreshTrigger, onEntryChange
               onClick={handleEntrySelection}
               key={"catalog_entry_" + index}
               data-index={index}
-              divider={true}>
+              divider>
               <ListItemIcon>
                 <BeerIcon htmlColor={srmToRgb(entry.srm)} />
               </ListItemIcon>

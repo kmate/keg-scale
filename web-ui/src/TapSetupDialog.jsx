@@ -70,7 +70,7 @@ export default function TapSetupDialog({ label, weights, open, onClose }) {
   // TODO disable start until entry is ready
   return (
     <>
-      <Dialog open={open} onClose={onClose} fullScreen={fullScreen} fullWidth={true} maxWidth="md" scroll="body">
+      <Dialog open={open} onClose={onClose} fullScreen={fullScreen} fullWidth maxWidth="md" scroll="body">
         <DialogTitle variant="h6" sx={{ flexGrow: 1 }}>
             <Typography variant="overline" noWrap paragraph mb={0}>{label}</Typography>
             <Divider />
@@ -91,7 +91,7 @@ export default function TapSetupDialog({ label, weights, open, onClose }) {
             {useCatalog && <CatalogInputPanel onEntryChange={setEntry} catalogRefreshTrigger={catalogRefreshTrigger} />}
             <EntryInputPanel entry={entry} onEntryChange={setEntry} />
             <Divider sx={{my: 2}} />
-            <KnownWeights isToggle={true} weights={weights} forTare={true} onClick={handleKnownWeight} />
+            <KnownWeights forTare isToggle weights={weights} onClick={handleKnownWeight} />
           </DialogContent>
           <DialogActions>
             <Button onClick={onClose}>Cancel</Button>

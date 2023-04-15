@@ -97,7 +97,7 @@ export default function CalibrationDialog({ index, label, weights, open, onClose
 
   return (
     <>
-      <Dialog open={open} onClose={onClose} fullScreen={fullScreen} fullWidth={true} maxWidth="md" scroll="body">
+      <Dialog open={open} onClose={onClose} fullScreen={fullScreen} fullWidth maxWidth="md" scroll="body">
         <DialogTitle variant="h6" sx={{ flexGrow: 1 }}>
           <Typography variant="overline" noWrap paragraph mb={0}>{label}</Typography>
           <Divider />
@@ -134,7 +134,7 @@ export default function CalibrationDialog({ index, label, weights, open, onClose
                 </Select>
               </FormControl>
             </Box>
-            <KnownWeights weights={weights} forCalibration={true} onClick={handleKnownWeight} />
+            <KnownWeights forCalibration weights={weights} onClick={handleKnownWeight} />
           </Stack>
         </DialogContent>
         <Divider />

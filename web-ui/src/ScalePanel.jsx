@@ -125,7 +125,7 @@ function LiveMeasurementView({ index, data, weights, onCalibrationClick }) {
       <Divider />
       <LiveMeasurement padding={3} value={data.state.data - tareOffset} />
       <Divider />
-      <KnownWeights weights={weights} forTare={true} onClick={handleKnownWeight}>
+      <KnownWeights forTare weights={weights} onClick={handleKnownWeight}>
         <Button onClick={handleReset}>Reset</Button>
         <Button onClick={handleTare}>Tare</Button>
       </KnownWeights>
