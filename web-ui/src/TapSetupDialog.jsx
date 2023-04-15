@@ -6,11 +6,10 @@ import apiLocation from './apiLocation';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import { useTheme } from '@mui/material/styles';
 
-import { Alert, Button, Dialog, DialogActions, DialogContent, DialogTitle, Divider, FormControlLabel, IconButton, Snackbar, Switch, TextField, Tooltip, Typography } from "@mui/material";
+import { Alert, Button, Dialog, DialogActions, DialogContent, DialogTitle, Divider, FormControlLabel, IconButton, Snackbar, Switch, Tooltip, Typography } from "@mui/material";
 import { Stack } from '@mui/system';
 import RefreshIcon from '@mui/icons-material/Refresh';
 
-import KnownWeights from './KnownWeights';
 import CatalogInputPanel from './CatalogInputPanel';
 import EntryInputPanel from './EntryInputPanel';
 import dayjs from 'dayjs';
@@ -57,11 +56,6 @@ export default function TapSetupDialog({ label, weights, open, onClose }) {
     setFeedback({ ...feedback, isOpen: false });
   };
 
-  const handleKnownWeight = (mass) => {
-    entry.tareOffset = mass;
-    setEntry(entry);
-  }
-
   const handleStart = () => {
     // TODO start recording
     console.log(entry);
@@ -89,10 +83,9 @@ export default function TapSetupDialog({ label, weights, open, onClose }) {
             </Stack>
             <Divider />
             {useCatalog && <CatalogInputPanel onEntryChange={setEntry} catalogRefreshTrigger={catalogRefreshTrigger} />}
-            <EntryInputPanel entry={entry} onEntryChange={setEntry} />
-            <Divider sx={{my: 2}} />
-            <KnownWeights forTare isToggle weights={weights} onClick={handleKnownWeight} />
+            <EntryInputPanel weights={weights} entry={entry} onEntryChange={setEntry} />
           </DialogContent>
+          <Divider />
           <DialogActions>
             <Button onClick={onClose}>Cancel</Button>
             <Button onClick={handleStart}>Start</Button>

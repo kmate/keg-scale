@@ -2,13 +2,66 @@ import * as React from 'react';
 
 import LinkIcon from '@mui/icons-material/Link';
 import SquareIcon from '@mui/icons-material/Square';
-import { IconButton, InputAdornment, TextField, Tooltip } from '@mui/material';
+import { FormControlLabel, IconButton, InputAdornment, Switch, TextField, Tooltip, Typography } from '@mui/material';
 import { Stack } from '@mui/system';
 import { DatePicker } from '@mui/x-date-pickers';
 import DensityInput from './DensityInput';
 import InputWithUnit from './InputWithUnit';
+import KnownWeights from './KnownWeights';
 import srmToRgb from './srmToRgb';
 import { colorUnits, volumeUnits } from './units';
+
+function BatchNameInput({ id, value, onChange }) {
+  const [prevValue, setPrevValue] = React.useState();
+  const [text, setText] = React.useState("");
+  const [inputError, setInputError] = React.useState(false);
+
+  function isValid(text) {
+    return text != null && text.replace(/\s/g, "").length > 0;
+  };
+
+  const updateText = (text) => {
+    setText(text);
+    setInputError(!isValid(text));
+  }
+
+  if (prevValue != value) {
+    updateText(value);
+    setPrevValue(value);
+  }
+
+  const handleChange = (e) => {
+    const text = e.target.value;
+    updateText(text);
+  }
+
+  const handleBlur = (e) => {
+    const text = e.target.value;
+    if (isValid(text)) {
+      onChange(text);
+    }
+  };
+
+  return (
+    <TextField
+    label="Name"
+    variant="outlined"
+    error={inputError}
+    value={text}
+    onChange={handleChange}
+    onBlur={handleBlur}
+    InputProps={ id && {
+      endAdornment:
+        <InputAdornment position="end">
+          <Tooltip title={"Catalog id: " + id} placement="left">
+            <IconButton disableRipple>
+              <LinkIcon fontSize="small" />
+            </IconButton>
+        </Tooltip>
+        </InputAdornment>
+    }} />
+  );
+}
 
 function AbvInput({ value, onChange }) {
   const [prevValue, setPrevValue] = React.useState();
@@ -48,7 +101,7 @@ function AbvInput({ value, onChange }) {
   const handleBlur = (e) => {
     const text = e.target.value;
     const parsed = textToValue(text);
-    if (!!parsed) {
+    if (parsed != null) {
       onChange(parsed);
     }
   };
@@ -73,7 +126,6 @@ function ColorInput({ value, onChange }) {
     <InputWithUnit
       label="Color"
       units={colorUnits}
-      unitMinWidth={80}
       defaultUnit="SRM"
       defaultValue="9"
       value={value}
@@ -88,7 +140,6 @@ function BottlingSizeInput({ value, onChange }) {
     <InputWithUnit
       label="Bottling volume"
       units={volumeUnits}
-      unitMinWidth={150}
       defaultUnit="L"
       defaultValue="19"
       value={value}
@@ -97,10 +148,12 @@ function BottlingSizeInput({ value, onChange }) {
   );
 }
 
-export default function EntryInputPanel({ entry, onEntryChange }) {
+export default function EntryInputPanel({ weights, entry, onEntryChange }) {
 
-  const handleNameChange = (e) => {
-    onEntryChange({ ...entry, name: e.target.value });
+  const [useBottlingVolume, setUseBottlingVolume] = React.useState(false);
+
+  const handleNameChange = (name) => {
+    onEntryChange({ ...entry, name: name });
   };
 
   const handleAbvChange = (abv) => {
@@ -123,24 +176,25 @@ export default function EntryInputPanel({ entry, onEntryChange }) {
     onEntryChange({ ...entry, bottlingDate: d });
   };
 
+  const handleKnownWeight = (mass) => {
+    if (useBottlingVolume) {
+      setEntry({ ...entry, tareOffset: mass });
+    }
+  }
+
+  const handleUseBottlingVolumeChange = (e) => {
+    const newUseBottlingVolume = e.currentTarget.checked;
+    setUseBottlingVolume(newUseBottlingVolume);
+    // TODO set some prop on entry
+  };
+
   return (
     <Stack direction="column" paddingTop={2} spacing={2}>
-      <TextField
-        label="Name"
-        variant="outlined"
-        fullWidth
+      <BatchNameInput
+        id={entry.id}
         value={entry.name}
         onChange={handleNameChange}
-        InputProps={ entry.id && {
-          endAdornment:
-            <InputAdornment position="end">
-              <Tooltip title={"Catalog id: " + entry.id} placement="left">
-                <IconButton disableRipple>
-                  <LinkIcon fontSize="small" />
-                </IconButton>
-             </Tooltip>
-            </InputAdornment>
-        }} />
+        fullWidth />
       <Stack direction="row" spacing={2}>
         <AbvInput
           value={entry.abv}
@@ -153,15 +207,23 @@ export default function EntryInputPanel({ entry, onEntryChange }) {
           onChange={handleColorChange} />
       </Stack>
       <Stack direction="row" spacing={2}>
-        <BottlingSizeInput
-          value={entry.bottlingSize}
-          onChange={handleBottlingSizeChange} />
         <DatePicker
           label="Bottling date"
           variant="outlined"
           value={entry.bottlingDate}
           onChange={handleBottlingDateChange} />
+        <BottlingSizeInput
+          value={entry.bottlingSize}
+          onChange={handleBottlingSizeChange} />
+        <FormControlLabel control={
+          <Switch checked={useBottlingVolume} onChange={handleUseBottlingVolumeChange} />
+        } label="Use for measurement" />
       </Stack>
+      {!useBottlingVolume &&
+        <Stack direction="row" spacing={2} alignItems="center">
+          <Typography>Tare offset:</Typography>
+          <KnownWeights forTare isToggle selectFirst weights={weights} onClick={handleKnownWeight} />
+        </Stack>}
     </Stack>
   );
 }
