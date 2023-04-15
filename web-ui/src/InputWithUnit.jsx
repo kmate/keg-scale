@@ -58,7 +58,7 @@ export default function InputWithUnit({ label, units, defaultUnit, value, defaul
   const handleBlur = (e) => {
     const text = e.target.value;
     const parsed = textToValue(text);
-    if (!!parsed) {
+    if (parsed != null) {
       onChange(toDefaultUnit(parsed));
     }
   };
