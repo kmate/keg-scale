@@ -1,7 +1,8 @@
 import * as React from 'react';
 
+import LinkIcon from '@mui/icons-material/Link';
 import SquareIcon from '@mui/icons-material/Square';
-import { InputAdornment, TextField } from '@mui/material';
+import { IconButton, InputAdornment, TextField, Tooltip } from '@mui/material';
 import { Stack } from '@mui/system';
 import { DatePicker } from '@mui/x-date-pickers';
 import DensityInput from './DensityInput';
@@ -10,25 +11,47 @@ import srmToRgb from './srmToRgb';
 import { colorUnits, volumeUnits } from './units';
 
 function AbvInput({ value, onChange }) {
-  const [abvText, setAbvText] = React.useState(value ? Number(value).toFixed(1) : "5.0");
+  const [prevValue, setPrevValue] = React.useState();
+  const [abvText, setAbvText] = React.useState("5.0");
   const [inputError, setInputError] = React.useState(false);
 
-  const handleAbvChange = (e) => {
-    const text = e.target.value;
+  const textToValue = (text) => {
+    if (!text) {
+      return null;
+    }
+
+    const parsed = Number(text);
+    if (!Number.isNaN(parsed) && parsed >= 0 && parsed < 50) {
+      return parsed;
+    }
+
+    return null;
+  };
+
+  const updateText = (text) => {
     setAbvText(text);
 
-    if (text != "") {
-      const parsed = Number(text);
-      if (!Number.isNaN(parsed) && parsed >= 0 && parsed < 50) {
-        setInputError(false);
-        onChange(parsed);
-      } else {
-        setInputError(true);
-      }
-    } else {
-      setInputError(true);
-    }
+    const parsed = textToValue(text);
+    setInputError(!parsed);
   }
+
+  if (prevValue != value) {
+    updateText(Number(value).toFixed(1));
+    setPrevValue(value);
+  }
+
+  const handleChange = (e) => {
+    const text = e.target.value;
+    updateText(text);
+  }
+
+  const handleBlur = (e) => {
+    const text = e.target.value;
+    const parsed = textToValue(text);
+    if (!!parsed) {
+      onChange(parsed);
+    }
+  };
 
   return (
     <TextField
@@ -37,7 +60,8 @@ function AbvInput({ value, onChange }) {
       variant="outlined"
       error={inputError}
       value={abvText}
-      onChange={handleAbvChange}
+      onChange={handleChange}
+      onBlur={handleBlur}
       InputProps={{
         endAdornment: <InputAdornment position="end">% V/V</InputAdornment>
       }} />
@@ -76,45 +100,47 @@ function BottlingSizeInput({ value, onChange }) {
 export default function EntryInputPanel({ entry, onEntryChange }) {
 
   const handleNameChange = (e) => {
-    entry.name = e.target.value;
-    onEntryChange(entry);
+    onEntryChange({ ...entry, name: e.target.value });
   };
 
   const handleAbvChange = (abv) => {
-    entry.abv = abv;
-    onEntryChange(entry);
+    onEntryChange({ ...entry, abv: abv });
   };
 
   const handleFinalGravityChange = (fg) => {
-    entry.finalGravity = fg;
-    onEntryChange(entry);
+    onEntryChange({ ...entry, finalGravity: fg });
   };
 
   const handleColorChange = (srm) => {
-    entry.srm = srm;
-    onEntryChange(entry);
+    onEntryChange({ ...entry, srm: srm });
   };
 
   const handleBottlingSizeChange = (l) => {
-    entry.bottlingSize = l;
-    onEntryChange(entry);
+    onEntryChange({ ...entry, bottlingSize: l });
   };
 
-  const handleBottlingDateChange = (e) => {
-    console.log("bottling date change!", e);
+  const handleBottlingDateChange = (d) => {
+    onEntryChange({ ...entry, bottlingDate: d });
   };
 
   return (
     <Stack direction="column" paddingTop={2} spacing={2}>
-      <Stack direction="row" spacing={2}>
-        {entry.id && <TextField label="Catalog id" value={entry.id} disabled={true} sx={{ minWidth: 200 }} />}
-        <TextField
-          label="Name"
-          variant="outlined"
-          fullWidth={true}
-          value={entry.name}
-          onChange={handleNameChange} />
-      </Stack>
+      <TextField
+        label="Name"
+        variant="outlined"
+        fullWidth
+        value={entry.name}
+        onChange={handleNameChange}
+        InputProps={ entry.id && {
+          endAdornment:
+            <InputAdornment position="end">
+              <Tooltip title={"Catalog id: " + entry.id} placement="left">
+                <IconButton disableRipple>
+                  <LinkIcon fontSize="small" />
+                </IconButton>
+             </Tooltip>
+            </InputAdornment>
+        }} />
       <Stack direction="row" spacing={2}>
         <AbvInput
           value={entry.abv}
