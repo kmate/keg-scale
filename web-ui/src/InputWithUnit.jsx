@@ -5,7 +5,7 @@ import useLocalStorage from './useLocalStorage';
 
 export default function InputWithUnit({ label, units, defaultUnit, value, defaultValue, onChange, isValid, startAdornment }) {
   const [prevValue, setPrevValue] = React.useState();
-  const [unit, setUnit] = useLocalStorage("inputWithUnit_" + label.replace(/\s/, "_").toLowerCase(), defaultUnit);
+  const [unit, setUnit] = useLocalStorage("inputWithUnit_" + label.replace(/\s/g, "_").toLowerCase(), defaultUnit);
   const [text, setText] = React.useState(defaultValue);
   const [inputError, setInputError] = React.useState(false);
 
