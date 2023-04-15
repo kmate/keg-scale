@@ -11,7 +11,6 @@ export default function KnownWeights({ children, isToggle, selectFirst, onClick,
 
   useEffect(() => {
     if (selectFirst) {
-      console.log("clickfirst");
       onClick(showWeights[0].mass);
     }
   }, [selectFirst]);
