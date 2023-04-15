@@ -7,7 +7,6 @@ export default function DensityInput({ value, onChange }) {
     <InputWithUnit
       label="Density"
       units={densityUnits}
-      unitMinWidth={120}
       defaultUnit="g/L"
       defaultValue="1000"
       value={value}
