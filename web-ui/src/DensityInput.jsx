@@ -2,7 +2,7 @@ import * as React from 'react';
 import { densityUnits } from './units';
 import InputWithUnit from './InputWithUnit';
 
-export default function DensityInput({ value, onChange }) {
+export default function DensityInput({ value, onChange, ...props }) {
   return (
     <InputWithUnit
       label="Density"
@@ -11,6 +11,7 @@ export default function DensityInput({ value, onChange }) {
       defaultValue="1000"
       value={value}
       onChange={onChange}
-      isValid={(parsed) => parsed >= 980 && parsed <= 1300} />
+      isValid={(parsed) => parsed >= 980 && parsed <= 1300}
+      {...props} />
   );
 }

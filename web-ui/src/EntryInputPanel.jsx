@@ -11,7 +11,7 @@ import KnownWeights from './KnownWeights';
 import srmToRgb from './srmToRgb';
 import { colorUnits, volumeUnits } from './units';
 
-function BatchNameInput({ id, value, onChange }) {
+function BatchNameInput({ id, value, onChange, ...props }) {
   const [prevValue, setPrevValue] = React.useState();
   const [text, setText] = React.useState("");
   const [inputError, setInputError] = React.useState(false);
@@ -59,11 +59,12 @@ function BatchNameInput({ id, value, onChange }) {
             </IconButton>
         </Tooltip>
         </InputAdornment>
-    }} />
+    }}
+    {...props} />
   );
 }
 
-function AbvInput({ value, onChange }) {
+function AbvInput({ value, onChange, ...props }) {
   const [prevValue, setPrevValue] = React.useState();
   const [abvText, setAbvText] = React.useState("5.0");
   const [inputError, setInputError] = React.useState(false);
@@ -117,11 +118,12 @@ function AbvInput({ value, onChange }) {
       onBlur={handleBlur}
       InputProps={{
         endAdornment: <InputAdornment position="end">% V/V</InputAdornment>
-      }} />
+      }}
+      {...props} />
   );
 }
 
-function ColorInput({ value, onChange }) {
+function ColorInput({ value, onChange, ...props }) {
   return (
     <InputWithUnit
       label="Color"
@@ -131,11 +133,12 @@ function ColorInput({ value, onChange }) {
       value={value}
       onChange={onChange}
       isValid={(parsed) => parsed >= 0 && parsed <= 100}
-      startAdornment={<SquareIcon sx={{ backgroundColor: "white" }} htmlColor={srmToRgb(value)}></SquareIcon>} />
+      startAdornment={<SquareIcon sx={{ backgroundColor: "white" }} htmlColor={srmToRgb(value)}></SquareIcon>}
+      {...props} />
   );
 }
 
-function BottlingSizeInput({ value, onChange }) {
+function BottlingSizeInput({ value, onChange, ...props }) {
   return (
     <InputWithUnit
       label="Bottling volume"
@@ -144,7 +147,8 @@ function BottlingSizeInput({ value, onChange }) {
       defaultValue="19"
       value={value}
       onChange={onChange}
-      isValid={(parsed) => parsed >= 0 && parsed <= 100} />
+      isValid={(parsed) => parsed >= 0 && parsed <= 100}
+      {...props} />
   );
 }
 
@@ -198,26 +202,31 @@ export default function EntryInputPanel({ weights, entry, onEntryChange }) {
       <Stack direction="row" spacing={2}>
         <AbvInput
           value={entry.abv}
-          onChange={handleAbvChange} />
+          onChange={handleAbvChange}
+          fullWidth />
         <DensityInput
           value={entry.finalGravity}
-          onChange={handleFinalGravityChange} />
+          onChange={handleFinalGravityChange}
+          fullWidth />
         <ColorInput
           value={entry.srm}
-          onChange={handleColorChange} />
+          onChange={handleColorChange}
+          fullWidth />
       </Stack>
       <Stack direction="row" spacing={2}>
         <DatePicker
           label="Bottling date"
           variant="outlined"
           value={entry.bottlingDate}
-          onChange={handleBottlingDateChange} />
+          onChange={handleBottlingDateChange}
+          sx={{width:"100%"}} />
         <BottlingSizeInput
           value={entry.bottlingSize}
-          onChange={handleBottlingSizeChange} />
+          onChange={handleBottlingSizeChange}
+          fullWidth />
         <FormControlLabel control={
           <Switch checked={useBottlingVolume} onChange={handleUseBottlingVolumeChange} />
-        } label="Use for measurement" />
+        } label="Use for measurement" sx={{width:"100%"}} />
       </Stack>
       {!useBottlingVolume &&
         <Stack direction="row" spacing={2} alignItems="center">
