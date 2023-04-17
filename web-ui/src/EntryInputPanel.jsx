@@ -2,7 +2,7 @@ import * as React from 'react';
 
 import LinkIcon from '@mui/icons-material/Link';
 import SquareIcon from '@mui/icons-material/Square';
-import { FormControlLabel, IconButton, InputAdornment, Switch, TextField, Tooltip, Typography } from '@mui/material';
+import { FormControlLabel, Grid, IconButton, InputAdornment, Switch, TextField, Tooltip, Typography } from '@mui/material';
 import { Stack } from '@mui/system';
 import { DatePicker } from '@mui/x-date-pickers';
 import DensityInput from './DensityInput';
@@ -200,46 +200,58 @@ export default function EntryInputPanel({ weights, entry, onEntryChange }) {
   };
 
   return (
-    <Stack direction="column" paddingTop={2} spacing={2}>
-      <BatchNameInput
-        id={entry.id}
-        value={entry.name}
-        onChange={handleNameChange}
-        fullWidth />
-      <Stack direction="row" spacing={2}>
+    <Grid container spacing={2} columns={{ xs: 1, sm: 2, md: 3 }} sx={{mt: 1}}>
+      <Grid item xs={1} sm={2} md={3}>
+        <BatchNameInput
+          id={entry.id}
+          value={entry.name}
+          onChange={handleNameChange}
+          fullWidth />
+      </Grid>
+      <Grid item xs={1}>
         <AbvInput
-          value={entry.abv}
-          onChange={handleAbvChange}
-          fullWidth />
+            value={entry.abv}
+            onChange={handleAbvChange}
+            fullWidth />
+      </Grid>
+      <Grid item xs={1}>
         <DensityInput
-          value={entry.finalGravity}
-          onChange={handleFinalGravityChange}
-          fullWidth />
+            value={entry.finalGravity}
+            onChange={handleFinalGravityChange}
+            fullWidth />
+      </Grid>
+      <Grid item xs={1}>
         <ColorInput
           value={entry.srm}
           onChange={handleColorChange}
           fullWidth />
-      </Stack>
-      <Stack direction="row" spacing={2}>
+      </Grid>
+      <Grid item xs={1}>
         <DatePicker
-          label="Bottling date"
-          variant="outlined"
-          value={entry.bottlingDate}
-          onChange={handleBottlingDateChange}
-          sx={{width:"100%"}} />
+            label="Bottling date"
+            variant="outlined"
+            value={entry.bottlingDate}
+            onChange={handleBottlingDateChange}
+            sx={{width:"100%"}} />
+      </Grid>
+      <Grid item xs={1}>
         <BottlingSizeInput
           value={entry.bottlingSize}
           onChange={handleBottlingSizeChange}
           fullWidth />
+      </Grid>
+      <Grid item xs={1}>
         <FormControlLabel control={
           <Switch checked={useBottlingVolume} onChange={handleUseBottlingVolumeChange} />
         } label="Use for measurement" sx={{width:"100%"}} />
-      </Stack>
-      {!useBottlingVolume &&
-        <Stack direction="row" spacing={2} alignItems="center">
-          <Typography>Tare offset:</Typography>
-          <KnownWeights forTare isToggle selectFirst weights={weights} onClick={handleKnownWeight} />
-        </Stack>}
-    </Stack>
+      </Grid>
+      <Grid item xs={1} sm={2} md={3}>
+        {!useBottlingVolume &&
+          <Stack direction="row" spacing={2} alignItems="center">
+            <Typography>Tare offset:</Typography>
+            <KnownWeights forTare isToggle selectFirst weights={weights} onClick={handleKnownWeight} />
+          </Stack>}
+      </Grid>
+    </Grid>
   );
 }
