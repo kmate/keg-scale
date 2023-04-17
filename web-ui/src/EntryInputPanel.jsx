@@ -181,15 +181,22 @@ export default function EntryInputPanel({ weights, entry, onEntryChange }) {
   };
 
   const handleKnownWeight = (mass) => {
-    if (useBottlingVolume) {
-      setEntry({ ...entry, tareOffset: mass });
+    if (!useBottlingVolume) {
+      const newEntry = { ...entry, tareOffset: mass };
+      delete newEntry.useBottlingVolume;
+      onEntryChange(newEntry);
     }
   }
 
   const handleUseBottlingVolumeChange = (e) => {
     const newUseBottlingVolume = e.currentTarget.checked;
     setUseBottlingVolume(newUseBottlingVolume);
-    // TODO set some prop on entry
+
+    if (newUseBottlingVolume) {
+      const newEntry = { ...entry, useBottlingVolume: true };
+      delete newEntry.tareOffset;
+      onEntryChange(newEntry);
+    }
   };
 
   return (
