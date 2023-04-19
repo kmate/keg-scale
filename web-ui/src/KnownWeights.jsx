@@ -1,7 +1,6 @@
 import { Button, Divider, ToggleButton, ToggleButtonGroup } from '@mui/material';
 import { Stack } from '@mui/system';
 import * as React from 'react';
-import { useEffect } from 'react';
 
 export default function KnownWeights({ children, isToggle, selectFirst, onClick, weights, forTare, forCalibration }) {
 
@@ -9,7 +8,7 @@ export default function KnownWeights({ children, isToggle, selectFirst, onClick,
 
   const [selectedLabel, setSelectedLabel] = React.useState(selectFirst ? showWeights[0].label : null);
 
-  useEffect(() => {
+  React.useEffect(() => {
     if (selectFirst) {
       onClick(showWeights[0].mass);
     }
