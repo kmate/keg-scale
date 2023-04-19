@@ -185,7 +185,7 @@ function BottlingDateInput({ value, onChange, onError })  {
 
 export default function EntryInputPanel({ weights, entry, onEntryChange }) {
 
-  const [errors, setErrors] = React.useState(false);
+  const [errors, setErrors] = React.useState({ name: "invalid" });
   const [useBottlingVolume, setUseBottlingVolume] = React.useState(false);
 
   const handleNameChange = (name) => {
@@ -245,10 +245,6 @@ export default function EntryInputPanel({ weights, entry, onEntryChange }) {
       const isValid = Object.keys(newErrors).length == 0
 
       if (isValid != entry.isValid) {
-        // FIXME this is still not really working... try the following:
-        //  1. open the dialog, then select a valid entry
-        //  2. close the dialog and open it again
-        //  3. observe that the start button is enabled despite we have no name for the entry...
         const newEntry = { ...entry, isValid: isValid };
         onEntryChange(newEntry);
       }
