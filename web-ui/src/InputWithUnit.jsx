@@ -49,10 +49,12 @@ export default function InputWithUnit({ label, units, defaultUnit, value, defaul
     }
   }
 
-  if (prevValue != value) {
-    updateText(valueToText(value, unit));
-    setPrevValue(value);
-  }
+  React.useEffect(() => {
+    if (prevValue != value) {
+      updateText(valueToText(value, unit));
+      setPrevValue(value);
+    }
+  }, [value]);
 
   const handleChange = (e) => {
     const text = e.target.value;

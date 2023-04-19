@@ -27,10 +27,12 @@ function BatchNameInput({ id, value, onChange, onError, ...props }) {
     onError(hasError ? "invalid" : null);
   }
 
-  if (prevValue != value) {
-    updateText(value);
-    setPrevValue(value);
-  }
+  React.useEffect(() => {
+    if (prevValue != value) {
+      updateText(value);
+      setPrevValue(value);
+    }
+  }, [value]);
 
   const handleChange = (e) => {
     const text = e.target.value;
@@ -93,10 +95,12 @@ function AbvInput({ value, onChange, onError, ...props }) {
     onError(hasError ? "invalid" : null);
   }
 
-  if (prevValue != value) {
-    updateText(Number(value).toFixed(1));
-    setPrevValue(value);
-  }
+  React.useEffect(() => {
+    if (prevValue != value) {
+      updateText(Number(value).toFixed(1));
+      setPrevValue(value);
+    }
+  }, [value]);
 
   const handleChange = (e) => {
     const text = e.target.value;
@@ -160,6 +164,12 @@ function BottlingSizeInput({ value, onChange, onError, ...props }) {
 
 function BottlingDateInput({ value, onChange, onError })  {
 
+  React.useEffect(() => {
+    if (value != null && value.isValid()) {
+      onError(null);
+    }
+  }, [value]);
+
   const handleError = (error) => {
     if (error) {
       onError(error);
@@ -185,7 +195,7 @@ function BottlingDateInput({ value, onChange, onError })  {
 
 export default function EntryInputPanel({ weights, entry, onEntryChange }) {
 
-  const [errors, setErrors] = React.useState({ name: "invalid" });
+  const [errors, setErrors] = React.useState({});
   const [useBottlingVolume, setUseBottlingVolume] = React.useState(false);
 
   const handleNameChange = (name) => {
@@ -233,21 +243,23 @@ export default function EntryInputPanel({ weights, entry, onEntryChange }) {
 
   function errorHandler(field) {
     return (error) => {
-      const newErrors = {...errors};
+      setErrors(errors => {
+        const newErrors = {...errors};
 
-      if (error) {
-        newErrors[field] = error;
-      } else {
-        delete newErrors[field];
-      }
+        if (error) {
+          newErrors[field] = error;
+        } else {
+          delete newErrors[field];
+        }
 
-      setErrors(newErrors);
-      const isValid = Object.keys(newErrors).length == 0
+        const isValid = Object.keys(newErrors).length == 0
+        if (isValid != entry.isValid) {
+          const newEntry = { ...entry, isValid: isValid };
+          onEntryChange(newEntry);
+        }
 
-      if (isValid != entry.isValid) {
-        const newEntry = { ...entry, isValid: isValid };
-        onEntryChange(newEntry);
-      }
+        return newErrors;
+      });
     };
   }
 
