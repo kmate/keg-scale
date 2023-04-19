@@ -27,7 +27,7 @@ const defaultEntry = {
   isValid: false
 }
 
-export default function TapSetupDialog({ label, weights, open, onClose }) {
+export default function TapSetupDialog({ index, label, weights, open, onClose }) {
   const theme = useTheme();
   const fullScreen = useMediaQuery(theme.breakpoints.down('md'));
   const [useCatalog, setUseCatalog] = React.useState(true);
@@ -66,8 +66,18 @@ export default function TapSetupDialog({ label, weights, open, onClose }) {
     delete payload.isValid;
     payload.bottlingDate = payload.bottlingDate.format("YYYY-MM-DD");
 
-    // TODO start recording
-    console.log(payload);
+    fetch(apiLocation("/recording/start/" + index), {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    }).then((response) => {
+      if (response.ok) {
+        setFeedback({ isOpen: true, message: 'Recording started!', severity: 'success' });
+        onClose();
+      } else {
+        setFeedback({ isOpen: true, message: 'Failed to start recording!', severity: 'error' });
+      }
+    })
   };
 
   return (

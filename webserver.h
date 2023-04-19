@@ -26,10 +26,10 @@ public:
   OneParamRewrite(const char* from, const char* to) : AsyncWebRewrite(from, to) {
     _paramIndex = _from.indexOf('{');
 
-    if( _paramIndex >=0 && _from.endsWith("}")) {
+    if (_paramIndex >= 0 && _from.endsWith("}")) {
       _urlPrefix = _from.substring(0, _paramIndex);
       int index = _params.indexOf('{');
-      if(index >= 0) {
+      if (index >= 0) {
         _params = _params.substring(0, index);
       }
     } else {
@@ -39,8 +39,8 @@ public:
   }
 
   bool match(AsyncWebServerRequest *request) override {
-    if(request->url().startsWith(_urlPrefix)) {
-      if(_paramIndex >= 0) {
+    if (request->url().startsWith(_urlPrefix)) {
+      if (_paramIndex >= 0) {
         _params = _paramsBackup + request->url().substring(_paramIndex);
       } else {
         _params = _paramsBackup;
@@ -179,6 +179,23 @@ class WebServer {
         request->send(400);
       }
     });
+
+    this->server.addRewrite(new OneParamRewrite("/recording/start/{scaleId}", "/recording/start?scaleId={scaleId}"));
+    AsyncCallbackJsonWebHandler *recordingStartHandler = new AsyncCallbackJsonWebHandler("/recording/start", [this](AsyncWebServerRequest *request, JsonVariant &json) {
+      const JsonObject& body = json.as<JsonObject>();
+      int scaleId = request->arg("scaleId").toInt();
+      if (scaleId >= 0 && scaleId < this->scales.size()) {
+        // TODO remove logging and start real recording
+        String jsonStr = "";
+        serializeJson(json, jsonStr);
+        Logger.print("Received recording payload: " + jsonStr);
+
+        request->send(200, "text/plain", "start recording on scale " + String(scaleId));
+      } else {
+        request->send(400);
+      }
+    });
+    this->server.addHandler(recordingStartHandler);
   }
 
   void addStatusHandler() {
@@ -250,6 +267,7 @@ public:
     this->addLogHandler();
     // makes local testing of web ui easier
     DefaultHeaders::Instance().addHeader("Access-Control-Allow-Origin", "*");
+    DefaultHeaders::Instance().addHeader("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
     // handle OPTIONS request of CORS pre-flight
     this->server.onNotFound([](AsyncWebServerRequest *request) {
       if (request->method() == HTTP_OPTIONS) {
