@@ -11,7 +11,7 @@ import KnownWeights from './KnownWeights';
 import srmToRgb from './srmToRgb';
 import { colorUnits, volumeUnits } from './units';
 
-function BatchNameInput({ id, value, onChange, ...props }) {
+function BatchNameInput({ id, value, onChange, onError, ...props }) {
   const [prevValue, setPrevValue] = React.useState();
   const [text, setText] = React.useState("");
   const [inputError, setInputError] = React.useState(false);
@@ -22,7 +22,9 @@ function BatchNameInput({ id, value, onChange, ...props }) {
 
   const updateText = (text) => {
     setText(text);
-    setInputError(!isValid(text));
+    const hasError = !isValid(text);
+    setInputError(hasError);
+    onError(hasError ? "invalid" : null);
   }
 
   if (prevValue != value) {
@@ -64,7 +66,7 @@ function BatchNameInput({ id, value, onChange, ...props }) {
   );
 }
 
-function AbvInput({ value, onChange, ...props }) {
+function AbvInput({ value, onChange, onError, ...props }) {
   const [prevValue, setPrevValue] = React.useState();
   const [abvText, setAbvText] = React.useState("5.0");
   const [inputError, setInputError] = React.useState(false);
@@ -86,7 +88,9 @@ function AbvInput({ value, onChange, ...props }) {
     setAbvText(text);
 
     const parsed = textToValue(text);
-    setInputError(parsed == null);
+    const hasError = parsed == null;
+    setInputError(hasError);
+    onError(hasError ? "invalid" : null);
   }
 
   if (prevValue != value) {
@@ -123,7 +127,7 @@ function AbvInput({ value, onChange, ...props }) {
   );
 }
 
-function ColorInput({ value, onChange, ...props }) {
+function ColorInput({ value, onChange, onError, ...props }) {
   return (
     <InputWithUnit
       label="Color"
@@ -132,13 +136,14 @@ function ColorInput({ value, onChange, ...props }) {
       defaultValue="9"
       value={value}
       onChange={onChange}
+      onError={onError}
       isValid={(parsed) => parsed >= 0 && parsed <= 100}
       startAdornment={<SquareIcon sx={{ backgroundColor: "white" }} htmlColor={srmToRgb(value)}></SquareIcon>}
       {...props} />
   );
 }
 
-function BottlingSizeInput({ value, onChange, ...props }) {
+function BottlingSizeInput({ value, onChange, onError, ...props }) {
   return (
     <InputWithUnit
       label="Bottling volume"
@@ -147,13 +152,40 @@ function BottlingSizeInput({ value, onChange, ...props }) {
       defaultValue="19"
       value={value}
       onChange={onChange}
+      onError={onError}
       isValid={(parsed) => parsed >= 0 && parsed <= 100}
       {...props} />
   );
 }
 
+function BottlingDateInput({ value, onChange, onError })  {
+
+  const handleError = (error) => {
+    if (error) {
+      onError(error);
+    } else if (value == null) {
+      onError("missing");
+    } else {
+      onError(null);
+    }
+  };
+
+  return (
+    <DatePicker
+      label="Bottling date"
+      variant="outlined"
+      disableFuture
+      value={value}
+      onChange={onChange}
+      onError={handleError}
+      slotProps={{ textField: { error: value == null || !value.isValid() } }}
+      sx={{width:"100%"}} />
+  );
+}
+
 export default function EntryInputPanel({ weights, entry, onEntryChange }) {
 
+  const [errors, setErrors] = React.useState(false);
   const [useBottlingVolume, setUseBottlingVolume] = React.useState(false);
 
   const handleNameChange = (name) => {
@@ -199,6 +231,30 @@ export default function EntryInputPanel({ weights, entry, onEntryChange }) {
     }
   };
 
+  function errorHandler(field) {
+    return (error) => {
+      const newErrors = {...errors};
+
+      if (error) {
+        newErrors[field] = error;
+      } else {
+        delete newErrors[field];
+      }
+
+      setErrors(newErrors);
+      const isValid = Object.keys(newErrors).length == 0
+
+      if (isValid != entry.isValid) {
+        // FIXME this is still not really working... try the following:
+        //  1. open the dialog, then select a valid entry
+        //  2. close the dialog and open it again
+        //  3. observe that the start button is enabled despite we have no name for the entry...
+        const newEntry = { ...entry, isValid: isValid };
+        onEntryChange(newEntry);
+      }
+    };
+  }
+
   return (
     <Grid container spacing={2} columns={{ xs: 1, sm: 2, md: 3 }} sx={{mt: 1}}>
       <Grid item xs={1} sm={2} md={3}>
@@ -206,38 +262,41 @@ export default function EntryInputPanel({ weights, entry, onEntryChange }) {
           id={entry.id}
           value={entry.name}
           onChange={handleNameChange}
+          onError={errorHandler("name")}
           fullWidth />
       </Grid>
       <Grid item xs={1}>
         <AbvInput
             value={entry.abv}
             onChange={handleAbvChange}
+            onError={errorHandler("abv")}
             fullWidth />
       </Grid>
       <Grid item xs={1}>
         <DensityInput
             value={entry.finalGravity}
             onChange={handleFinalGravityChange}
+            onError={errorHandler("finalGravity")}
             fullWidth />
       </Grid>
       <Grid item xs={1}>
         <ColorInput
           value={entry.srm}
           onChange={handleColorChange}
+          onError={errorHandler("srm")}
           fullWidth />
       </Grid>
       <Grid item xs={1}>
-        <DatePicker
-            label="Bottling date"
-            variant="outlined"
-            value={entry.bottlingDate}
-            onChange={handleBottlingDateChange}
-            sx={{width:"100%"}} />
+        <BottlingDateInput
+          value={entry.bottlingDate}
+          onChange={handleBottlingDateChange}
+          onError={errorHandler("bottlingDate")} />
       </Grid>
       <Grid item xs={1}>
         <BottlingSizeInput
           value={entry.bottlingSize}
           onChange={handleBottlingSizeChange}
+          onError={errorHandler("bottlingSize")}
           fullWidth />
       </Grid>
       <Grid item xs={1}>

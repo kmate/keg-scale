@@ -3,7 +3,7 @@ import * as React from 'react';
 import { InputAdornment, MenuItem, Select, TextField } from '@mui/material';
 import useLocalStorage from './useLocalStorage';
 
-export default function InputWithUnit({ label, units, defaultUnit, value, defaultValue, onChange, isValid, startAdornment, ...props }) {
+export default function InputWithUnit({ label, units, defaultUnit, value, defaultValue, onChange, onError, isValid, startAdornment, ...props }) {
   const [prevValue, setPrevValue] = React.useState();
   const [unit, setUnit] = useLocalStorage("inputWithUnit_" + label.replace(/\s/g, "_").toLowerCase(), defaultUnit);
   const [text, setText] = React.useState(defaultValue);
@@ -42,7 +42,11 @@ export default function InputWithUnit({ label, units, defaultUnit, value, defaul
     setText(text);
 
     const parsed = textToValue(text);
-    setInputError(parsed == null);
+    const hasError = parsed == null;
+    setInputError(hasError);
+    if (onError) {
+      onError(hasError ? "invalid" : null);
+    }
   }
 
   if (prevValue != value) {

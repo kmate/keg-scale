@@ -23,7 +23,8 @@ const defaultEntry = {
   finalGravity: 1010,
   srm: 9,
   bottlingSize: 19,
-  bottlingDate: dayjs()
+  bottlingDate: dayjs(),
+  isValid: false
 }
 
 export default function TapSetupDialog({ label, weights, open, onClose }) {
@@ -32,6 +33,10 @@ export default function TapSetupDialog({ label, weights, open, onClose }) {
   const [useCatalog, setUseCatalog] = React.useState(true);
   const [feedback, setFeedback] = React.useState({ isOpen: false, message: '', severity: 'success' });
   const [entry, setEntry] = React.useState(defaultEntry);
+
+  React.useEffect(() => {
+    setEntry({ ...defaultEntry });
+  }, [open])
 
   const handleUseCatalogChange = (e) => {
     const newUseCatalog = e.currentTarget.checked;
@@ -57,11 +62,14 @@ export default function TapSetupDialog({ label, weights, open, onClose }) {
   };
 
   const handleStart = () => {
+    const payload = { ...entry };
+    delete payload.isValid;
+    payload.bottlingDate = payload.bottlingDate.format("YYYY-MM-DD");
+
     // TODO start recording
-    console.log(entry);
+    console.log(payload);
   };
 
-  // TODO disable start until entry is ready
   return (
     <>
       <Dialog open={open} onClose={onClose} fullScreen={fullScreen} fullWidth maxWidth="md" scroll="body">
@@ -88,7 +96,7 @@ export default function TapSetupDialog({ label, weights, open, onClose }) {
           <Divider />
           <DialogActions>
             <Button onClick={onClose}>Cancel</Button>
-            <Button onClick={handleStart}>Start</Button>
+            <Button onClick={handleStart} disabled={!entry.isValid}>Start</Button>
           </DialogActions>
       </Dialog>
       <Snackbar open={feedback.isOpen} autoHideDuration={1000} onClose={handleFeedbackClose}>
