@@ -12,6 +12,7 @@
 #define RECORDER_MAX_RESPONSE_SIZE 4096
 
 const char *GITHUB_GIST_RECORDER_GQL_URL = "https://api.github.com/graphql";
+const char *GITHUB_GIST_RECORDER_GQL_ROOT_QUERY = "query{node(id:\"%s\"){... on Gist{files{text}}}}\0";
 
 class GithubGistRecorder {
 
@@ -24,6 +25,46 @@ private:
   GithubGistRecorderConfig *config;
 
 public:
+  void downloadRecordingData() {
+    HeapSelectIram ephemeral;
+
+    HTTPClient https;
+
+    if (https.begin(*client, GITHUB_GIST_RECORDER_GQL_URL)) {
+      https.setAuthorization(this->config->userId, this->config->apiKey);
+      char *requestBody = new char[strlen(GITHUB_GIST_RECORDER_GQL_URL) + strlen(this->config->rootNodeId)];
+      sprintf(requestBody, GITHUB_GIST_RECORDER_GQL_ROOT_QUERY, this->config->rootNodeId);
+      this->lastStatusCode = https.POST(requestBody);
+
+// TODO this prints -1 then the stuff gets hanging and WDT kicks...
+      Serial.printf("Status code: %d\n", lastStatusCode);
+      if (this->lastStatusCode > 0) {
+        this->lastErrorMessage = String("");
+
+        if (this->lastStatusCode == HTTP_CODE_OK || this->lastStatusCode == HTTP_CODE_MOVED_PERMANENTLY) {
+          String payload = https.getString();
+          DynamicJsonDocument doc(CATALOG_MAX_RESPONSE_SIZE);
+          DeserializationError error = deserializeJson(doc, payload);
+
+          if (error) {
+            this->lastErrorMessage = String(error.c_str());
+          } else {
+            JsonArray entriesToParse = doc.as<JsonArray>();
+            Serial.printf("Number of recorder entries: %d\n", entriesToParse.size());
+          }
+
+        }
+      } else {
+        this->lastErrorMessage = https.errorToString(this->lastStatusCode);
+      }
+
+      https.end();
+      delete[] requestBody;
+    } else {
+      this->lastErrorMessage = String("Unable to connect to the target host.");
+    }
+  };
+
   void begin(GithubGistRecorderConfig *_config, BearSSL::WiFiClientSecure *_client) {
     this->config = _config;
     this->client = _client;
@@ -31,6 +72,10 @@ public:
       HeapSelectIram ephemeral;
       this->useMFL = this->client->probeMaxFragmentLength(GITHUB_GIST_RECORDER_GQL_URL, 443, 512);
       Serial.printf("Github gist recorder:%s using MFLN.\n", this->useMFL ? "" : " NOT");
+
+      // FIXME see the issue above in the method body
+      //yield();
+      //this->downloadRecordingData();
     }
     this->lastStatusCode = 0;
     this->lastErrorMessage = String("");
