@@ -27,7 +27,10 @@ public:
   }
 
   void begin();
-  void update();
+
+  // returns whether there was any notable change that we need to push to the clients
+  bool update();
+
   void setState(ScaleState *newState);
   void render(JsonDocument &doc);
 

@@ -9,11 +9,12 @@ void OnlineScaleState::enter(Scale *scale, ScaleState *prevState) {
   ScaleState::enter(scale, prevState);
 }
 
-void OnlineScaleState::update() {
+bool OnlineScaleState::update() {
   this->scale->updateAdc();
   if (!this->scale->isAdcOnline()) {
     this->scale->setState(new OfflineScaleState());
   }
+  return false;
 }
 
 void OnlineScaleState::render(JsonObject &state) const {
@@ -25,7 +26,25 @@ void StandbyScaleState::render(JsonObject &state) const {
   OnlineScaleState::render(state);
 }
 
-// power down scale on standby enter, power up on standby exit - if next state is not offline
+void LiveMeasurementScaleState::enter(Scale *scale, ScaleState *prevState) {
+  OnlineScaleState::enter(scale, prevState);
+  this->lastRefresh = 0;
+}
+
+bool LiveMeasurementScaleState::update() {
+  OnlineScaleState::update();
+
+  time_t now = DateTime.now();
+  time_t elapsed = now - this->lastRefresh;
+
+  if (elapsed >= LIVE_MEASUREMENT_REFRESH_SECONDS) {
+    this->lastRefresh = now;
+    // TODO only push state when the measured value differs? (what about adc values then?)
+    return true;
+  }
+
+  return false;
+}
 
 void LiveMeasurementScaleState::render(JsonObject &state) const {
   state["name"] = "liveMeasurement";
@@ -37,11 +56,12 @@ void TareScaleState::enter(Scale *scale, ScaleState *prevState) {
   this->scale->startAdcTare();
 }
 
-void TareScaleState::update() {
+bool TareScaleState::update() {
   OnlineScaleState::update();
   if (this->scale->isAdcTareDone()) {
     this->scale->setState(new StandbyScaleState());
   }
+  return false;
 }
 
 void TareScaleState::render(JsonObject &state) const {
@@ -54,9 +74,10 @@ void CalibrateScaleState::enter(Scale *scale, ScaleState *prevState) {
   this->scale->calibrateAdc(this->knownMass);
 }
 
-void CalibrateScaleState::update() {
+bool CalibrateScaleState::update() {
   OnlineScaleState::update();
   this->scale->setState(new StandbyScaleState());
+  return false;
 }
 
 void CalibrateScaleState::render(JsonObject &state) const {
@@ -69,13 +90,14 @@ void OfflineScaleState::enter(Scale *scale, ScaleState *prevState) {
   ScaleState::enter(scale, prevState);
 }
 
-void OfflineScaleState::update() {
+bool OfflineScaleState::update() {
   this->scale->startAdc();
   this->scale->updateAdc();
   if (this->scale->isAdcOnline()) {
     // TODO continue recording if possible
     this->scale->setState(new StandbyScaleState());
   }
+  return false;
 }
 
 void OfflineScaleState::render(JsonObject &state) const {

@@ -8,7 +8,7 @@ void Scale::begin() {
   this->setState(new OfflineScaleState());
 }
 
-void Scale::update() {
+bool Scale::update() {
   if (this->nextState != nullptr) {
     if (this->currentState != nullptr) {
       this->currentState->exit(this->nextState);
@@ -24,8 +24,9 @@ void Scale::update() {
       delete prevState;
     }
     yield();
+    return true;
   } else {
-    this->currentState->update();
+    return this->currentState->update();
   }
 }
 

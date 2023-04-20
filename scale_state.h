@@ -2,7 +2,9 @@
 #define KEG_SCALE__SCALE_STATE_H
 
 #include <ArduinoJson.h>
-#include <HX711_ADC.h>
+#include <ESPDateTime.h>
+
+#define LIVE_MEASUREMENT_REFRESH_SECONDS 1
 
 class Scale;
 
@@ -13,7 +15,7 @@ protected:
 
 public:
   virtual void enter(Scale *scale, ScaleState *prevState) = 0;
-  virtual void update() = 0;
+  virtual bool update() = 0;
   virtual void exit(ScaleState *nextState) = 0;
 
   virtual void render(JsonObject &state) const = 0;
@@ -23,7 +25,7 @@ class OnlineScaleState : public ScaleState {
 
 public:
   void enter(Scale *scale, ScaleState *prevState) override;
-  void update() override;
+  bool update() override;
   void exit(ScaleState *nextState) override {};
 
   void render(JsonObject &state) const override;
@@ -38,7 +40,13 @@ public:
 
 class LiveMeasurementScaleState : public OnlineScaleState {
 
+private:
+  time_t lastRefresh;
+
 public:
+  void enter(Scale *scale, ScaleState *prevState) override;
+  bool update() override;
+
   void render(JsonObject &state) const override;
 };
 
@@ -49,7 +57,7 @@ class TareScaleState : public OnlineScaleState {
 
 public:
   void enter(Scale *scale, ScaleState *prevState) override;
-  void update() override;
+  bool update() override;
   void exit(ScaleState *nextState) override {};
 
   void render(JsonObject &state) const override;
@@ -62,7 +70,7 @@ class CalibrateScaleState : public OnlineScaleState {
 public:
   CalibrateScaleState(float _knownMass) : knownMass(_knownMass) {};
   void enter(Scale *scale, ScaleState *prevState) override;
-  void update() override;
+  bool update() override;
   void exit(ScaleState *nextState) override {};
 
   void render(JsonObject &state) const override;
@@ -72,7 +80,7 @@ class OfflineScaleState : public ScaleState {
 
 public:
   void enter(Scale *scale, ScaleState *prevState) override;
-  void update() override;
+  bool update() override;
   void exit(ScaleState *nextState) override {};
 
   void render(JsonObject &state) const override;

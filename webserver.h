@@ -120,19 +120,7 @@ class WebServer {
   }
 
   void addScaleHandlers() {
-    this->server.addRewrite(new OneParamRewrite("/scale/{scaleId}", "/scale?scaleId={scaleId}"));
-    this->server.on("/scale", HTTP_GET, [this](AsyncWebServerRequest *request) {
-      int scaleId = request->arg("scaleId").toInt();
-      if (scaleId >= 0 && scaleId < this->scales.size()) {
-        AsyncResponseStream *response = request->beginResponseStream("application/json");
-        DynamicJsonDocument doc(512);
-        this->scales.render(scaleId, doc);
-        serializeJson(doc, *response);
-        request->send(response);
-      } else {
-        request->send(400);
-      }
-    });
+    this->server.addHandler(this->scales.getSocket());
 
     this->server.addRewrite(new OneParamRewrite("/standby/{scaleId}", "/standby?scaleId={scaleId}"));
     this->server.on("/standby", HTTP_POST, [this](AsyncWebServerRequest *request) {

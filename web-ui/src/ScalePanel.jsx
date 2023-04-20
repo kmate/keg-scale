@@ -1,6 +1,4 @@
 import * as React from 'react';
-import useFetch from "react-fetch-hook";
-import useInterval from 'use-interval';
 import apiLocation from './apiLocation';
 
 import { Button, Divider, IconButton, Paper, Toolbar, Tooltip, Typography } from '@mui/material';
@@ -8,7 +6,6 @@ import CloudOffIcon from '@mui/icons-material/CloudOff';
 import PowerSettingsNewIcon from '@mui/icons-material/PowerSettingsNew';
 import AdjustIcon from '@mui/icons-material/Adjust';
 import BalanceIcon from '@mui/icons-material/Balance';
-import RefreshIcon from '@mui/icons-material/Refresh';
 import SportsBarIcon from '@mui/icons-material/SportsBar';
 
 import TabPanel from './TabPanel';
@@ -51,16 +48,8 @@ function ScaleToolbar({ children, icon, stateName }) {
   );
 }
 
-function OfflineView({ onRefreshClick }) {
-  return (
-    <ScaleToolbar icon={CloudOffIcon} stateName="Offline">
-      <Tooltip title="Refresh">
-        <IconButton onClick={onRefreshClick} edge="end">
-          <RefreshIcon />
-        </IconButton>
-      </Tooltip>
-    </ScaleToolbar>
-  );
+function OfflineView() {
+  return <ScaleToolbar icon={CloudOffIcon} stateName="Offline" />;
 }
 
 function StandbyView({ index, onCalibrationClick, onTapSetupClick }) {
@@ -138,18 +127,9 @@ function TapMeasurementView(props) {
   return <></>;
 }
 
-export default function ScalePanel({ index, scale, weights }) {
-  const [tick, setTick] = React.useState(false);
+export default function ScalePanel({ index, scale, data, weights }) {
   const [calibrationIsOpen, setCalibrationIsOpen] = React.useState(false);
   const [tapSetupIsOpen, setTapSetupIsOpen] = React.useState(false);
-
-  const triggerFetch = () => {
-    setTick((prevTick) => !prevTick);
-  };
-
-  const handleRefreshClick = () => {
-    triggerFetch();
-  };
 
   const handleCalibrationClick = () => {
     setCalibrationIsOpen(true);
@@ -167,11 +147,6 @@ export default function ScalePanel({ index, scale, weights }) {
     setTapSetupIsOpen(false);
   };
 
-  const { isLoading, data, error } = useFetch(apiLocation("/scale/" + index), { depends: [tick] });
-
-  const delayInSeconds = data && data.state && states[data.state.name].refreshSeconds || 10;
-  useInterval(() => { triggerFetch(); }, calibrationIsOpen ? null : (delayInSeconds * 1000), true);
-
   // TODO figure out how to show debug data
   return (
     <Paper>
@@ -180,7 +155,7 @@ export default function ScalePanel({ index, scale, weights }) {
           <Typography variant="overline" noWrap paragraph ml={1} mb={0}>{scale.label}</Typography>
           <Divider />
           <TabPanel value={data.state.name} index="offline">
-            <OfflineView index={index} data={data} onRefreshClick={handleRefreshClick} />
+            <OfflineView index={index} data={data} />
           </TabPanel>
           <TabPanel value={data.state.name} index="standby">
             <StandbyView index={index} data={data} onCalibrationClick={handleCalibrationClick} onTapSetupClick={handleTapSetupClick} />
