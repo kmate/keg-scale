@@ -23,17 +23,12 @@ const weightUnits = {
   }
 };
 
-export default function CalibrationDialog({ index, label, weights, open, onClose }) {
+export default function CalibrationDialog({ index, label, data, weights, open, onClose }) {
   const theme = useTheme();
   const fullScreen = useMediaQuery(theme.breakpoints.down('md'));
   const [knownMass, setKnownMass] = React.useState(1000);
   const [massUnit, setMassUnit] = React.useState("g");
   const [feedback, setFeedback] = React.useState({ isOpen: false, message: '', severity: 'success' });
-
-  const [tick, setTick] = React.useState(false);
-  const { isLoading, data, error } = useFetch(apiLocation("/scale/" + index), { depends: [tick] });
-
-  useInterval(() => { setTick((prevTick) => !prevTick); }, open ? 250 : null, true);
 
   const handleKnownMassChange = (e) => {
     const text = e.target.value;
@@ -119,6 +114,7 @@ export default function CalibrationDialog({ index, label, weights, open, onClose
             <Divider />
             <LiveMeasurement value={data && data.state && data.state.data} />
             <Divider />
+            {/* TODO use InputWithUnit? */}
             <Box display="flex" alignItems="center" justifyContent="center">
               <TextField
                 sx={{input: {textAlign: 'right'}}}

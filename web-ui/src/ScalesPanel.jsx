@@ -42,7 +42,7 @@ function ScalePanelGrid({ scales, weights }) {
         {scales.map((scale, index) => {
           return (
             <Grid item key={"scale_" + index} xs={2} md={1}>
-              <ScalePanel scale={scale} data={scaleData[index]} weights={weights} index={index} />
+              <ScalePanel label={scale.label} data={scaleData[index]} weights={weights} index={index} />
             </Grid>
           );
         })}

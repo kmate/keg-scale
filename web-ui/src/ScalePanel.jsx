@@ -15,27 +15,6 @@ import KnownWeights from './KnownWeights';
 import useLocalStorage from './useLocalStorage';
 import TapSetupDialog from './TapSetupDialog';
 
-const states = {
-  offline: {
-    refreshSeconds: 30
-  },
-  standby: {
-    refreshSeconds: 1
-  },
-  tare: {
-    refreshSeconds: 1
-  },
-  calibrate: {
-    refreshSeconds: 1
-  },
-  liveMeasurement: {
-    refreshSeconds: 1
-  },
-  tapMeasurement: {
-    refreshSeconds: 1
-  }
-}
-
 function ScaleToolbar({ children, icon, stateName }) {
   const Icon = icon;
 
@@ -122,12 +101,11 @@ function LiveMeasurementView({ index, data, weights, onCalibrationClick }) {
   );
 }
 
-// TODO add a wizard to set up the recording
 function TapMeasurementView(props) {
   return <></>;
 }
 
-export default function ScalePanel({ index, scale, data, weights }) {
+export default function ScalePanel({ index, label, data, weights }) {
   const [calibrationIsOpen, setCalibrationIsOpen] = React.useState(false);
   const [tapSetupIsOpen, setTapSetupIsOpen] = React.useState(false);
 
@@ -152,7 +130,7 @@ export default function ScalePanel({ index, scale, data, weights }) {
     <Paper>
       { data && data.state && (
         <>
-          <Typography variant="overline" noWrap paragraph ml={1} mb={0}>{scale.label}</Typography>
+          <Typography variant="overline" noWrap paragraph ml={1} mb={0}>{label}</Typography>
           <Divider />
           <TabPanel value={data.state.name} index="offline">
             <OfflineView index={index} data={data} />
@@ -166,15 +144,16 @@ export default function ScalePanel({ index, scale, data, weights }) {
           <CalibrationDialog
             open={data.state.name != "offline" && calibrationIsOpen}
             onClose={handleCalibrationClose}
+            data={data}
             index={index}
-            label={scale.label}
+            label={label}
             weights={weights}
           />
           <TapSetupDialog
             open={data.state.name != "offline" && tapSetupIsOpen}
             onClose={handleTapSetupClose}
             index={index}
-            label={scale.label}
+            label={label}
             weights={weights}
           />
         </>
