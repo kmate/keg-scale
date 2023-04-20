@@ -8,6 +8,8 @@
 #include "persistent_config.h"
 #include "scale.h"
 
+#define SCALE_JSON_DOCUMENT_SIZE 512
+
 class Scales {
 
 private:
@@ -15,17 +17,21 @@ private:
   AsyncWebSocket socket;
 
 public:
+  size_t scaleToJson(Scale *scale, int index, String &data) {
+    StaticJsonDocument<SCALE_JSON_DOCUMENT_SIZE> doc;
+    doc["index"] = index;
+    scale->render(doc);
+    return serializeJson(doc, data);
+  }
+
   Scales() : socket("/scales") {
     this->socket.onEvent([this](AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType type, void *arg, uint8_t *data, size_t len) {
       if (type == WS_EVT_CONNECT) {
         for (int i = 0; i < this->scales.size(); ++i) {
           Scale *scale = this->scales[i];
-          StaticJsonDocument<512> doc;
-          doc["index"] = i;
-          scale->render(doc);
-          char data[512];
-          size_t len = serializeJson(doc, data);
-          client->text(data, len);
+          String data;
+          size_t len = this->scaleToJson(scale, i, data);
+          client->text(data.c_str(), len);
         }
       }
     });
@@ -49,12 +55,9 @@ public:
     for (int i = 0; i < this->scales.size(); ++i) {
       Scale *scale = this->scales[i];
       if (scale->update()) {
-        StaticJsonDocument<512> doc;
-        doc["index"] = i;
-        scale->render(doc);
-        char data[512];
-        size_t len = serializeJson(doc, data);
-        this->socket.textAll(data, len);
+        String data;
+        size_t len = this->scaleToJson(scale, i, data);
+        this->socket.textAll(data.c_str(), len);
       }
       yield();
     }
