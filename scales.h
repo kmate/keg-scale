@@ -17,11 +17,14 @@ private:
   AsyncWebSocket socket;
 
 public:
-  size_t scaleToJson(Scale *scale, int index, String &data) {
+  AsyncWebSocketMessageBuffer *scaleToJson(Scale *scale, int index) {
     StaticJsonDocument<SCALE_JSON_DOCUMENT_SIZE> doc;
     doc["index"] = index;
     scale->render(doc);
-    return serializeJson(doc, data);
+    size_t len = measureJson(doc);
+    AsyncWebSocketMessageBuffer *buffer = this->socket.makeBuffer(len);
+    serializeJson(doc, (char *) buffer->get(), len + 1);
+    return buffer;
   }
 
   Scales() : socket("/scales") {
@@ -29,9 +32,7 @@ public:
       if (type == WS_EVT_CONNECT) {
         for (int i = 0; i < this->scales.size(); ++i) {
           Scale *scale = this->scales[i];
-          String data;
-          size_t len = this->scaleToJson(scale, i, data);
-          client->text(data.c_str(), len);
+          client->text(this->scaleToJson(scale, i));
         }
       }
     });
@@ -55,9 +56,7 @@ public:
     for (int i = 0; i < this->scales.size(); ++i) {
       Scale *scale = this->scales[i];
       if (scale->update()) {
-        String data;
-        size_t len = this->scaleToJson(scale, i, data);
-        this->socket.textAll(data.c_str(), len);
+        this->socket.textAll(this->scaleToJson(scale, i));
       }
       yield();
     }
