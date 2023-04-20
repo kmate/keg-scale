@@ -36,6 +36,8 @@ void Scale::setState(ScaleState *newState) {
 }
 
 void Scale::render(JsonDocument &doc) {
+  doc["index"] = this->index;
+
   JsonObject state = doc.createNestedObject("state");
   this->currentState->render(state);
 

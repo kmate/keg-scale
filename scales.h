@@ -17,9 +17,8 @@ private:
   AsyncWebSocket socket;
 
 public:
-  AsyncWebSocketMessageBuffer *scaleToJson(Scale *scale, int index) {
+  AsyncWebSocketMessageBuffer *scaleToJson(Scale *scale) {
     StaticJsonDocument<SCALE_JSON_DOCUMENT_SIZE> doc;
-    doc["index"] = index;
     scale->render(doc);
     size_t len = measureJson(doc);
     AsyncWebSocketMessageBuffer *buffer = this->socket.makeBuffer(len);
@@ -30,9 +29,8 @@ public:
   Scales() : socket("/scales") {
     this->socket.onEvent([this](AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType type, void *arg, uint8_t *data, size_t len) {
       if (type == WS_EVT_CONNECT) {
-        for (int i = 0; i < this->scales.size(); ++i) {
-          Scale *scale = this->scales[i];
-          client->text(this->scaleToJson(scale, i));
+        for (Scale *scale : this->scales) {
+          client->text(this->scaleToJson(scale));
         }
       }
     });
@@ -53,10 +51,9 @@ public:
   void handle() {
     this->socket.cleanupClients();
     yield();
-    for (int i = 0; i < this->scales.size(); ++i) {
-      Scale *scale = this->scales[i];
+    for (Scale *scale : this->scales) {
       if (scale->update()) {
-        this->socket.textAll(this->scaleToJson(scale, i));
+        this->socket.textAll(this->scaleToJson(scale));
       }
       yield();
     }
