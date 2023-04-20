@@ -1,58 +1,29 @@
 import * as React from 'react';
-import useFetch from "react-fetch-hook";
-import useInterval from 'use-interval';
 import apiLocation from './apiLocation';
 
 import useMediaQuery from '@mui/material/useMediaQuery';
 import { useTheme } from '@mui/material/styles';
 
-import { Alert, Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, Divider, FormControl, List, ListItem, MenuItem, Select, Snackbar, TextField, Typography } from "@mui/material";
+import { Alert, Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, Divider, List, ListItem, Snackbar, Typography } from "@mui/material";
 import { Stack } from '@mui/system';
 
 import LiveMeasurement from './LiveMeasurement';
 import KnownWeights from './KnownWeights';
-
-const weightUnits = {
-  g: {
-    multiplier: 1,
-    digits: 0
-  },
-  kg: {
-    multiplier: 1/1000,
-    digits: 2,
-  }
-};
+import InputWithUnit from './InputWithUnit';
+import { massUnits } from './units';
 
 export default function CalibrationDialog({ index, label, data, weights, open, onClose }) {
   const theme = useTheme();
   const fullScreen = useMediaQuery(theme.breakpoints.down('md'));
   const [knownMass, setKnownMass] = React.useState(1000);
-  const [massUnit, setMassUnit] = React.useState("g");
   const [feedback, setFeedback] = React.useState({ isOpen: false, message: '', severity: 'success' });
 
-  const handleKnownMassChange = (e) => {
-    const text = e.target.value;
-    if (text != "") {
-      const parsed = Number.parseFloat(text);
-      if (!Number.isNaN(parsed) && parsed > 0) {
-        setKnownMass(parsed);
-      }
-    } else {
-      setKnownMass(0);
-    }
+  const handleKnownMassChange = (mass) => {
+    setKnownMass(mass);
   };
 
   const handleKnownWeight = (mass) => {
-    const weightUnit = weightUnits[massUnit];
-    setKnownMass((mass * weightUnit.multiplier).toFixed(weightUnit.digits));
-  };
-
-  const handleMassUnitChange = (e) => {
-    const oldWeightUnit = weightUnits[massUnit];
-    const newUnitName = e.target.value;
-    setMassUnit(newUnitName);
-    const newWeightUnit = weightUnits[newUnitName];
-    setKnownMass((knownMass / oldWeightUnit.multiplier * newWeightUnit.multiplier).toFixed(newWeightUnit.digits));
+    setKnownMass(mass);
   };
 
   const handleTare = () => {
@@ -114,21 +85,15 @@ export default function CalibrationDialog({ index, label, data, weights, open, o
             <Divider />
             <LiveMeasurement value={data && data.state && data.state.data} />
             <Divider />
-            {/* TODO use InputWithUnit? */}
             <Box display="flex" alignItems="center" justifyContent="center">
-              <TextField
-                sx={{input: {textAlign: 'right'}}}
+              <InputWithUnit
                 label="Known mass"
-                variant="outlined"
+                units={massUnits}
+                defaultUnit="g"
+                defaultValue="1000"
                 value={knownMass}
-                onChange={handleKnownMassChange} />
-              <FormControl sx={{ minWidth: "80px", ml: 1 }}>
-                <Select value={massUnit} onChange={handleMassUnitChange}>
-                  {Object.keys(weightUnits).map(unit => {
-                    return <MenuItem key={ "weight_unit_" + unit } value={unit}>{unit}</MenuItem>;
-                  })}
-                </Select>
-              </FormControl>
+                onChange={handleKnownMassChange}
+                isValid={(parsed) => parsed >= 0} />
             </Box>
             <KnownWeights forCalibration weights={weights} onClick={handleKnownWeight} />
           </Stack>
