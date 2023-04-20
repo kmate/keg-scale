@@ -13,7 +13,7 @@
 #include "logger.h"
 #include "catalog.h"
 #include "recorder.h"
-#include "scale.h"
+#include "scales.h"
 #include "webserver.h"
 
 Config config;
@@ -23,7 +23,7 @@ BearSSL::WiFiClientSecure *sslClient;
 BrewfatherCatalog catalog;
 GithubGistRecorder recorder;
 
-std::vector<Scale*> scales;
+Scales scales;
 WebServer *server;
 
 void failSetup(const char *message) {
@@ -143,11 +143,7 @@ void setupRecorder() {
 }
 
 void setupScales() {
-  for (int i = 0; i < config.scales.size(); ++i) {
-    Scale *scale = new Scale(i, config.scales[i], persistentConfig.getCalibrationForScale(i));
-    scales.push_back(scale);
-    scale->begin();
-  }
+  scales.begin(config, persistentConfig);
   Serial.println("Scales initialized.");
 }
 
@@ -180,9 +176,7 @@ void loop() {
   yield();
   catalog.handle();
   yield();
-  for (Scale *scale : scales) {
-    scale->update();
-    yield();
-  }
+  scales.handle();
+  yield();
   Logger.handle();
 }

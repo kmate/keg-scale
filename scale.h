@@ -29,7 +29,7 @@ public:
   void begin();
   void update();
   void setState(ScaleState *newState);
-  void render(DynamicJsonDocument &doc);
+  void render(JsonDocument &doc);
 
   void startAdc();
   uint8_t updateAdc();

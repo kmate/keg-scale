@@ -34,7 +34,7 @@ void Scale::setState(ScaleState *newState) {
   this->nextState = newState;
 }
 
-void Scale::render(DynamicJsonDocument &doc) {
+void Scale::render(JsonDocument &doc) {
   JsonObject state = doc.createNestedObject("state");
   this->currentState->render(state);
 

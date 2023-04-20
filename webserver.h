@@ -58,7 +58,7 @@ class WebServer {
   Config &config;
   PersistentConfig &persistentConfig;
   BrewfatherCatalog &catalog;
-  std::vector<Scale*> &scales;
+  Scales &scales;
 
   void addRootHandler() {
     // TODO add cache based on LittleFS upload date if possible
@@ -127,7 +127,7 @@ class WebServer {
       if (scaleId >= 0 && scaleId < this->scales.size()) {
         AsyncResponseStream *response = request->beginResponseStream("application/json");
         DynamicJsonDocument doc(512);
-        this->scales[scaleId]->render(doc);
+        this->scales.render(scaleId, doc);
         serializeJson(doc, *response);
         request->send(response);
       } else {
@@ -139,7 +139,7 @@ class WebServer {
     this->server.on("/standby", HTTP_POST, [this](AsyncWebServerRequest *request) {
       int scaleId = request->arg("scaleId").toInt();
       if (scaleId >= 0 && scaleId < this->scales.size()) {
-        this->scales[scaleId]->setState(new StandbyScaleState());
+        this->scales.standby(scaleId);
         request->send(200, "text/plain", "standby scale " + String(scaleId));
       } else {
         request->send(400);
@@ -150,7 +150,7 @@ class WebServer {
     this->server.on("/live", HTTP_POST, [this](AsyncWebServerRequest *request) {
       int scaleId = request->arg("scaleId").toInt();
       if (scaleId >= 0 && scaleId < this->scales.size()) {
-        this->scales[scaleId]->setState(new LiveMeasurementScaleState());
+        this->scales.liveMeasurement(scaleId);
         request->send(200, "text/plain", "start live measurement on scale " + String(scaleId));
       } else {
         request->send(400);
@@ -161,7 +161,7 @@ class WebServer {
     this->server.on("/tare", HTTP_POST, [this](AsyncWebServerRequest *request) {
       int scaleId = request->arg("scaleId").toInt();
       if (scaleId >= 0 && scaleId < this->scales.size()) {
-        this->scales[scaleId]->setState(new TareScaleState());
+        this->scales.tare(scaleId);
         request->send(200, "text/plain", "tare scale " + String(scaleId));
       } else {
         request->send(400);
@@ -173,7 +173,7 @@ class WebServer {
       int scaleId = request->arg("scaleId").toInt();
       if (scaleId >= 0 && scaleId < this->scales.size() && request->hasParam("knownMass")) {
         float knownMass = request->getParam("knownMass")->value().toFloat();
-        this->scales[scaleId]->setState(new CalibrateScaleState(knownMass));
+        this->scales.calibrate(scaleId, knownMass);
         request->send(200, "text/plain", "calibrate scale " + String(scaleId) + " with known mass " + String(knownMass) + "g");
       } else {
         request->send(400);
@@ -252,7 +252,7 @@ class WebServer {
   }
 
 public:
-  WebServer(Config &_config, PersistentConfig &_persistentConfig, BrewfatherCatalog &_catalog, std::vector<Scale*> &_scales) :
+  WebServer(Config &_config, PersistentConfig &_persistentConfig, BrewfatherCatalog &_catalog, Scales &_scales) :
     config(_config), persistentConfig(_persistentConfig), catalog(_catalog), scales(_scales), server(_config.httpPort) {
     MDNS.addService("http", "tcp", this->config.httpPort);
   }
