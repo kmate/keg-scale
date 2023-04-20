@@ -1,13 +1,13 @@
 #ifndef KEG_SCALE__RECORDER_H
 #define KEG_SCALE__RECORDER_H
 
-#include "config.h"
-
 #include <ESPDateTime.h>
 #include <ESP8266HTTPClient.h>
 #include <WiFiClientSecureBearSSL.h>
 #include <umm_malloc/umm_heap_select.h>
 #include <vector>
+
+#include "config.h"
 
 #define RECORDER_MAX_RESPONSE_SIZE 4096
 

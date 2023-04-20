@@ -1,7 +1,7 @@
 #ifndef KEG_SCALE__SCALE_STATE_H
 #define KEG_SCALE__SCALE_STATE_H
 
-#include "ArduinoJson.h"
+#include <ArduinoJson.h>
 #include <HX711_ADC.h>
 
 class Scale;

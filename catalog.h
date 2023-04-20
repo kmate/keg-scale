@@ -1,15 +1,15 @@
 #ifndef KEG_SCALE__CATALOG_H
 #define KEG_SCALE__CATALOG_H
 
-#include "config.h"
-#include "logger.h"
-
 #include <ArduinoJson.h>
 #include <ESPDateTime.h>
 #include <ESP8266HTTPClient.h>
 #include <WiFiClientSecureBearSSL.h>
 #include <umm_malloc/umm_heap_select.h>
 #include <vector>
+
+#include "config.h"
+#include "logger.h"
 
 #define CATALOG_REFRESH_SECONDS   86400 // once a day - could be forced if needed anyways
 #define CATALOG_MAX_RESPONSE_SIZE 4096

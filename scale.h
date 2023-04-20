@@ -1,7 +1,7 @@
 #ifndef KEG_SCALE__SCALE_H
 #define KEG_SCALE__SCALE_H
 
-#include "ArduinoJson.h"
+#include <ArduinoJson.h>
 #include <HX711_ADC.h>
 
 #include "config.h"
