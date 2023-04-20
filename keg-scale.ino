@@ -178,11 +178,11 @@ void setup() {
 void loop() {
   ArduinoOTA.handle();
   yield();
-  catalog.update();
+  catalog.handle();
   yield();
   for (Scale *scale : scales) {
     scale->update();
     yield();
   }
-  Logger.update();
+  Logger.handle();
 }

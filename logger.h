@@ -18,7 +18,7 @@ public:
     });
   }
 
-  void update() {
+  void handle() {
     this->logSocket.cleanupClients();
   }
 

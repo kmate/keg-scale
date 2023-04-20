@@ -115,7 +115,7 @@ class WebServer {
       request->send(response);
     });
     this->server.on("/catalog/update", HTTP_POST, [this](AsyncWebServerRequest *request) {
-      this->catalog.forceUpdate();
+      this->catalog.update();
       request->send(200, "text/plain", "ok");
     });
   }

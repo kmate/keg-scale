@@ -65,12 +65,12 @@ public:
     this->entries.clear();
   }
 
-  void forceUpdate() {
+  void update() {
     // the next update will execute in the loop
     this->lastRefresh = 0;
   }
 
-  void update() {
+  void handle() {
     HeapSelectIram ephemeral;
 
     time_t now = DateTime.now();
