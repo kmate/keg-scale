@@ -73,7 +73,7 @@ export default function CatalogInputPanel({ catalogRefreshTrigger, onEntryChange
   return (
     <ThemeProvider theme={theme}>
       <List>
-        {data && data.entries && data.entries.sort((a, b) => a.number < b.number).map((entry, index) => {
+        {data && data.entries && data.entries.sort((a, b) => b.number - a.number).map((entry, index) => {
           return (
             <ListItemButton
               selected={selectedEntry && selectedEntry.id == entry.id}
