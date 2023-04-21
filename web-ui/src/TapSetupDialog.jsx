@@ -27,7 +27,7 @@ const defaultEntry = {
   isValid: false
 }
 
-export default function TapSetupDialog({ index, label, weights, open, onClose }) {
+export default function TapSetupDialog({ scale, weights, open, onClose }) {
   const theme = useTheme();
   const fullScreen = useMediaQuery(theme.breakpoints.down('md'));
   const [useCatalog, setUseCatalog] = React.useState(true);
@@ -66,25 +66,16 @@ export default function TapSetupDialog({ index, label, weights, open, onClose })
     delete payload.isValid;
     payload.bottlingDate = payload.bottlingDate.format("YYYY-MM-DD");
 
-    fetch(apiLocation("/recording/start/" + index), {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload)
-    }).then((response) => {
-      if (response.ok) {
-        setFeedback({ isOpen: true, message: 'Recording started!', severity: 'success' });
-        onClose();
-      } else {
-        setFeedback({ isOpen: true, message: 'Failed to start recording!', severity: 'error' });
-      }
-    })
+    scale.startRecording(payload)
+      .then(() => setFeedback({ isOpen: true, message: 'Recording started!', severity: 'success' }))
+      .catch(() => setFeedback({ isOpen: true, message: 'Failed to start recording!', severity: 'error' }));
   };
 
   return (
     <>
       <Dialog open={open} onClose={onClose} fullScreen={fullScreen} fullWidth maxWidth="md" scroll="body">
         <DialogTitle variant="h6" sx={{ flexGrow: 1 }}>
-            <Typography variant="overline" noWrap paragraph mb={0}>{label}</Typography>
+            <Typography variant="overline" noWrap paragraph mb={0}>{scale.label}</Typography>
             <Divider />
             Tap setup
           </DialogTitle>

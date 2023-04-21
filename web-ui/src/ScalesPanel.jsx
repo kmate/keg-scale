@@ -8,41 +8,42 @@ import apiLocation from './apiLocation';
 import ErrorIndicator from './ErrorIndicator';
 import LoadingIndicator from './LoadingIndicator';
 import ScalePanel from './ScalePanel';
+import Scales from './scales';
 
-function ScalePanelGrid({ scales, weights }) {
+function ScalePanelGrid({ scaleConfig, weights }) {
 
   const [scaleData, setScaleData] = React.useState([]);
+  const [scales, _] = React.useState(() => {
+    return new Scales(
+      apiLocation('/scales').replace(/^http/, 'ws'),
+      scaleConfig,
+      (payload) => {
+        setScaleData((scaleData) => {
+          const newScaleData = [...scaleData];
+          newScaleData[payload.index] = payload;
+          return newScaleData;
+        });
+      }
+    )
+  });
 
   React.useEffect(() => {
-    console.info('Opening scales socket...');
-    const scalesSocket = new ReconnectingWebSocket(apiLocation('/scales').replace(/^http/, 'ws'));
-
-    scalesSocket.onerror = (e) => {
-      console.warn('Scales socket error.', e);
-    };
-
-    scalesSocket.onmessage = e => {
-      setScaleData((scaleData) => {
-        const payload = JSON.parse(e.data);
-        const newScaleData = [...scaleData];
-        newScaleData[payload.index] = payload;
-        return newScaleData;
-      });
-    };
-
+    scales.open();
     return () => {
-      scalesSocket.close();
-      console.info('Scales socket closed.');
+      scales.close();
     };
-  }, [scales, weights]);
+  }, [scaleConfig]);
 
   return (
     <Box sx={{ flexGrow: 1, p: 1 }}>
       <Grid container columns={2} spacing={1}>
-        {scales.map((scale, index) => {
+        {scales.instances.map((scale, index) => {
           return (
             <Grid item key={"scale_" + index} xs={2} md={1}>
-              <ScalePanel label={scale.label} data={scaleData[index]} weights={weights} index={index} />
+              <ScalePanel
+                scale={scale}
+                data={scaleData[index]}
+                weights={weights} />
             </Grid>
           );
         })}
@@ -61,7 +62,7 @@ export default function ScalesPanel() {
         ? <LoadingIndicator />
         : (error
           ? <ErrorIndicator error={error} />
-          : <ScalePanelGrid scales={data.scales} weights={data.weights} />)}
+          : <ScalePanelGrid scaleConfig={data.scales} weights={data.weights} />)}
     </>
   );
 }

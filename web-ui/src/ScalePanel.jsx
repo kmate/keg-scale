@@ -1,5 +1,4 @@
 import * as React from 'react';
-import apiLocation from './apiLocation';
 
 import { Button, Divider, IconButton, Paper, Toolbar, Tooltip, Typography } from '@mui/material';
 import CloudOffIcon from '@mui/icons-material/CloudOff';
@@ -31,37 +30,32 @@ function OfflineView() {
   return <ScaleToolbar icon={CloudOffIcon} stateName="Offline" />;
 }
 
-function StandbyView({ index, onCalibrationClick, onTapSetupClick }) {
+function StandbyView({ scale, onTapSetupClick }) {
   const handleLiveMeasurementClick = () => {
-    fetch(apiLocation("/live/" + index), { method: "POST" });
+    scale.liveMeasurement();
   };
 
   return (
     <ScaleToolbar icon={PowerSettingsNewIcon} stateName="Standby">
-      <Tooltip title="Calibrate">
-        <IconButton onClick={onCalibrationClick}>
-          <AdjustIcon />
+      <Tooltip title="Tap setup">
+        <IconButton onClick={onTapSetupClick}>
+          <SportsBarIcon />
         </IconButton>
       </Tooltip>
       <Tooltip title="Live measurement">
-        <IconButton onClick={handleLiveMeasurementClick}>
+        <IconButton onClick={handleLiveMeasurementClick} edge="end">
           <BalanceIcon />
-        </IconButton>
-      </Tooltip>
-      <Tooltip title="Tap setup">
-        <IconButton onClick={onTapSetupClick} edge="end">
-          <SportsBarIcon />
         </IconButton>
       </Tooltip>
     </ScaleToolbar>
   );
 }
 
-function LiveMeasurementView({ index, data, weights, onCalibrationClick }) {
-  const [tareOffset, setTareOffset] = useLocalStorage("tareOffset_" + index, 0);
+function LiveMeasurementView({ scale, data, weights, onCalibrationClick }) {
+  const [tareOffset, setTareOffset] = useLocalStorage("tareOffset_" + scale.index, 0);
 
   const handleStandbyClick = () => {
-    fetch(apiLocation("/standby/" + index), { method: "POST" });
+    scale.standby();
   };
 
   const handleKnownWeight = (mass) => {
@@ -105,7 +99,7 @@ function TapMeasurementView(props) {
   return <></>;
 }
 
-export default function ScalePanel({ index, label, data, weights }) {
+export default function ScalePanel({ scale, data, weights }) {
   const [calibrationIsOpen, setCalibrationIsOpen] = React.useState(false);
   const [tapSetupIsOpen, setTapSetupIsOpen] = React.useState(false);
 
@@ -130,32 +124,28 @@ export default function ScalePanel({ index, label, data, weights }) {
     <Paper>
       { data && data.state && (
         <>
-          <Typography variant="overline" noWrap paragraph ml={1} mb={0}>{label}</Typography>
+          <Typography variant="overline" noWrap paragraph ml={1} mb={0}>{scale.label}</Typography>
           <Divider />
           <TabPanel value={data.state.name} index="offline">
-            <OfflineView index={index} data={data} />
+            <OfflineView />
           </TabPanel>
           <TabPanel value={data.state.name} index="standby">
-            <StandbyView index={index} data={data} onCalibrationClick={handleCalibrationClick} onTapSetupClick={handleTapSetupClick} />
+            <StandbyView scale={scale} onTapSetupClick={handleTapSetupClick} />
           </TabPanel>
           <TabPanel value={data.state.name} index="liveMeasurement">
-            <LiveMeasurementView index={index} data={data} weights={weights} onCalibrationClick={handleCalibrationClick} />
+            <LiveMeasurementView scale={scale} data={data} weights={weights} onCalibrationClick={handleCalibrationClick} />
           </TabPanel>
           <CalibrationDialog
             open={data.state.name != "offline" && calibrationIsOpen}
             onClose={handleCalibrationClose}
+            scale={scale}
             data={data}
-            index={index}
-            label={label}
-            weights={weights}
-          />
+            weights={weights} />
           <TapSetupDialog
             open={data.state.name != "offline" && tapSetupIsOpen}
             onClose={handleTapSetupClose}
-            index={index}
-            label={label}
-            weights={weights}
-          />
+            scale={scale}
+            weights={weights} />
         </>
       )}
     </Paper>
