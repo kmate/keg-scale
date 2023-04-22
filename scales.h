@@ -8,7 +8,9 @@
 #include "persistent_config.h"
 #include "scale.h"
 
-#define SCALE_JSON_DOCUMENT_SIZE 512
+#define MAX_SCALE_JSON_SIZE   512
+#define MAX_COMMAND_JSON_SIZE 512
+#define MAX_ERROR_JSON_SIZE   128
 
 class Scales {
 
@@ -16,9 +18,9 @@ private:
   std::vector<Scale*> scales;
   AsyncWebSocket socket;
 
-public:
   AsyncWebSocketMessageBuffer *scaleToJson(Scale *scale) {
-    StaticJsonDocument<SCALE_JSON_DOCUMENT_SIZE> doc;
+    StaticJsonDocument<MAX_SCALE_JSON_SIZE> doc;
+    doc["type"] = "data";
     scale->render(doc);
     size_t len = measureJson(doc);
     AsyncWebSocketMessageBuffer *buffer = this->socket.makeBuffer(len);
@@ -26,11 +28,90 @@ public:
     return buffer;
   }
 
+  AsyncWebSocketMessageBuffer *errorToJson(String &message) {
+    StaticJsonDocument<MAX_ERROR_JSON_SIZE> doc;
+    doc["type"] = "error";
+    doc["message"] = message;
+    size_t len = measureJson(doc);
+    AsyncWebSocketMessageBuffer *buffer = this->socket.makeBuffer(len);
+    serializeJson(doc, (char *) buffer->get(), len + 1);
+    return buffer;
+  }
+
+  bool isCommandValid(JsonObject &command) {
+    return !command.isNull() && command.containsKey("action") && command.containsKey("index");
+  }
+
+  void processCommand(JsonObject &command, AsyncWebSocketClient *client) {
+    String action = command["action"];
+    int index = command["index"];
+
+    if (action == "standby") {
+      Logger.printf("Set scale %d to standby mode.\n", index);
+      this->scales[index]->setState(new StandbyScaleState());
+    } else if (action == "liveMeasurement") {
+      Logger.printf("Start live measurement on scale %d.\n", index);
+      this->scales[index]->setState(new LiveMeasurementScaleState());
+    } else if (action == "tare") {
+      Logger.printf("Start to tare scale %d.\n", index);
+      this->scales[index]->setState(new TareScaleState());
+    } else if (action == "calibrate") {
+      float knownMass = command["knownMass"];
+      Logger.printf("Calibrating scale %d to known mass of %.0fg.\n", index, knownMass);
+      this->scales[index]->setState(new CalibrateScaleState(knownMass));
+    } else if (action == "startRecording") {
+      const JsonObject &tapEntry = command["tapEntry"].as<JsonObject>();
+      String name = tapEntry["name"];
+      Logger.printf("Recording on scale %d for batch %s.\n", index, name.c_str());
+
+      // TODO implement recording based on tap entry
+    } else {
+      String message = "Unknown scale command action: " + action;
+      Logger.print(message);
+      client->text(this->errorToJson(message));
+      return;
+    }
+
+    client->text("{\"type\":\"ack\"}");
+  }
+
+public:
+
   Scales() : socket("/scales") {
     this->socket.onEvent([this](AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType type, void *arg, uint8_t *data, size_t len) {
       if (type == WS_EVT_CONNECT) {
         for (Scale *scale : this->scales) {
           client->text(this->scaleToJson(scale));
+        }
+      } else if (type == WS_EVT_DATA) {
+        AwsFrameInfo *info = (AwsFrameInfo *) arg;
+        // it seems that up to 528 bytes the messages are single-frame
+        if (info->final && info->index == 0 && info->len == len) {
+          char *payload = (char *) data;
+          payload[len] = 0;
+
+          StaticJsonDocument<MAX_COMMAND_JSON_SIZE> doc;
+          DeserializationError error = deserializeJson(doc, payload, len);
+          if (error) {
+            String message = "Unable to deserialize scale command payload: " + String(payload);
+            Logger.print(message);
+            client->text(this->errorToJson(message));
+            return;
+          }
+
+          JsonObject command = doc.as<JsonObject>();
+          if (!this->isCommandValid(command)) {
+            String message = "Invalid scale command format: " + String(payload);
+            Logger.print(message);
+            client->text(this->errorToJson(message));
+            return;
+          }
+
+          this->processCommand(command, client);
+        } else {
+          String message = "Ignoring multi-frame scale command payload.";
+          Logger.print(message);
+          client->text(this->errorToJson(message));
         }
       }
     });
@@ -57,26 +138,6 @@ public:
       }
       yield();
     }
-  }
-
-  size_t size() {
-    return this->scales.size();
-  }
-
-  void standby(int index) {
-    this->scales[index]->setState(new StandbyScaleState());
-  }
-
-  void liveMeasurement(int index) {
-    this->scales[index]->setState(new LiveMeasurementScaleState());
-  }
-
-  void tare(int index) {
-    this->scales[index]->setState(new TareScaleState());
-  }
-
-  void calibrate(int index, float knownMass) {
-    this->scales[index]->setState(new CalibrateScaleState(knownMass));
   }
 };
 

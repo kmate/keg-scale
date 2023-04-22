@@ -14,43 +14,6 @@
 
 const char compiledAt[] = __DATE__ " " __TIME__;
 
-class OneParamRewrite : public AsyncWebRewrite {
-
-protected:
-  String _urlPrefix;
-  int _paramIndex;
-  String _paramsBackup;
-
-public:
-  OneParamRewrite(const char* from, const char* to) : AsyncWebRewrite(from, to) {
-    _paramIndex = _from.indexOf('{');
-
-    if (_paramIndex >= 0 && _from.endsWith("}")) {
-      _urlPrefix = _from.substring(0, _paramIndex);
-      int index = _params.indexOf('{');
-      if (index >= 0) {
-        _params = _params.substring(0, index);
-      }
-    } else {
-      _urlPrefix = _from;
-    }
-    _paramsBackup = _params;
-  }
-
-  bool match(AsyncWebServerRequest *request) override {
-    if (request->url().startsWith(_urlPrefix)) {
-      if (_paramIndex >= 0) {
-        _params = _paramsBackup + request->url().substring(_paramIndex);
-      } else {
-        _params = _paramsBackup;
-      }
-      return true;
-    } else {
-      return false;
-    }
-  }
-};
-
 class WebServer {
 
   AsyncWebServer server;
@@ -119,70 +82,8 @@ class WebServer {
     });
   }
 
-  void addScaleHandlers() {
+  void addScalesHandler() {
     this->server.addHandler(this->scales.getSocket());
-
-    this->server.addRewrite(new OneParamRewrite("/standby/{scaleId}", "/standby?scaleId={scaleId}"));
-    this->server.on("/standby", HTTP_POST, [this](AsyncWebServerRequest *request) {
-      int scaleId = request->arg("scaleId").toInt();
-      if (scaleId >= 0 && scaleId < this->scales.size()) {
-        this->scales.standby(scaleId);
-        request->send(200, "text/plain", "standby scale " + String(scaleId));
-      } else {
-        request->send(400);
-      }
-    });
-
-    this->server.addRewrite(new OneParamRewrite("/live/{scaleId}", "/live?scaleId={scaleId}"));
-    this->server.on("/live", HTTP_POST, [this](AsyncWebServerRequest *request) {
-      int scaleId = request->arg("scaleId").toInt();
-      if (scaleId >= 0 && scaleId < this->scales.size()) {
-        this->scales.liveMeasurement(scaleId);
-        request->send(200, "text/plain", "start live measurement on scale " + String(scaleId));
-      } else {
-        request->send(400);
-      }
-    });
-
-    this->server.addRewrite(new OneParamRewrite("/tare/{scaleId}", "/tare?scaleId={scaleId}"));
-    this->server.on("/tare", HTTP_POST, [this](AsyncWebServerRequest *request) {
-      int scaleId = request->arg("scaleId").toInt();
-      if (scaleId >= 0 && scaleId < this->scales.size()) {
-        this->scales.tare(scaleId);
-        request->send(200, "text/plain", "tare scale " + String(scaleId));
-      } else {
-        request->send(400);
-      }
-    });
-
-    this->server.addRewrite(new OneParamRewrite("/calibrate/{scaleId}", "/calibrate?scaleId={scaleId}"));
-    this->server.on("/calibrate", HTTP_POST, [this](AsyncWebServerRequest *request) {
-      int scaleId = request->arg("scaleId").toInt();
-      if (scaleId >= 0 && scaleId < this->scales.size() && request->hasParam("knownMass")) {
-        float knownMass = request->getParam("knownMass")->value().toFloat();
-        this->scales.calibrate(scaleId, knownMass);
-        request->send(200, "text/plain", "calibrate scale " + String(scaleId) + " with known mass " + String(knownMass) + "g");
-      } else {
-        request->send(400);
-      }
-    });
-
-    this->server.addRewrite(new OneParamRewrite("/recording/start/{scaleId}", "/recording/start?scaleId={scaleId}"));
-    AsyncCallbackJsonWebHandler *recordingStartHandler = new AsyncCallbackJsonWebHandler("/recording/start", [this](AsyncWebServerRequest *request, JsonVariant &json) {
-      const JsonObject& body = json.as<JsonObject>();
-      int scaleId = request->arg("scaleId").toInt();
-      if (scaleId >= 0 && scaleId < this->scales.size()) {
-        // TODO remove logging and start real recording
-        String jsonStr = "";
-        serializeJson(json, jsonStr);
-        Logger.print("Received recording payload: " + jsonStr);
-
-        request->send(200, "text/plain", "start recording on scale " + String(scaleId));
-      } else {
-        request->send(400);
-      }
-    });
-    this->server.addHandler(recordingStartHandler);
   }
 
   void addStatusHandler() {
@@ -249,7 +150,7 @@ public:
     this->addConfigHandler();
     this->addPersistHandler();
     this->addCatalogHandlers();
-    this->addScaleHandlers();
+    this->addScalesHandler();
     this->addStatusHandler();
     this->addLogHandler();
     // makes local testing of web ui easier
