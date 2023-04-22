@@ -6,6 +6,7 @@
 #include <ESP8266HTTPClient.h>
 #include <WiFiClientSecureBearSSL.h>
 #include <umm_malloc/umm_heap_select.h>
+#include <time.h>
 #include <vector>
 
 #include "config.h"
@@ -35,6 +36,23 @@ struct CatalogEntry {
     obj["finalGravity"] = this->finalGravity;
     obj["abv"] = this->abv;
     obj["srm"] = this->srm;
+  }
+
+  static CatalogEntry *fromJson(const JsonObject &obj) {
+    CatalogEntry *entry = new CatalogEntry;
+    strlcpy(entry->id, obj["id"] | "", sizeof(entry->id));
+    entry->number = obj["number"] | 0;
+    strlcpy(entry->name, obj["name"] | "", sizeof(entry->name));
+
+    struct tm bottlingDateTm = {0};
+    strptime(obj["bottlingDate"], "%Y-%m-%d", &bottlingDateTm);
+    entry->bottlingDate = mktime(&bottlingDateTm);
+
+    entry->bottlingSize = obj["bottlingSize"];
+    entry->finalGravity = obj["finalGravity"];
+    entry->abv = obj["abv"];
+    entry->srm = obj["srm"];
+    return entry;
   }
 };
 

@@ -4,6 +4,7 @@
 #include <ArduinoJson.h>
 #include <ESPAsyncWebServer.h>
 
+#include "catalog.h"
 #include "config.h"
 #include "persistent_config.h"
 #include "scale.h"
@@ -60,9 +61,8 @@ private:
       Logger.printf("Calibrating scale %d to known mass of %.0fg.\n", index, knownMass);
       this->scales[index]->setState(new CalibrateScaleState(knownMass));
     } else if (action == "startRecording") {
-      const JsonObject &tapEntry = command["tapEntry"].as<JsonObject>();
-      String name = tapEntry["name"];
-      Logger.printf("Recording on scale %d for batch %s.\n", index, name.c_str());
+      CatalogEntry *entry = CatalogEntry::fromJson(command["tapEntry"].as<JsonObject>());
+      Logger.printf("Recording on scale %d for batch %s.\n", index, entry->name);
 
       // TODO implement recording based on tap entry
     } else {
