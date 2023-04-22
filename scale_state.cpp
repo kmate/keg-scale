@@ -59,7 +59,7 @@ void TareScaleState::enter(Scale *scale, ScaleState *prevState) {
 bool TareScaleState::update() {
   OnlineScaleState::update();
   if (this->scale->isAdcTareDone()) {
-    this->scale->setState(new StandbyScaleState());
+    this->scale->setState(new LiveMeasurementScaleState());
   }
   return false;
 }
@@ -76,7 +76,7 @@ void CalibrateScaleState::enter(Scale *scale, ScaleState *prevState) {
 
 bool CalibrateScaleState::update() {
   OnlineScaleState::update();
-  this->scale->setState(new StandbyScaleState());
+  this->scale->setState(new LiveMeasurementScaleState());
   return false;
 }
 
