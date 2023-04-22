@@ -11,7 +11,7 @@ import KnownWeights from './KnownWeights';
 import srmToRgb from './srmToRgb';
 import { colorUnits, volumeUnits } from './units';
 
-function BatchNameInput({ id, value, onChange, onError, ...props }) {
+function BatchNameInput({ id, number, value, onChange, onError, ...props }) {
   const [prevValue, setPrevValue] = React.useState();
   const [text, setText] = React.useState("");
   const [inputError, setInputError] = React.useState(false);
@@ -54,9 +54,10 @@ function BatchNameInput({ id, value, onChange, onError, ...props }) {
     value={text}
     onChange={handleChange}
     onBlur={handleBlur}
-    InputProps={ id && {
+    InputProps={ id && number && {
       endAdornment:
         <InputAdornment position="end">
+          #{number}
           <Tooltip title={"Catalog id: " + id} placement="left">
             <IconButton disableRipple>
               <LinkIcon fontSize="small" />
@@ -268,6 +269,7 @@ export default function EntryInputPanel({ weights, entry, onEntryChange }) {
       <Grid item xs={1} sm={2} md={3}>
         <BatchNameInput
           id={entry.id}
+          number={entry.number}
           value={entry.name}
           onChange={handleNameChange}
           onError={errorHandler("name")}

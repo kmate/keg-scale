@@ -41,7 +41,7 @@ export default function CatalogInputPanel({ catalogRefreshTrigger, onEntryChange
       const original = data.entries[selectedIndex];
 
       const cloned = selectedEntry && selectedEntry.id == original.id
-        ? { ...selectedEntry, id: null }
+        ? { ...selectedEntry, id: null, number: null }
         : { ...original, bottlingDate: dayjs(original.bottlingDate) };
       cloned.isValid = true;
 
