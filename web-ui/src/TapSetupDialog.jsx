@@ -67,7 +67,10 @@ export default function TapSetupDialog({ scale, weights, open, onClose }) {
     payload.bottlingDate = payload.bottlingDate.format("YYYY-MM-DD");
 
     scale.startRecording(payload)
-      .then(() => setFeedback({ isOpen: true, message: 'Recording started!', severity: 'success' }))
+      .then(() => {
+        setFeedback({ isOpen: true, message: 'Recording started!', severity: 'success' });
+        onClose();
+      })
       .catch(() => setFeedback({ isOpen: true, message: 'Failed to start recording!', severity: 'error' }));
   };
 
