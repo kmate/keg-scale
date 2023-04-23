@@ -19,10 +19,10 @@ private:
   std::vector<Scale*> scales;
   AsyncWebSocket socket;
 
-  AsyncWebSocketMessageBuffer *scaleToJson(Scale *scale) {
+  AsyncWebSocketMessageBuffer *scaleToJson(Scale *scale, bool isFullRender) {
     StaticJsonDocument<MAX_SCALE_JSON_SIZE> doc;
     doc["type"] = "data";
-    scale->render(doc);
+    scale->render(doc, isFullRender);
     size_t len = measureJson(doc);
     AsyncWebSocketMessageBuffer *buffer = this->socket.makeBuffer(len);
     serializeJson(doc, (char *) buffer->get(), len + 1);
@@ -63,8 +63,16 @@ private:
     } else if (action == "startRecording") {
       CatalogEntry *entry = CatalogEntry::fromJson(command["tapEntry"].as<JsonObject>());
       Logger.printf("Recording on scale %d for batch %s.\n", index, entry->name);
-
       // TODO implement recording based on tap entry
+      this->scales[index]->setState(new RecordingScaleState());
+    } else if (action == "pauseRecording") {
+      Logger.printf("Pause recording on scale %d.\n", index);
+      // TODO implement pause recording
+      this->scales[index]->setState(new PausedRecordingScaleState());
+    } else if (action == "continueRecording") {
+      Logger.printf("Continue recording on scale %d.\n", index);
+      // TODO implement continue recording (check existing recording)
+      this->scales[index]->setState(new RecordingScaleState());
     } else {
       String message = "Unknown scale command action: " + action;
       Logger.print(message);
@@ -81,7 +89,7 @@ public:
     this->socket.onEvent([this](AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType type, void *arg, uint8_t *data, size_t len) {
       if (type == WS_EVT_CONNECT) {
         for (Scale *scale : this->scales) {
-          client->text(this->scaleToJson(scale));
+          client->text(this->scaleToJson(scale, true));
         }
       } else if (type == WS_EVT_DATA) {
         AwsFrameInfo *info = (AwsFrameInfo *) arg;
@@ -133,8 +141,10 @@ public:
     this->socket.cleanupClients();
     yield();
     for (Scale *scale : this->scales) {
-      if (scale->update()) {
-        this->socket.textAll(this->scaleToJson(scale));
+      UpdateResult result = scale->update();
+      if (result != UpdateResult::None) {
+        bool isFullRender = result == UpdateResult::StateChange;
+        this->socket.textAll(this->scaleToJson(scale, isFullRender));
       }
       yield();
     }

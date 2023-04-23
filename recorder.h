@@ -80,6 +80,7 @@ public:
     this->lastStatusCode = 0;
     this->lastErrorMessage = String("");
   }
+
   // TODO: implement an update method and call it in the loop
   //  - maintain flag(s?) if the current in-memory data is saved properly; save if not
   //  - try to save root data immediately on change

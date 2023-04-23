@@ -18,7 +18,7 @@ public:
   virtual bool update() = 0;
   virtual void exit(ScaleState *nextState) = 0;
 
-  virtual void render(JsonObject &state) const = 0;
+  virtual void render(JsonObject &state, bool isFull) const = 0;
 };
 
 class OnlineScaleState : public ScaleState {
@@ -28,13 +28,13 @@ public:
   bool update() override;
   void exit(ScaleState *nextState) override {};
 
-  void render(JsonObject &state) const override;
+  void render(JsonObject &state, bool isFull) const override;
 };
 
 class StandbyScaleState : public OnlineScaleState {
 
 public:
-  void render(JsonObject &state) const override;
+  void render(JsonObject &state, bool isFull) const override;
 };
 
 
@@ -47,10 +47,19 @@ public:
   void enter(Scale *scale, ScaleState *prevState) override;
   bool update() override;
 
-  void render(JsonObject &state) const override;
+  void render(JsonObject &state, bool isFull) const override;
 };
 
-class TapMeasurementScaleState : public OnlineScaleState {
+class RecordingScaleState : public OnlineScaleState {
+
+public:
+  void render(JsonObject &state, bool isFull) const override;
+};
+
+class PausedRecordingScaleState : public RecordingScaleState {
+
+public:
+  void render(JsonObject &state, bool isFull) const override;
 };
 
 class TareScaleState : public OnlineScaleState {
@@ -60,7 +69,7 @@ public:
   bool update() override;
   void exit(ScaleState *nextState) override {};
 
-  void render(JsonObject &state) const override;
+  void render(JsonObject &state, bool isFull) const override;
 };
 
 class CalibrateScaleState : public OnlineScaleState {
@@ -73,7 +82,7 @@ public:
   bool update() override;
   void exit(ScaleState *nextState) override {};
 
-  void render(JsonObject &state) const override;
+  void render(JsonObject &state, bool isFull) const override;
 };
 
 class OfflineScaleState : public ScaleState {
@@ -83,7 +92,7 @@ public:
   bool update() override;
   void exit(ScaleState *nextState) override {};
 
-  void render(JsonObject &state) const override;
+  void render(JsonObject &state, bool isFull) const override;
 };
 
 #endif

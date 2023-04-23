@@ -8,6 +8,12 @@
 #include "persistent_config.h"
 #include "scale_state.h"
 
+enum class UpdateResult {
+  StateChange,
+  StateUpdate,
+  None
+};
+
 class Scale {
 
 private:
@@ -27,12 +33,10 @@ public:
   }
 
   void begin();
-
-  // returns whether there was any notable change that we need to push to the clients
-  bool update();
+  UpdateResult update();
 
   void setState(ScaleState *newState);
-  void render(JsonDocument &doc);
+  void render(JsonDocument &doc, bool isFull);
 
   void startAdc();
   uint8_t updateAdc();

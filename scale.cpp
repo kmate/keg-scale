@@ -8,7 +8,7 @@ void Scale::begin() {
   this->setState(new OfflineScaleState());
 }
 
-bool Scale::update() {
+UpdateResult Scale::update() {
   if (this->nextState != nullptr) {
     if (this->currentState != nullptr) {
       this->currentState->exit(this->nextState);
@@ -24,9 +24,11 @@ bool Scale::update() {
       delete prevState;
     }
     yield();
-    return true;
+    return UpdateResult::StateChange;
   } else {
-    return this->currentState->update();
+    return this->currentState->update()
+      ? UpdateResult::StateUpdate
+      : UpdateResult::None;
   }
 }
 
@@ -35,11 +37,11 @@ void Scale::setState(ScaleState *newState) {
   this->nextState = newState;
 }
 
-void Scale::render(JsonDocument &doc) {
+void Scale::render(JsonDocument &doc, bool isFull) {
   doc["index"] = this->index;
 
   JsonObject state = doc.createNestedObject("state");
-  this->currentState->render(state);
+  this->currentState->render(state, isFull);
 
   JsonObject adc = doc.createNestedObject("adc");
   adc["tareOffset"] = this->adc.getTareOffset();

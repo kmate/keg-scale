@@ -17,13 +17,13 @@ bool OnlineScaleState::update() {
   return false;
 }
 
-void OnlineScaleState::render(JsonObject &state) const {
+void OnlineScaleState::render(JsonObject &state, bool isFull) const {
   state["data"] = this->scale->getAdcData();
 }
 
-void StandbyScaleState::render(JsonObject &state) const {
+void StandbyScaleState::render(JsonObject &state, bool isFull) const {
+  OnlineScaleState::render(state, isFull);
   state["name"] = "standby";
-  OnlineScaleState::render(state);
 }
 
 void LiveMeasurementScaleState::enter(Scale *scale, ScaleState *prevState) {
@@ -46,9 +46,21 @@ bool LiveMeasurementScaleState::update() {
   return false;
 }
 
-void LiveMeasurementScaleState::render(JsonObject &state) const {
+void LiveMeasurementScaleState::render(JsonObject &state, bool isFull) const {
+  OnlineScaleState::render(state, isFull);
   state["name"] = "liveMeasurement";
-  OnlineScaleState::render(state);
+}
+
+void RecordingScaleState::render(JsonObject &state, bool isFull) const {
+  OnlineScaleState::render(state, isFull);
+  state["name"] = "recording";
+  state["isPaused"] = false;
+  // TODO render corresponding tap entry on full render
+}
+
+void PausedRecordingScaleState::render(JsonObject &state, bool isFull) const {
+  RecordingScaleState::render(state, isFull);
+  state["isPaused"] = true;
 }
 
 void TareScaleState::enter(Scale *scale, ScaleState *prevState) {
@@ -64,9 +76,9 @@ bool TareScaleState::update() {
   return false;
 }
 
-void TareScaleState::render(JsonObject &state) const {
+void TareScaleState::render(JsonObject &state, bool isFull) const {
+  OnlineScaleState::render(state, isFull);
   state["name"] = "tare";
-  OnlineScaleState::render(state);
 }
 
 void CalibrateScaleState::enter(Scale *scale, ScaleState *prevState) {
@@ -80,10 +92,10 @@ bool CalibrateScaleState::update() {
   return false;
 }
 
-void CalibrateScaleState::render(JsonObject &state) const {
+void CalibrateScaleState::render(JsonObject &state, bool isFull) const {
+  OnlineScaleState::render(state, isFull);
   state["name"] = "calibrate";
   state["knownMass"] = this->knownMass;
-  OnlineScaleState::render(state);
 }
 
 void OfflineScaleState::enter(Scale *scale, ScaleState *prevState) {
@@ -100,6 +112,6 @@ bool OfflineScaleState::update() {
   return false;
 }
 
-void OfflineScaleState::render(JsonObject &state) const {
+void OfflineScaleState::render(JsonObject &state, bool isFull) const {
   state["name"] = "offline";
 }
