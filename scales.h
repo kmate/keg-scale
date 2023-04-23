@@ -46,33 +46,31 @@ private:
   void processCommand(JsonObject &command, AsyncWebSocketClient *client) {
     String action = command["action"];
     int index = command["index"];
+    Scale *scale = this->scales[index];
+
+    if (index < 0 || index >= this->scales.size()) {
+      String message = "Invalid scale index in command: " + String(index);
+      Logger.print(message);
+      client->text(this->errorToJson(message));
+      return;
+    }
 
     if (action == "standby") {
-      Logger.printf("Set scale %d to standby mode.\n", index);
-      this->scales[index]->setState(new StandbyScaleState());
+      scale->standby();
     } else if (action == "liveMeasurement") {
-      Logger.printf("Start live measurement on scale %d.\n", index);
-      this->scales[index]->setState(new LiveMeasurementScaleState());
+      scale->liveMeasurement();
     } else if (action == "tare") {
-      Logger.printf("Start to tare scale %d.\n", index);
-      this->scales[index]->setState(new TareScaleState());
+      scale->tare();
     } else if (action == "calibrate") {
       float knownMass = command["knownMass"];
-      Logger.printf("Calibrating scale %d to known mass of %.0fg.\n", index, knownMass);
-      this->scales[index]->setState(new CalibrateScaleState(knownMass));
+      scale->calibrate(knownMass);
     } else if (action == "startRecording") {
       CatalogEntry *entry = CatalogEntry::fromJson(command["tapEntry"].as<JsonObject>());
-      Logger.printf("Recording on scale %d for batch %s.\n", index, entry->name);
-      // TODO implement recording based on tap entry
-      this->scales[index]->setState(new RecordingScaleState());
+      scale->startRecording(entry);
     } else if (action == "pauseRecording") {
-      Logger.printf("Pause recording on scale %d.\n", index);
-      // TODO implement pause recording
-      this->scales[index]->setState(new PausedRecordingScaleState());
+      scale->pauseRecording();
     } else if (action == "continueRecording") {
-      Logger.printf("Continue recording on scale %d.\n", index);
-      // TODO implement continue recording (check existing recording)
-      this->scales[index]->setState(new RecordingScaleState());
+      scale->continueRecording();
     } else {
       String message = "Unknown scale command action: " + action;
       Logger.print(message);

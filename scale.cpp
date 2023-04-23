@@ -59,6 +59,45 @@ void Scale::render(JsonDocument &doc, bool isFull) {
   adc["signalTimeoutFlag"] = this->adc.getSignalTimeoutFlag();
 }
 
+
+void Scale::standby() {
+  Logger.printf("Set scale %d to standby mode.\n", this->index);
+  this->setState(new StandbyScaleState());
+}
+
+void Scale::liveMeasurement() {
+  Logger.printf("Start live measurement on scale %d.\n", this->index);
+  this->setState(new LiveMeasurementScaleState());
+}
+
+void Scale::tare() {
+  Logger.printf("Start to tare scale %d.\n", this->index);
+  this->setState(new TareScaleState());
+}
+
+void Scale::calibrate(float knownMass) {
+  Logger.printf("Calibrating scale %d to known mass of %.0fg.\n", this->index, knownMass);
+  this->setState(new CalibrateScaleState(knownMass));
+}
+
+void Scale::startRecording(CatalogEntry *entry) {
+  Logger.printf("Recording on scale %d for batch %s.\n", this->index, entry->name);
+  // TODO implement recording based on tap entry
+  this->setState(new RecordingScaleState());
+}
+
+void Scale::pauseRecording() {
+  Logger.printf("Pause recording on scale %d.\n", this->index);
+  // TODO tap entry should be present
+  this->setState(new PausedRecordingScaleState());
+}
+
+void Scale::continueRecording() {
+  Logger.printf("Continue recording on scale %d.\n", this->index);
+  // TODO implement continue recording (check existing recording)
+  this->setState(new RecordingScaleState());
+}
+
 void Scale::startAdc() {
   // TODO should the timeout / tare flag come from config?
   this->adc.startMultiple(5000, false);

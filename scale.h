@@ -4,6 +4,7 @@
 #include <ArduinoJson.h>
 #include <HX711_ADC.h>
 
+#include "catalog.h"
 #include "config.h"
 #include "persistent_config.h"
 #include "scale_state.h"
@@ -32,11 +33,21 @@ public:
     }
   }
 
+  // public interface
   void begin();
   UpdateResult update();
-
-  void setState(ScaleState *newState);
   void render(JsonDocument &doc, bool isFull);
+
+  void standby();
+  void liveMeasurement();
+  void tare();
+  void calibrate(float knownMass);
+  void startRecording(CatalogEntry *entry);
+  void pauseRecording();
+  void continueRecording();
+
+  // functions used by different scale states
+  void setState(ScaleState *newState);
 
   void startAdc();
   uint8_t updateAdc();
