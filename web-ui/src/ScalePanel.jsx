@@ -1,18 +1,21 @@
 import * as React from 'react';
 
-import { Button, Divider, IconButton, Paper, Toolbar, Tooltip, Typography } from '@mui/material';
-import CloudOffIcon from '@mui/icons-material/CloudOff';
-import PowerSettingsNewIcon from '@mui/icons-material/PowerSettingsNew';
 import AdjustIcon from '@mui/icons-material/Adjust';
 import BalanceIcon from '@mui/icons-material/Balance';
+import CloudOffIcon from '@mui/icons-material/CloudOff';
+import PauseIcon from '@mui/icons-material/Pause';
+import PlayArrowIcon from '@mui/icons-material/PlayArrow';
+import PowerSettingsNewIcon from '@mui/icons-material/PowerSettingsNew';
 import SportsBarIcon from '@mui/icons-material/SportsBar';
-
-import TabPanel from './TabPanel';
+import StopIcon from '@mui/icons-material/Stop';
+import { Button, Divider, IconButton, Paper, Toolbar, Tooltip, Typography } from '@mui/material';
+import { Stack } from '@mui/system';
 import CalibrationDialog from './CalibrationDialog';
-import LiveMeasurement from './LiveMeasurement';
 import KnownWeights from './KnownWeights';
-import useLocalStorage from './useLocalStorage';
+import LiveMeasurement from './LiveMeasurement';
+import TabPanel from './TabPanel';
 import TapSetupDialog from './TapSetupDialog';
+import useLocalStorage from './useLocalStorage';
 
 function ScaleToolbar({ children, icon, stateName }) {
   const Icon = icon;
@@ -95,8 +98,36 @@ function LiveMeasurementView({ scale, data, weights, onCalibrationClick }) {
   );
 }
 
-function TapMeasurementView(props) {
-  return <></>;
+function RecordingView({ scale, data }) {
+  // TODO add pause/continue & stop buttons instead
+  // Put the batch name in the title instead?
+  return (
+    <>
+      <ScaleToolbar icon={SportsBarIcon} stateName="TODO put batch name here">
+       {data.isPaused &&
+        <Tooltip title="Continue recording">
+            <IconButton>
+              <PlayArrowIcon />
+            </IconButton>
+          </Tooltip>}
+        {!data.isPaused &&
+          <Tooltip title="Pause recording">
+            <IconButton>
+              <PauseIcon />
+            </IconButton>
+          </Tooltip>}
+        <Tooltip title="Stop recording">
+          <IconButton edge="end">
+            <StopIcon />
+          </IconButton>
+        </Tooltip>
+      </ScaleToolbar>
+      <Divider />
+      <Stack direction="row">
+        <Typography>TODO put actual value and graph here</Typography>
+      </Stack>
+    </>
+  );
 }
 
 export default function ScalePanel({ scale, data, weights }) {
@@ -134,6 +165,9 @@ export default function ScalePanel({ scale, data, weights }) {
           </TabPanel>
           <TabPanel value={data.state.name} index="liveMeasurement">
             <LiveMeasurementView scale={scale} data={data} weights={weights} onCalibrationClick={handleCalibrationClick} />
+          </TabPanel>
+          <TabPanel value={data.state.name} index="recording">
+            <RecordingView scale={scale} data={data} />
           </TabPanel>
           <CalibrationDialog
             open={data.state.name != "offline" && calibrationIsOpen}
