@@ -37,6 +37,26 @@ void Scale::setState(ScaleState *newState) {
   this->nextState = newState;
 }
 
+void Scale::startRecorder(CatalogEntry *tapEntry) {
+  this->recorder.start(this->index, tapEntry);
+}
+
+void Scale::pauseRecorder() {
+  this->recorder.pause(this->index);
+}
+
+void Scale::stopRecorder() {
+  this->recorder.stop(this->index);
+}
+
+bool Scale::updateRecorder() {
+  return this->recorder.update(this->index, this->getAdcData());
+}
+
+void Scale::renderRecorder(JsonObject &obj, bool isFull) {
+  this->recorder.render(this->index, obj, isFull);
+}
+
 void Scale::render(JsonDocument &doc, bool isFull) {
   doc["index"] = this->index;
 
@@ -80,22 +100,24 @@ void Scale::calibrate(float knownMass) {
   this->setState(new CalibrateScaleState(knownMass));
 }
 
-void Scale::startRecording(CatalogEntry *entry) {
-  Logger.printf("Recording on scale %d for batch %s.\n", this->index, entry->name);
-  // TODO implement recording based on tap entry
-  this->setState(new RecordingScaleState());
+void Scale::startRecording(CatalogEntry *tapEntry) {
+  Logger.printf("Recording on scale %d for batch %s.\n", this->index, tapEntry->name);
+  this->setState(new RecordingScaleState(tapEntry));
 }
 
 void Scale::pauseRecording() {
   Logger.printf("Pause recording on scale %d.\n", this->index);
-  // TODO tap entry should be present
   this->setState(new PausedRecordingScaleState());
 }
 
 void Scale::continueRecording() {
   Logger.printf("Continue recording on scale %d.\n", this->index);
-  // TODO implement continue recording (check existing recording)
   this->setState(new RecordingScaleState());
+}
+
+void Scale::stopRecording() {
+  Logger.printf("Stop recording on scale %d.\n", this->index);
+  this->setState(new StopRecordingScaleState());
 }
 
 void Scale::startAdc() {

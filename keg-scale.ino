@@ -21,7 +21,7 @@ PersistentConfig persistentConfig;
 
 BearSSL::WiFiClientSecure *sslClient;
 BrewfatherCatalog catalog;
-GithubGistRecorder recorder;
+Recorder recorder;
 
 Scales scales;
 WebServer *server;
@@ -139,11 +139,13 @@ void setupCatalog() {
 }
 
 void setupRecorder() {
-  recorder.begin(&config.recorder.githubGist, sslClient);
+  if (!recorder.load(config.scales.size())) {
+    failSetup("Loading recorder failed!");
+  }
 }
 
 void setupScales() {
-  scales.begin(config, persistentConfig);
+  scales.begin(config, persistentConfig, recorder);
   Serial.println("Scales initialized.");
 }
 

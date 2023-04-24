@@ -5,6 +5,10 @@ void ScaleState::enter(Scale *_scale, ScaleState *prevState) {
   this->scale = _scale;
 }
 
+void ScaleState::render(JsonObject &state, bool isFull) const {
+  state["isFull"] = isFull;
+}
+
 void OnlineScaleState::enter(Scale *scale, ScaleState *prevState) {
   ScaleState::enter(scale, prevState);
 }
@@ -18,6 +22,7 @@ bool OnlineScaleState::update() {
 }
 
 void OnlineScaleState::render(JsonObject &state, bool isFull) const {
+  ScaleState::render(state, isFull);
   state["data"] = this->scale->getAdcData();
 }
 
@@ -39,7 +44,6 @@ bool LiveMeasurementScaleState::update() {
 
   if (elapsed >= LIVE_MEASUREMENT_REFRESH_SECONDS) {
     this->lastRefresh = now;
-    // TODO only push state when the measured value differs? (what about adc values then?)
     return true;
   }
 
@@ -51,16 +55,47 @@ void LiveMeasurementScaleState::render(JsonObject &state, bool isFull) const {
   state["name"] = "liveMeasurement";
 }
 
+void RecordingScaleState::enter(Scale *scale, ScaleState *prevState) {
+  OnlineScaleState::enter(scale, prevState);
+  this->scale->startRecorder(this->tapEntry);
+}
+
+bool RecordingScaleState::update() {
+  OnlineScaleState::update();
+  return this->scale->updateRecorder();
+}
+
 void RecordingScaleState::render(JsonObject &state, bool isFull) const {
   OnlineScaleState::render(state, isFull);
   state["name"] = "recording";
   state["isPaused"] = false;
-  // TODO render corresponding tap entry on full render
+  this->scale->renderRecorder(state, isFull);
+}
+
+void PausedRecordingScaleState::enter(Scale *scale, ScaleState *prevState) {
+  RecordingScaleState::enter(scale, prevState);
+  this->scale->pauseRecorder();
 }
 
 void PausedRecordingScaleState::render(JsonObject &state, bool isFull) const {
   RecordingScaleState::render(state, isFull);
   state["isPaused"] = true;
+}
+
+void StopRecordingScaleState::enter(Scale *scale, ScaleState *prevState) {
+  OnlineScaleState::enter(scale, prevState);
+  this->scale->stopRecorder();
+}
+
+bool StopRecordingScaleState::update() {
+  this->scale->setState(new StandbyScaleState());
+  // this might bring the scale offline, so let it be the effective change
+  return OnlineScaleState::update();
+}
+
+void StopRecordingScaleState::render(JsonObject &state, bool isFull) const {
+  OnlineScaleState::render(state, isFull);
+  state["name"] = "recording";
 }
 
 void TareScaleState::enter(Scale *scale, ScaleState *prevState) {
@@ -113,5 +148,6 @@ bool OfflineScaleState::update() {
 }
 
 void OfflineScaleState::render(JsonObject &state, bool isFull) const {
+  ScaleState::render(state, isFull);
   state["name"] = "offline";
 }

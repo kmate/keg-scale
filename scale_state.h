@@ -18,7 +18,7 @@ public:
   virtual bool update() = 0;
   virtual void exit(ScaleState *nextState) = 0;
 
-  virtual void render(JsonObject &state, bool isFull) const = 0;
+  virtual void render(JsonObject &state, bool isFull) const;
 };
 
 class OnlineScaleState : public ScaleState {
@@ -52,13 +52,35 @@ public:
 
 class RecordingScaleState : public OnlineScaleState {
 
+  CatalogEntry *tapEntry;
+
 public:
+  // constructor to start recording
+  RecordingScaleState(CatalogEntry *_tapEntry) : tapEntry(_tapEntry) {};
+
+  // constructor to continue recording
+  RecordingScaleState() : tapEntry(nullptr) {};
+
+  void enter(Scale *scale, ScaleState *prevState) override;
+  bool update() override;
+
   void render(JsonObject &state, bool isFull) const override;
 };
 
 class PausedRecordingScaleState : public RecordingScaleState {
 
 public:
+  void enter(Scale *scale, ScaleState *prevState) override;
+
+  void render(JsonObject &state, bool isFull) const override;
+};
+
+class StopRecordingScaleState : public OnlineScaleState {
+
+public:
+  void enter(Scale *scale, ScaleState *prevState) override;
+  bool update() override;
+
   void render(JsonObject &state, bool isFull) const override;
 };
 

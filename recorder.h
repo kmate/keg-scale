@@ -1,99 +1,126 @@
 #ifndef KEG_SCALE__RECORDER_H
 #define KEG_SCALE__RECORDER_H
 
+#include <cmath>
 #include <ESPDateTime.h>
-#include <ESP8266HTTPClient.h>
-#include <WiFiClientSecureBearSSL.h>
-#include <umm_malloc/umm_heap_select.h>
-#include <vector>
 
-#include "config.h"
+#include "catalog.h"
+#include "logger.h"
 
-#define RECORDER_MAX_RESPONSE_SIZE 4096
+#define RECORDING_ENTRY_NUM_RAW_DATA_ITEMS 200
 
-const char *GITHUB_GIST_RECORDER_GQL_URL = "https://api.github.com/graphql";
-const char *GITHUB_GIST_RECORDER_GQL_ROOT_QUERY = "query{node(id:\"%s\"){... on Gist{files{text}}}}\0";
+#define GRAMS_IN_DECILITERS  100
+#define DECILITERS_IN_LITERS 10
 
-class GithubGistRecorder {
+#define MAX_PARTIAL_RENDER_TIME_DELAY_SECONDS 10
+
+struct RecordingEntry {
+  CatalogEntry tapEntry;
+  time_t startDateTime;
+  bool isPaused;
+
+  // This is a special encoding used to save RAM and persistent storage.
+  // Each index represents the remaining volume in the keg in deciliters,
+  // and each corresponding value tells when that volume was reached first.
+  // A zero value is used to represent unused indices, i.e. unseens volumes.
+  // For example, a non-zero value at index 117 tells when the keg had 11.7L
+  // beer left in it. If the keg contained more in some point in time,
+  // values on larger indices should contain earlier timestamps. Also,
+  // if the keg currently contains 11.7L, lower indexes will contain zeroes.
+  time_t rawData[RECORDING_ENTRY_NUM_RAW_DATA_ITEMS];
+};
+
+class Recorder {
 
 private:
-  BearSSL::WiFiClientSecure *client;
-  bool useMFL;
-  int lastStatusCode;
-  String lastErrorMessage;
-
-  GithubGistRecorderConfig *config;
+  RecordingEntry **entries;
 
 public:
-  void downloadRecordingData() {
-    HeapSelectIram ephemeral;
-
-    HTTPClient https;
-
-    if (https.begin(*client, GITHUB_GIST_RECORDER_GQL_URL)) {
-      https.setAuthorization(this->config->userId, this->config->apiKey);
-      char *requestBody = new char[strlen(GITHUB_GIST_RECORDER_GQL_URL) + strlen(this->config->rootNodeId)];
-      sprintf(requestBody, GITHUB_GIST_RECORDER_GQL_ROOT_QUERY, this->config->rootNodeId);
-      this->lastStatusCode = https.POST(requestBody);
-
-// TODO this prints -1 then the stuff gets hanging and WDT kicks...
-      Serial.printf("Status code: %d\n", lastStatusCode);
-      if (this->lastStatusCode > 0) {
-        this->lastErrorMessage = String("");
-
-        if (this->lastStatusCode == HTTP_CODE_OK || this->lastStatusCode == HTTP_CODE_MOVED_PERMANENTLY) {
-          String payload = https.getString();
-          DynamicJsonDocument doc(CATALOG_MAX_RESPONSE_SIZE);
-          DeserializationError error = deserializeJson(doc, payload);
-
-          if (error) {
-            this->lastErrorMessage = String(error.c_str());
-          } else {
-            JsonArray entriesToParse = doc.as<JsonArray>();
-            Serial.printf("Number of recorder entries: %d\n", entriesToParse.size());
-          }
-
-        }
-      } else {
-        this->lastErrorMessage = https.errorToString(this->lastStatusCode);
-      }
-
-      https.end();
-      delete[] requestBody;
-    } else {
-      this->lastErrorMessage = String("Unable to connect to the target host.");
-    }
-  };
-
-  void begin(GithubGistRecorderConfig *_config, BearSSL::WiFiClientSecure *_client) {
-    this->config = _config;
-    this->client = _client;
-    {
-      HeapSelectIram ephemeral;
-      this->useMFL = this->client->probeMaxFragmentLength(GITHUB_GIST_RECORDER_GQL_URL, 443, 512);
-      Serial.printf("Github gist recorder:%s using MFLN.\n", this->useMFL ? "" : " NOT");
-
-      // FIXME see the issue above in the method body
-      //yield();
-      //this->downloadRecordingData();
-    }
-    this->lastStatusCode = 0;
-    this->lastErrorMessage = String("");
+  bool load(int numScales) {
+    this->entries = new RecordingEntry*[numScales];
+    // TODO read recording data from persistent storage
+    return true;
   }
 
-  // TODO: implement an update method and call it in the loop
-  //  - maintain flag(s?) if the current in-memory data is saved properly; save if not
-  //  - try to save root data immediately on change
-  //  - but only save scale data periodically (sync with catalog; schedule to different minutes)
-  // TODO
-  //  - we might be ok with the if from the Location header on create; but don't read the body - a smaller buffer could be sufficient?
-  //  - then we need to be able to query a gist by id, not node id! (if that's possible at all)
+  // TODO write recording data to persistent storage
+  bool save() {
+    return true;
+  }
 
-  // TODO implement a method that scales can call to update the current value
+  bool hasRecording(int index) {
+    return this->entries[index] != nullptr;
+  }
 
-  // TODO implement a method that the web server can use to get the recording data
+  void start(int index, CatalogEntry *tapEntry) {
+    if (this->hasRecording(index)) {
+      Logger.printf("Continue recording for scale %d.\n", index);
+      this->entries[index]->isPaused = false;
+    } else {
+      RecordingEntry *newEntry = new RecordingEntry;
+      newEntry->tapEntry = *tapEntry;
+      newEntry->startDateTime = DateTime.now();
+      newEntry->isPaused = false;
+      memset(newEntry->rawData, 0, sizeof(newEntry->rawData));
+      this->entries[index] = newEntry;
+    }
+  }
 
-  // TODO impelent methods to begin/pause/continue/finish recording
+  void pause(int index) {
+    if (!this->hasRecording(index)) {
+      Logger.printf("Unable to pause recording for scale %d.\n", index);
+      return;
+    }
+
+    Logger.printf("Pause recording for scale %d.\n", index);
+    this->entries[index]->isPaused = false;
+  }
+
+  void stop(int index) {
+    if (!this->hasRecording(index)) {
+      Logger.printf("Unable to stop recording for scale %d.\n", index);
+      return;
+    }
+
+    RecordingEntry *entry = this->entries[index];
+    this->entries[index] = nullptr;
+    delete entry;
+  }
+
+  bool update(int index, float mass) {
+    if (!this->hasRecording(index)) {
+      Logger.printf("Unable to update recording entry for scale %d.\n", index);
+      return false;
+    }
+
+    RecordingEntry *entry = this->entries[index];
+    int value = round(mass * entry->tapEntry.finalGravity / GRAMS_IN_DECILITERS);
+    if (entry->rawData[value] == 0) {
+      entry->rawData[value] = DateTime.now();
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  void render(int index, JsonObject &obj, bool isFull) {
+    RecordingEntry *entry = this->entries[index];
+    obj["isPaused"] = entry->isPaused;
+
+    if (isFull) {
+      obj["startDateTime"] = DateFormatter::format(DateFormatter::SIMPLE, entry->startDateTime);
+      JsonObject tapEntry = obj.createNestedObject("tapEntry");
+      entry->tapEntry.render(tapEntry);
+    }
+
+    time_t now = DateTime.now();
+    JsonObject data = obj.createNestedObject("data");
+    for (int i = 0; i < RECORDING_ENTRY_NUM_RAW_DATA_ITEMS; ++i) {
+      time_t timestamp = entry->rawData[i];
+      if (timestamp != 0 && (isFull || now - timestamp < MAX_PARTIAL_RENDER_TIME_DELAY_SECONDS)) {
+        data[DateFormatter::format(DateFormatter::SIMPLE, timestamp)] = ((float) i) / DECILITERS_IN_LITERS;
+      }
+    }
+  }
 };
 
 #endif

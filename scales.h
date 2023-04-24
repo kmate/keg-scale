@@ -7,6 +7,7 @@
 #include "catalog.h"
 #include "config.h"
 #include "persistent_config.h"
+#include "recorder.h"
 #include "scale.h"
 
 #define MAX_SCALE_JSON_SIZE   512
@@ -65,12 +66,14 @@ private:
       float knownMass = command["knownMass"];
       scale->calibrate(knownMass);
     } else if (action == "startRecording") {
-      CatalogEntry *entry = CatalogEntry::fromJson(command["tapEntry"].as<JsonObject>());
-      scale->startRecording(entry);
+      CatalogEntry *tapEntry = CatalogEntry::fromJson(command["tapEntry"].as<JsonObject>());
+      scale->startRecording(tapEntry);
     } else if (action == "pauseRecording") {
       scale->pauseRecording();
     } else if (action == "continueRecording") {
       scale->continueRecording();
+    } else if (action == "stopRecording") {
+      scale->stopRecording();
     } else {
       String message = "Unknown scale command action: " + action;
       Logger.print(message);
@@ -127,9 +130,9 @@ public:
     return &this->socket;
   }
 
-  void begin(Config &config, PersistentConfig &persistentConfig) {
+  void begin(Config &config, PersistentConfig &persistentConfig, Recorder &recorder) {
     for (int i = 0; i < config.scales.size(); ++i) {
-      Scale *scale = new Scale(i, config.scales[i], persistentConfig.getCalibrationForScale(i));
+      Scale *scale = new Scale(i, config.scales[i], persistentConfig.getCalibrationForScale(i), recorder);
       this->scales.push_back(scale);
       scale->begin();
     }
