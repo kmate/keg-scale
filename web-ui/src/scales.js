@@ -50,6 +50,27 @@ class Scale {
       tapEntry: tapEntry,
     });
   }
+
+  pauseRecording() {
+    return this.#scales.sendCommand({
+      action: "pauseRecording",
+      index: this.#index,
+    });
+  }
+
+  continueRecording() {
+    return this.#scales.sendCommand({
+      action: "continueRecording",
+      index: this.#index,
+    });
+  }
+
+  stopRecording() {
+    return this.#scales.sendCommand({
+      action: "stopRecording",
+      index: this.#index,
+    });
+  }
 }
 
 export default class Scales {

@@ -4,11 +4,18 @@
 #include <ArduinoJson.h>
 #include <HX711_ADC.h>
 
-#include "catalog.h"
 #include "config.h"
 #include "persistent_config.h"
 #include "recorder.h"
 #include "scale_state.h"
+
+// #define RENDER_SCALE_ADC_FOR_DEBUG
+
+#ifdef RENDER_SCALE_ADC_FOR_DEBUG
+  #define MAX_SCALE_JSON_SIZE 1024
+#else
+  #define MAX_SCALE_JSON_SIZE 512
+#endif
 
 enum class UpdateResult {
   StateChange,
@@ -51,14 +58,14 @@ public:
   void liveMeasurement();
   void tare();
   void calibrate(float knownMass);
-  void startRecording(CatalogEntry *tapEntry);
+  void startRecording(TapEntry *tapEntry);
   void pauseRecording();
   void continueRecording();
   void stopRecording();
 
   // functions used by different scale states
   void setState(ScaleState *newState);
-  void startRecorder(CatalogEntry *tapEntry = nullptr);
+  bool startRecorder(TapEntry *tapEntry = nullptr);
   void pauseRecorder();
   void stopRecorder();
   bool updateRecorder();

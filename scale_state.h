@@ -18,7 +18,7 @@ public:
   virtual bool update() = 0;
   virtual void exit(ScaleState *nextState) = 0;
 
-  virtual void render(JsonObject &state, bool isFull) const;
+  virtual void render(JsonObject &state, bool isFull) const = 0;
 };
 
 class OnlineScaleState : public ScaleState {
@@ -52,11 +52,11 @@ public:
 
 class RecordingScaleState : public OnlineScaleState {
 
-  CatalogEntry *tapEntry;
+  TapEntry *tapEntry;
 
 public:
   // constructor to start recording
-  RecordingScaleState(CatalogEntry *_tapEntry) : tapEntry(_tapEntry) {};
+  RecordingScaleState(TapEntry *_tapEntry) : tapEntry(_tapEntry) {};
 
   // constructor to continue recording
   RecordingScaleState() : tapEntry(nullptr) {};

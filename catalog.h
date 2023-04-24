@@ -22,7 +22,7 @@ struct CatalogEntry {
   uint8_t number;
   char name[128];
   time_t bottlingDate;
-  float bottlingSize;
+  float bottlingVolume;
   float finalGravity;
   float abv;
   float srm;
@@ -32,7 +32,7 @@ struct CatalogEntry {
     obj["number"] = this->number;
     obj["name"] = this->name;
     obj["bottlingDate"] = DateFormatter::format(DateFormatter::DATE_ONLY, this->bottlingDate);
-    obj["bottlingSize"] = this->bottlingSize;
+    obj["bottlingVolume"] = this->bottlingVolume;
     obj["finalGravity"] = this->finalGravity;
     obj["abv"] = this->abv;
     obj["srm"] = this->srm;
@@ -48,7 +48,7 @@ struct CatalogEntry {
     strptime(obj["bottlingDate"], "%Y-%m-%d", &bottlingDateTm);
     entry->bottlingDate = mktime(&bottlingDateTm);
 
-    entry->bottlingSize = obj["bottlingSize"];
+    entry->bottlingVolume = obj["bottlingVolume"];
     entry->finalGravity = obj["finalGravity"];
     entry->abv = obj["abv"];
     entry->srm = obj["srm"];
@@ -97,7 +97,7 @@ public:
       return;
     }
 
-    Logger.printWithFreeHeaps("Brewfather catalog update started");
+    Logger.printWithFreeHeaps("[BrewfatherCatalog] Update started");
 
     this->client->setBufferSizes(this->useMFL ? CATALOG_MAX_RESPONSE_SIZE : 512, 512);
 
@@ -121,7 +121,7 @@ public:
             JsonArray entriesToParse = doc.as<JsonArray>();
             this->entries.clear();
 
-            Logger.printWithFreeHeaps("Brewfather catalog update in progress");
+            Logger.printWithFreeHeaps("[BrewfatherCatalog] Update in progress");
 
             uint8_t numEntries = entriesToParse.size();
             for (int i = 0; i < numEntries; ++i) {
@@ -130,7 +130,7 @@ public:
               currentEntry.number = entriesToParse[i]["batchNo"];
               strlcpy(currentEntry.name, entriesToParse[i]["recipe"]["name"], sizeof(currentEntry.name));
               currentEntry.bottlingDate = (int)(entriesToParse[i]["bottlingDate"].as<double>() / 1000l);
-              currentEntry.bottlingSize = entriesToParse[i]["measuredBottlingSize"];
+              currentEntry.bottlingVolume = entriesToParse[i]["measuredBottlingSize"];
               currentEntry.finalGravity = entriesToParse[i]["measuredFg"].as<float>() * 1000.0;
               currentEntry.abv = entriesToParse[i]["measuredAbv"];
               currentEntry.srm = entriesToParse[i]["recipe"]["color"];
@@ -149,7 +149,7 @@ public:
       this->lastErrorMessage = String("Unable to connect to the target host.");
     }
 
-    Logger.printWithFreeHeaps("Brewfather catalog update done");
+    Logger.printWithFreeHeaps("[BrewfatherCatalog] Update done");
   }
 
   time_t getLastRefresh() {

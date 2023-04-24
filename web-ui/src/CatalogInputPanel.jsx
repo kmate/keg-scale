@@ -42,7 +42,7 @@ export default function CatalogInputPanel({ catalogRefreshTrigger, onEntryChange
 
       const cloned = selectedEntry && selectedEntry.id == original.id
         ? { ...selectedEntry, id: null, number: null }
-        : { ...original, bottlingDate: dayjs(original.bottlingDate) };
+        : { ...original, bottlingDate: dayjs(original.bottlingDate), useBottlingVolume: true };
       cloned.isValid = true;
 
       setSelectedEntry(cloned);
@@ -95,7 +95,7 @@ export default function CatalogInputPanel({ catalogRefreshTrigger, onEntryChange
                 </Typography>
                 <Stack divider={<Divider orientation="vertical" flexItem />} direction="row" sx={{ color: "text.secondary" }}>
                   <Typography mx={1} variant="body2">{entry.abv.toFixed(1)}%</Typography>
-                  <Typography mx={1} variant="body2">{entry.bottlingSize.toFixed(1)} L</Typography>
+                  <Typography mx={1} variant="body2">{entry.bottlingVolume.toFixed(1)} L</Typography>
                   <Typography mx={1} variant="body2">{Math.round(entry.finalGravity)} g/L</Typography>
                   <Typography mx={1} variant="body2">{Math.floor((now - new Date(entry.bottlingDate)) / MICROSECONDS_PER_DAY)} days</Typography>
               </Stack>

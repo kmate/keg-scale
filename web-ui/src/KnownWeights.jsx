@@ -4,13 +4,14 @@ import * as React from 'react';
 
 export default function KnownWeights({ children, isToggle, selectFirst, onClick, weights, forTare, forCalibration }) {
 
-  const showWeights = weights.filter((weight) => forTare && weight.forTare || forCalibration && weight.forCalibration);
+  const shownWeights = weights.filter((weight) => forTare && weight.forTare || forCalibration && weight.forCalibration);
 
-  const [selectedLabel, setSelectedLabel] = React.useState(selectFirst ? showWeights[0].label : null);
+  const [selectedLabel, setSelectedLabel] = React.useState(selectFirst ? shownWeights[0].label : null);
 
   React.useEffect(() => {
     if (selectFirst) {
-      onClick(showWeights[0].mass);
+      onClick(shownWeights[0].mass);
+      setSelectedLabel(shownWeights[0].label);
     }
   }, [selectFirst]);
 
@@ -24,7 +25,7 @@ export default function KnownWeights({ children, isToggle, selectFirst, onClick,
   const Btn = isToggle ? ToggleButton : Button;
 
   const buttons = (children || []).concat(
-    showWeights.map((weight, index) => {
+    shownWeights.map((weight, index) => {
       return (
         <Btn key={"weight_" + index} value={weight.label} onClick={makeClickHandler(weight.mass, weight.label)}>{weight.label}</Btn>
       );

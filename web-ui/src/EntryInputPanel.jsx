@@ -148,7 +148,7 @@ function ColorInput({ value, onChange, onError, ...props }) {
   );
 }
 
-function BottlingSizeInput({ value, onChange, onError, ...props }) {
+function BottlingVolumeInput({ value, onChange, onError, ...props }) {
   return (
     <InputWithUnit
       label="Bottling volume"
@@ -197,7 +197,6 @@ function BottlingDateInput({ value, onChange, onError })  {
 export default function EntryInputPanel({ weights, entry, onEntryChange }) {
 
   const [errors, setErrors] = React.useState({});
-  const [useBottlingVolume, setUseBottlingVolume] = React.useState(false);
 
   const handleNameChange = (name) => {
     onEntryChange({ ...entry, name: name });
@@ -215,8 +214,8 @@ export default function EntryInputPanel({ weights, entry, onEntryChange }) {
     onEntryChange({ ...entry, srm: srm });
   };
 
-  const handleBottlingSizeChange = (l) => {
-    onEntryChange({ ...entry, bottlingSize: l });
+  const handleBottlingVolumeChange = (l) => {
+    onEntryChange({ ...entry, bottlingVolume: l });
   };
 
   const handleBottlingDateChange = (d) => {
@@ -224,20 +223,21 @@ export default function EntryInputPanel({ weights, entry, onEntryChange }) {
   };
 
   const handleKnownWeight = (mass) => {
-    if (!useBottlingVolume) {
-      const newEntry = { ...entry, tareOffset: mass };
-      delete newEntry.useBottlingVolume;
+    if (!entry.useBottlingVolume) {
+      const newEntry = { ...entry, tareOffset: mass, useBottlingVolume: false };
       onEntryChange(newEntry);
     }
   }
 
   const handleUseBottlingVolumeChange = (e) => {
     const newUseBottlingVolume = e.currentTarget.checked;
-    setUseBottlingVolume(newUseBottlingVolume);
 
     if (newUseBottlingVolume) {
       const newEntry = { ...entry, useBottlingVolume: true };
       delete newEntry.tareOffset;
+      onEntryChange(newEntry);
+    } else {
+      const newEntry = { ...entry, useBottlingVolume: false };
       onEntryChange(newEntry);
     }
   };
@@ -303,19 +303,19 @@ export default function EntryInputPanel({ weights, entry, onEntryChange }) {
           onError={errorHandler("bottlingDate")} />
       </Grid>
       <Grid item xs={1}>
-        <BottlingSizeInput
-          value={entry.bottlingSize}
-          onChange={handleBottlingSizeChange}
-          onError={errorHandler("bottlingSize")}
+        <BottlingVolumeInput
+          value={entry.bottlingVolume}
+          onChange={handleBottlingVolumeChange}
+          onError={errorHandler("bottlingVolume")}
           fullWidth />
       </Grid>
       <Grid item xs={1}>
         <FormControlLabel control={
-          <Switch checked={useBottlingVolume} onChange={handleUseBottlingVolumeChange} />
+          <Switch checked={entry.useBottlingVolume} onChange={handleUseBottlingVolumeChange} />
         } label="Use for measurement" sx={{width:"100%"}} />
       </Grid>
       <Grid item xs={1} sm={2} md={3}>
-        {!useBottlingVolume &&
+        {!entry.useBottlingVolume &&
           <Stack direction="row" spacing={2} alignItems="center">
             <Typography>Tare offset:</Typography>
             <KnownWeights forTare isToggle selectFirst weights={weights} onClick={handleKnownWeight} />

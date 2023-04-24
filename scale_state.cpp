@@ -5,10 +5,6 @@ void ScaleState::enter(Scale *_scale, ScaleState *prevState) {
   this->scale = _scale;
 }
 
-void ScaleState::render(JsonObject &state, bool isFull) const {
-  state["isFull"] = isFull;
-}
-
 void OnlineScaleState::enter(Scale *scale, ScaleState *prevState) {
   ScaleState::enter(scale, prevState);
 }
@@ -22,7 +18,6 @@ bool OnlineScaleState::update() {
 }
 
 void OnlineScaleState::render(JsonObject &state, bool isFull) const {
-  ScaleState::render(state, isFull);
   state["data"] = this->scale->getAdcData();
 }
 
@@ -73,7 +68,7 @@ void RecordingScaleState::render(JsonObject &state, bool isFull) const {
 }
 
 void PausedRecordingScaleState::enter(Scale *scale, ScaleState *prevState) {
-  RecordingScaleState::enter(scale, prevState);
+  OnlineScaleState::enter(scale, prevState);
   this->scale->pauseRecorder();
 }
 
@@ -141,13 +136,16 @@ bool OfflineScaleState::update() {
   this->scale->startAdc();
   this->scale->updateAdc();
   if (this->scale->isAdcOnline()) {
-    // TODO continue recording if possible
-    this->scale->setState(new StandbyScaleState());
+    if (this->scale->startRecorder()) {
+      // continue recording if possible
+      this->scale->setState(new RecordingScaleState());
+    } else {
+      this->scale->setState(new StandbyScaleState());
+    }
   }
   return false;
 }
 
 void OfflineScaleState::render(JsonObject &state, bool isFull) const {
-  ScaleState::render(state, isFull);
   state["name"] = "offline";
 }

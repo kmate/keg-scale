@@ -1,6 +1,6 @@
 import * as React from 'react';
 import useFetch from "react-fetch-hook";
-import ReconnectingWebSocket from 'reconnecting-websocket';
+import merge from 'lodash.merge';
 
 import { Box, Grid } from '@mui/material';
 
@@ -20,7 +20,11 @@ function ScalePanelGrid({ scaleConfig, weights }) {
       (payload) => {
         setScaleData((scaleData) => {
           const newScaleData = [...scaleData];
-          newScaleData[payload.index] = payload;
+          if (payload.isFull) {
+            newScaleData[payload.index] = payload;
+          } else {
+            merge(newScaleData[payload.index], payload);
+          }
           return newScaleData;
         });
       }

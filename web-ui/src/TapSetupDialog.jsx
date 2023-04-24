@@ -22,7 +22,8 @@ const defaultEntry = {
   abv: 5,
   finalGravity: 1010,
   srm: 9,
-  bottlingSize: 19,
+  bottlingVolume: 19,
+  useBottlingVolume: true,
   bottlingDate: dayjs(),
   isValid: false
 }

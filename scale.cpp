@@ -37,8 +37,8 @@ void Scale::setState(ScaleState *newState) {
   this->nextState = newState;
 }
 
-void Scale::startRecorder(CatalogEntry *tapEntry) {
-  this->recorder.start(this->index, tapEntry);
+bool Scale::startRecorder(TapEntry *tapEntry) {
+  return this->recorder.start(this->index, tapEntry, this->getAdcData());
 }
 
 void Scale::pauseRecorder() {
@@ -59,10 +59,12 @@ void Scale::renderRecorder(JsonObject &obj, bool isFull) {
 
 void Scale::render(JsonDocument &doc, bool isFull) {
   doc["index"] = this->index;
+  doc["isFull"] = isFull;
 
   JsonObject state = doc.createNestedObject("state");
   this->currentState->render(state, isFull);
 
+#ifdef RENDER_SCALE_ADC_FOR_DEBUG
   JsonObject adc = doc.createNestedObject("adc");
   adc["tareOffset"] = this->adc.getTareOffset();
   adc["calibrationFactor"] = this->adc.getCalFactor();
@@ -77,46 +79,47 @@ void Scale::render(JsonDocument &doc, bool isFull) {
 
   adc["tareTimeoutFlag"] = this->adc.getTareTimeoutFlag();
   adc["signalTimeoutFlag"] = this->adc.getSignalTimeoutFlag();
+#endif
 }
 
 
 void Scale::standby() {
-  Logger.printf("Set scale %d to standby mode.\n", this->index);
+  Logger.printf("[Scale] Set scale %d to standby mode.\n", this->index);
   this->setState(new StandbyScaleState());
 }
 
 void Scale::liveMeasurement() {
-  Logger.printf("Start live measurement on scale %d.\n", this->index);
+  Logger.printf("[Scale] Start live measurement on scale %d.\n", this->index);
   this->setState(new LiveMeasurementScaleState());
 }
 
 void Scale::tare() {
-  Logger.printf("Start to tare scale %d.\n", this->index);
+  Logger.printf("[Scale] Start to tare scale %d.\n", this->index);
   this->setState(new TareScaleState());
 }
 
 void Scale::calibrate(float knownMass) {
-  Logger.printf("Calibrating scale %d to known mass of %.0fg.\n", this->index, knownMass);
+  Logger.printf("[Scale] Calibrating scale %d to known mass of %.0fg.\n", this->index, knownMass);
   this->setState(new CalibrateScaleState(knownMass));
 }
 
-void Scale::startRecording(CatalogEntry *tapEntry) {
-  Logger.printf("Recording on scale %d for batch %s.\n", this->index, tapEntry->name);
+void Scale::startRecording(TapEntry *tapEntry) {
+  Logger.printf("[Scale] Recording on scale %d for batch %s.\n", this->index, tapEntry->name);
   this->setState(new RecordingScaleState(tapEntry));
 }
 
 void Scale::pauseRecording() {
-  Logger.printf("Pause recording on scale %d.\n", this->index);
+  Logger.printf("[Scale] Pause recording on scale %d.\n", this->index);
   this->setState(new PausedRecordingScaleState());
 }
 
 void Scale::continueRecording() {
-  Logger.printf("Continue recording on scale %d.\n", this->index);
+  Logger.printf("[Scale] Continue recording on scale %d.\n", this->index);
   this->setState(new RecordingScaleState());
 }
 
 void Scale::stopRecording() {
-  Logger.printf("Stop recording on scale %d.\n", this->index);
+  Logger.printf("[Scale] Stop recording on scale %d.\n", this->index);
   this->setState(new StopRecordingScaleState());
 }
 
@@ -136,7 +139,7 @@ uint8_t Scale::updateAdc() {
 
   if (newOnlineFlag != this->adcOnlineFlag) {
     Logger.printf(
-      "Scale %d went %s (signal timeout: %s, tare timeout: %s).\n",
+      "[Scale] Scale %d went %s (signal timeout: %s, tare timeout: %s).\n",
       this->index,
       newOnlineFlag ? "online" : "offline",
       btoa(isSignalTimeout),

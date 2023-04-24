@@ -10,7 +10,6 @@
 #include "recorder.h"
 #include "scale.h"
 
-#define MAX_SCALE_JSON_SIZE   512
 #define MAX_COMMAND_JSON_SIZE 512
 #define MAX_ERROR_JSON_SIZE   128
 
@@ -50,7 +49,7 @@ private:
     Scale *scale = this->scales[index];
 
     if (index < 0 || index >= this->scales.size()) {
-      String message = "Invalid scale index in command: " + String(index);
+      String message = "[Scales] Invalid scale index in command: " + String(index);
       Logger.print(message);
       client->text(this->errorToJson(message));
       return;
@@ -66,7 +65,7 @@ private:
       float knownMass = command["knownMass"];
       scale->calibrate(knownMass);
     } else if (action == "startRecording") {
-      CatalogEntry *tapEntry = CatalogEntry::fromJson(command["tapEntry"].as<JsonObject>());
+      TapEntry *tapEntry = TapEntry::fromJson(command["tapEntry"].as<JsonObject>());
       scale->startRecording(tapEntry);
     } else if (action == "pauseRecording") {
       scale->pauseRecording();
@@ -75,7 +74,7 @@ private:
     } else if (action == "stopRecording") {
       scale->stopRecording();
     } else {
-      String message = "Unknown scale command action: " + action;
+      String message = "[Scales] Unknown scale command action: " + action;
       Logger.print(message);
       client->text(this->errorToJson(message));
       return;
@@ -102,7 +101,7 @@ public:
           StaticJsonDocument<MAX_COMMAND_JSON_SIZE> doc;
           DeserializationError error = deserializeJson(doc, payload, len);
           if (error) {
-            String message = "Unable to deserialize scale command payload: " + String(payload);
+            String message = "[Scales] Unable to deserialize scale command payload: " + String(payload);
             Logger.print(message);
             client->text(this->errorToJson(message));
             return;
@@ -110,7 +109,7 @@ public:
 
           JsonObject command = doc.as<JsonObject>();
           if (!this->isCommandValid(command)) {
-            String message = "Invalid scale command format: " + String(payload);
+            String message = "[Scales] Invalid scale command format: " + String(payload);
             Logger.print(message);
             client->text(this->errorToJson(message));
             return;
@@ -118,7 +117,7 @@ public:
 
           this->processCommand(command, client);
         } else {
-          String message = "Ignoring multi-frame scale command payload.";
+          String message = "[Scales] Ignoring multi-frame scale command payload.";
           Logger.print(message);
           client->text(this->errorToJson(message));
         }

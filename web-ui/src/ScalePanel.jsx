@@ -99,25 +99,38 @@ function LiveMeasurementView({ scale, data, weights, onCalibrationClick }) {
 }
 
 function RecordingView({ scale, data }) {
-  // TODO add pause/continue & stop buttons instead
-  // Put the batch name in the title instead?
+
+  // TODO add visual feed back and error handling + confirmation dialog before these actions
+
+  const handleContinueClick = () => {
+    scale.continueRecording();
+  };
+
+  const handlePauseClick = () => {
+    scale.pauseRecording();
+  };
+
+  const handleStopClick = () => {
+    scale.stopRecording();
+  };
+
   return (
     <>
-      <ScaleToolbar icon={SportsBarIcon} stateName="TODO put batch name here">
-       {data.isPaused &&
-        <Tooltip title="Continue recording">
-            <IconButton>
+      <ScaleToolbar icon={SportsBarIcon} stateName={data && data.state && data.state.tapEntry && data.state.tapEntry.name}>
+       {data.state && data.state.isPaused &&
+          <Tooltip title="Continue recording">
+            <IconButton onClick={handleContinueClick}>
               <PlayArrowIcon />
             </IconButton>
           </Tooltip>}
-        {!data.isPaused &&
+        {data.state && !data.state.isPaused &&
           <Tooltip title="Pause recording">
-            <IconButton>
+            <IconButton onClick={handlePauseClick}>
               <PauseIcon />
             </IconButton>
           </Tooltip>}
         <Tooltip title="Stop recording">
-          <IconButton edge="end">
+          <IconButton onClick={handleStopClick} edge="end">
             <StopIcon />
           </IconButton>
         </Tooltip>
