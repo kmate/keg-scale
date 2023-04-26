@@ -30,8 +30,8 @@
     "webpack-dev-server": "^4.10.0"
   },
   "dependencies": {
-    "@emotion/react": "^11.10.0",
-    "@emotion/styled": "^11.10.0",
+    "@emotion/react": "^11.9.3",
+    "@emotion/styled": "^11.9.3",
     "@mui/icons-material": "^5.10.2",
     "@mui/material": "^5.10.2",
     "@mui/x-date-pickers": "^6.1.0",
@@ -43,6 +43,7 @@
     "react-dom": "^18.2.0",
     "react-fetch-hook": "^1.9.5",
     "react-use-trigger": "^0.3.4",
+    "recharts": "^2.5.0",
     "reconnecting-websocket": "^4.4.0",
     "use-interval": "^1.4.0",
     "use-long-press": "^2.0.2"

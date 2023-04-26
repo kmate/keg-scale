@@ -9,13 +9,14 @@ import PowerSettingsNewIcon from '@mui/icons-material/PowerSettingsNew';
 import SportsBarIcon from '@mui/icons-material/SportsBar';
 import StopIcon from '@mui/icons-material/Stop';
 import { Button, Divider, IconButton, Paper, Toolbar, Tooltip, Typography } from '@mui/material';
-import { Stack } from '@mui/system';
 import CalibrationDialog from './CalibrationDialog';
 import KnownWeights from './KnownWeights';
 import LiveMeasurement from './LiveMeasurement';
 import TabPanel from './TabPanel';
+import TapMeasurement from './TapMeasurement';
 import TapSetupDialog from './TapSetupDialog';
 import useLocalStorage from './useLocalStorage';
+import srmToRgb from './srmToRgb';
 
 function ScaleToolbar({ children, icon, stateName }) {
   const Icon = icon;
@@ -136,9 +137,11 @@ function RecordingView({ scale, data }) {
         </Tooltip>
       </ScaleToolbar>
       <Divider />
-      <Stack direction="row">
-        <Typography>TODO put actual value and graph here</Typography>
-      </Stack>
+      {data.state && data.state.data && data.state.tapEntry &&
+        <TapMeasurement
+          data={data.state.data}
+          color={srmToRgb(data.state.tapEntry.srm)}
+          padding={3}/>}
     </>
   );
 }
