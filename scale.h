@@ -12,9 +12,9 @@
 // #define RENDER_SCALE_ADC_FOR_DEBUG
 
 #ifdef RENDER_SCALE_ADC_FOR_DEBUG
-  #define MAX_SCALE_JSON_SIZE 1024
+  #define MAKE_SCALE_JSON_DOC(id) DynamicJsonDocument id(1536);
 #else
-  #define MAX_SCALE_JSON_SIZE 512
+  #define MAKE_SCALE_JSON_DOC(id) StaticJsonDocument<1024> id;
 #endif
 
 enum class UpdateResult {

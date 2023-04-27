@@ -20,7 +20,7 @@ private:
   AsyncWebSocket socket;
 
   AsyncWebSocketMessageBuffer *scaleToJson(Scale *scale, bool isFullRender) {
-    StaticJsonDocument<MAX_SCALE_JSON_SIZE> doc;
+    MAKE_SCALE_JSON_DOC(doc);
     doc["type"] = "data";
     scale->render(doc, isFullRender);
     size_t len = measureJson(doc);
