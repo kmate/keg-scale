@@ -16,7 +16,6 @@ import TabPanel from './TabPanel';
 import TapMeasurement from './TapMeasurement';
 import TapSetupDialog from './TapSetupDialog';
 import useLocalStorage from './useLocalStorage';
-import srmToRgb from './srmToRgb';
 
 function ScaleToolbar({ children, icon, stateName }) {
   const Icon = icon;
@@ -138,11 +137,10 @@ function RecordingView({ scale, data }) {
       </ScaleToolbar>
       <Divider />
       {data.state && data.state.data && data.state.tapEntry &&
-        // TODO add ABV, FG, days since on tap, etc.
         <TapMeasurement
           isPaused={data.state.isPaused}
           data={data.state.data}
-          color={srmToRgb(data.state.tapEntry.srm)}
+          tapEntry={data.state.tapEntry}
           padding={3}/>}
     </>
   );

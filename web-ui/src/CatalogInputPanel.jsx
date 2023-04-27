@@ -2,15 +2,13 @@ import * as React from 'react';
 import useFetch from "react-fetch-hook";
 import useTrigger from "react-use-trigger/useTrigger";
 
+import LaunchIcon from '@mui/icons-material/Launch';
+import { Box, IconButton, List, ListItemButton, ListItemIcon, ListItemText, SvgIcon, ThemeProvider, Tooltip, Typography } from "@mui/material";
+import { createTheme, useTheme } from '@mui/material/styles';
+import dayjs from 'dayjs';
 import apiLocation from './apiLocation';
 import srmToRgb from './srmToRgb';
-
-import { createTheme, useTheme } from '@mui/material/styles';
-
-import { Box, Divider, IconButton, List, ListItemButton, ListItemIcon, ListItemText, SvgIcon, ThemeProvider, Tooltip, Typography } from "@mui/material";
-import { Stack } from '@mui/system';
-import LaunchIcon from '@mui/icons-material/Launch';
-import dayjs from 'dayjs';
+import TapEntryProperties from './TapEntryProperties';
 
 function BeerIcon(props) {
   return (
@@ -49,9 +47,6 @@ export default function CatalogInputPanel({ catalogRefreshTrigger, onEntryChange
       onEntryChange(cloned);
     }
   }
-
-  const MICROSECONDS_PER_DAY = 24 * 60 * 60 * 1000;
-  const now = new Date();
 
   const theme = createTheme(useTheme(), {
     components: {
@@ -93,12 +88,7 @@ export default function CatalogInputPanel({ catalogRefreshTrigger, onEntryChange
                     </IconButton>
                   </Tooltip>
                 </Typography>
-                <Stack divider={<Divider orientation="vertical" flexItem />} direction="row" sx={{ color: "text.secondary" }}>
-                  <Typography mx={1} variant="body2">{entry.abv.toFixed(1)}%</Typography>
-                  <Typography mx={1} variant="body2">{entry.bottlingVolume.toFixed(1)} L</Typography>
-                  <Typography mx={1} variant="body2">{Math.round(entry.finalGravity)} g/L</Typography>
-                  <Typography mx={1} variant="body2">{Math.floor((now - new Date(entry.bottlingDate)) / MICROSECONDS_PER_DAY)} days</Typography>
-              </Stack>
+                <TapEntryProperties entry={entry} />
               </ListItemText>
             </ListItemButton>
           );

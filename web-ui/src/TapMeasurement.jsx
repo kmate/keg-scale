@@ -1,14 +1,16 @@
 import * as React from 'react';
 import useInterval from 'use-interval'
 
-import { FormControl, MenuItem, Select, Typography } from '@mui/material';
+import { Box, Divider, FormControl, MenuItem, Select, Typography } from '@mui/material';
 import { Stack } from '@mui/system';
 import { volumeUnits } from './units';
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, XAxis, YAxis } from 'recharts';
+import TapEntryProperties from './TapEntryProperties';
+import srmToRgb from './srmToRgb';
 
 const RENDER_TICK_SECONDS = 10;
 
-export default function TapMeasurement({ data, isPaused, color, padding }) {
+export default function TapMeasurement({ data, isPaused, tapEntry, padding }) {
 
   // force re-render every few seconds
   const [_, setTick] = React.useState(false);
@@ -31,6 +33,8 @@ export default function TapMeasurement({ data, isPaused, color, padding }) {
       value: Number((data[key] * currentVU.multiplier).toFixed(currentVU.digits))
     }; })
     .sort((a, b) => a.timestamp - b.timestamp);
+
+  const color = srmToRgb(tapEntry.srm);
 
   const currentValue = convertedData.length > 0 ? convertedData[convertedData.length - 1].value : NaN;
   const displayValue = 1 / currentValue !== -Infinity && !Number.isNaN(currentValue) ? currentValue : 0;
@@ -57,52 +61,58 @@ export default function TapMeasurement({ data, isPaused, color, padding }) {
   //  where to put the unit selector then? maybe the same row as the ABV, FG, etc.?
   // TODO add smaller crosshairs ever 1 / 0.5 dl?
   return (
-    <Stack direction="row" padding={padding}>
-      <Stack direction="column" alignItems="center">
-        <Typography
-          color={color}
-          sx={{ WebkitTextStrokeWidth: 1, WebkitTextStrokeColor: "white" }}
-          fontWeight={1000}
-          variant="h1"
-          component="span"
-          ml={1}
-          mr={1}>
-          {displayValue}
-        </Typography>
-        <FormControl sx={{ minWidth: "80px" }}>
-            <Select value={volumeUnit} onChange={handleVolumeUnitChange}>
-              {Object.keys(volumeUnits).map(unit => {
-                return <MenuItem key={ "volume_unit_" + unit } value={unit}>{unit}</MenuItem>;
-              })}
-            </Select>
+    <>
+      <TapEntryProperties entry={tapEntry} sx={{ mx: 1 }}>
+        <div style={{flex: '1 0 0'}} />
+        <FormControl sx={{ minWidth: "150px" }}>
+          <Select size="small" value={volumeUnit} onChange={handleVolumeUnitChange} sx={{ my: 1, ml: 1 }}>
+            {Object.keys(volumeUnits).map(unit => {
+              return <MenuItem key={ "volume_unit_" + unit } value={unit}>{unit}</MenuItem>;
+            })}
+          </Select>
         </FormControl>
+      </TapEntryProperties>
+      <Divider />
+      <Stack direction="row" padding={padding}>
+        <Stack direction="column" alignItems="center">
+          <Typography
+            color={color}
+            sx={{ WebkitTextStrokeWidth: 1, WebkitTextStrokeColor: "white" }}
+            fontWeight={1000}
+            variant="h1"
+            component="span"
+            ml={1}
+            mr={1}>
+            {displayValue}
+          </Typography>
+        </Stack>
+        <ResponsiveContainer width="100%" height={300}>
+          <AreaChart>
+          <defs>
+            <linearGradient id="colorGradient" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="5%" stopColor={color} stopOpacity={0.8}/>
+              <stop offset="95%" stopColor={color} stopOpacity={0}/>
+            </linearGradient>
+          </defs>
+            <XAxis
+              dataKey="timestamp"
+              domain={["dataMin", "dataMax"]}
+              name="Time"
+              tickFormatter={unixTime => ""}
+              type="number" />
+            <YAxis dataKey="value" name="Value" min={0} />
+            <CartesianGrid />
+            <Area
+              data={displayData}
+              type="monotoneX"
+              dataKey="value"
+              strokeWidth={3}
+              stroke={color}
+              fillOpacity={1}
+              fill="url(#colorGradient)" />
+          </AreaChart>
+        </ResponsiveContainer>
       </Stack>
-      <ResponsiveContainer width="100%" height={300}>
-        <AreaChart>
-        <defs>
-          <linearGradient id="colorGradient" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="5%" stopColor={color} stopOpacity={0.8}/>
-            <stop offset="95%" stopColor={color} stopOpacity={0}/>
-          </linearGradient>
-        </defs>
-          <XAxis
-            dataKey="timestamp"
-            domain={["dataMin", "dataMax"]}
-            name="Time"
-            tickFormatter={unixTime => ""}
-            type="number" />
-          <YAxis dataKey="value" name="Value" min={0} />
-          <CartesianGrid />
-          <Area
-            data={displayData}
-            type="monotoneX"
-            dataKey="value"
-            strokeWidth={3}
-            stroke={color}
-            fillOpacity={1}
-            fill="url(#colorGradient)" />
-        </AreaChart>
-      </ResponsiveContainer>
-    </Stack>
+    </>
   );
 }
