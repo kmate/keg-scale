@@ -138,7 +138,9 @@ function RecordingView({ scale, data }) {
       </ScaleToolbar>
       <Divider />
       {data.state && data.state.data && data.state.tapEntry &&
+        // TODO add ABV, FG, days since on tap, etc.
         <TapMeasurement
+          isPaused={data.state.isPaused}
           data={data.state.data}
           color={srmToRgb(data.state.tapEntry.srm)}
           padding={3}/>}

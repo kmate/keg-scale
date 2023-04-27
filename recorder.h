@@ -74,6 +74,11 @@ struct RecordingEntry {
   // some point in time, values on larger indices should contain earlier timestamps.
   // Also, if the keg currently contains 11.7L, lower indexes will contain zeroes.
   time_t rawData[RECORDING_ENTRY_NUM_RAW_DATA_ITEMS];
+
+  // Used to guard against increasing the available volume.
+  // Each time we update the rawData field, we save the index here,
+  // and we don't allow next time to fill larger indices than this.
+  int latestValue;
 };
 
 class Recorder {
@@ -114,6 +119,7 @@ public:
       newEntry->startDateTime = DateTime.now();
       newEntry->isPaused = false;
       memset(newEntry->rawData, 0, sizeof(newEntry->rawData));
+      newEntry->latestValue = RECORDING_ENTRY_NUM_RAW_DATA_ITEMS;
 
       if (newEntry->tapEntry.useBottlingVolume) {
         newEntry->tapEntry.tareOffset = currentMass - (newEntry->tapEntry.bottlingVolume * newEntry->tapEntry.finalGravity);
@@ -171,8 +177,13 @@ public:
       return false;
     }
 
-    // TODO we might want to disallow setting a newer timestamp on a higher index. Should we save lastIndex and only allow to go below that?
+    if (value >= entry->latestValue) {
+      // do not allow increasing the available volume in any case
+      return false;
+    }
+
     if (entry->rawData[value] == 0) {
+      entry->latestValue = value;
       entry->rawData[value] = DateTime.now();
       return true;
     } else {
@@ -195,7 +206,7 @@ public:
     for (int i = 0; i < RECORDING_ENTRY_NUM_RAW_DATA_ITEMS; ++i) {
       time_t timestamp = entry->rawData[i];
       if (timestamp != 0 && (isFull || now - timestamp < MAX_PARTIAL_RENDER_TIME_DELAY_SECONDS)) {
-        data[DateFormatter::format(DateFormatter::SIMPLE, timestamp)] = ((float) i) / MEASURED_POINTS_IN_LITERS;
+        data[String(timestamp)] = ((float) i) / MEASURED_POINTS_IN_LITERS;
       }
     }
   }
