@@ -38,20 +38,39 @@ function ScalePanelGrid({ scaleConfig, weights }) {
     };
   }, [scaleConfig]);
 
+  const [fullScreenIndex, setFullscreenIndex] = React.useState(-1);
+
+  const makeEnterFullScreenHandler = (index) => () => {
+    setFullscreenIndex(index);
+  }
+
+  const exitFullScreenHandler = () => {
+    setFullscreenIndex(-1);
+  }
+
+  const scalePanels = scales.instances.map((scale, index) => {
+    return (
+      <Grid item key={"scale_" + index} xs={2} md={1}>
+        <ScalePanel
+          scale={scale}
+          data={scaleData[index]}
+          weights={weights}
+          fullScreen={{
+            isActive: fullScreenIndex == index,
+            onEnter: makeEnterFullScreenHandler(index),
+            onExit: exitFullScreenHandler
+          }}/>
+      </Grid>
+    );
+  });
+
   return (
     <Box sx={{ flexGrow: 1, p: 1 }}>
-      <Grid container columns={2} spacing={1}>
-        {scales.instances.map((scale, index) => {
-          return (
-            <Grid item key={"scale_" + index} xs={2} md={1}>
-              <ScalePanel
-                scale={scale}
-                data={scaleData[index]}
-                weights={weights} />
-            </Grid>
-          );
-        })}
-      </Grid>
+      {fullScreenIndex >= 0 && scalePanels[fullScreenIndex]}
+      {fullScreenIndex < 0 &&
+        <Grid container columns={2} spacing={1}>
+          {scalePanels}
+        </Grid>}
     </Box>
   );
 }

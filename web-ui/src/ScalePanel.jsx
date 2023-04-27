@@ -3,6 +3,8 @@ import * as React from 'react';
 import AdjustIcon from '@mui/icons-material/Adjust';
 import BalanceIcon from '@mui/icons-material/Balance';
 import CloudOffIcon from '@mui/icons-material/CloudOff';
+import FullscreenIcon from '@mui/icons-material/Fullscreen';
+import FullscreenExitIcon from '@mui/icons-material/FullscreenExit';
 import PauseIcon from '@mui/icons-material/Pause';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import PowerSettingsNewIcon from '@mui/icons-material/PowerSettingsNew';
@@ -98,7 +100,7 @@ function LiveMeasurementView({ scale, data, weights, onCalibrationClick }) {
   );
 }
 
-function RecordingView({ scale, data }) {
+function RecordingView({ scale, data, fullScreen }) {
 
   // TODO add visual feed back and error handling + confirmation dialog before these actions
 
@@ -117,7 +119,7 @@ function RecordingView({ scale, data }) {
   return (
     <>
       <ScaleToolbar icon={SportsBarIcon} stateName={data && data.state && data.state.tapEntry && data.state.tapEntry.name}>
-       {data.state && data.state.isPaused &&
+        {data.state && data.state.isPaused &&
           <Tooltip title="Continue recording">
             <IconButton onClick={handleContinueClick}>
               <PlayArrowIcon />
@@ -130,10 +132,22 @@ function RecordingView({ scale, data }) {
             </IconButton>
           </Tooltip>}
         <Tooltip title="Stop recording">
-          <IconButton onClick={handleStopClick} edge="end">
+          <IconButton onClick={handleStopClick}>
             <StopIcon />
           </IconButton>
         </Tooltip>
+        {!fullScreen.isActive &&
+          <Tooltip title="Go fullscreen" edge="end">
+            <IconButton onClick={fullScreen.onEnter}>
+              <FullscreenIcon />
+            </IconButton>
+          </Tooltip>}
+        {fullScreen.isActive &&
+          <Tooltip title="Exit fullscreen" edge="end">
+            <IconButton onClick={fullScreen.onExit}>
+              <FullscreenExitIcon />
+            </IconButton>
+          </Tooltip>}
       </ScaleToolbar>
       <Divider />
       {data.state && data.state.data && data.state.tapEntry &&
@@ -146,7 +160,7 @@ function RecordingView({ scale, data }) {
   );
 }
 
-export default function ScalePanel({ scale, data, weights }) {
+export default function ScalePanel({ scale, data, weights, fullScreen }) {
   const [calibrationIsOpen, setCalibrationIsOpen] = React.useState(false);
   const [tapSetupIsOpen, setTapSetupIsOpen] = React.useState(false);
 
@@ -183,7 +197,7 @@ export default function ScalePanel({ scale, data, weights }) {
             <LiveMeasurementView scale={scale} data={data} weights={weights} onCalibrationClick={handleCalibrationClick} />
           </TabPanel>
           <TabPanel value={data.state.name} index="recording">
-            <RecordingView scale={scale} data={data} />
+            <RecordingView scale={scale} data={data} fullScreen={fullScreen} />
           </TabPanel>
           <CalibrationDialog
             open={data.state.name != "offline" && calibrationIsOpen}
