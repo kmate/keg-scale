@@ -1,14 +1,25 @@
 import * as React from 'react';
 import useInterval from 'use-interval'
 
-import { Box, Divider, FormControl, MenuItem, Select, Typography } from '@mui/material';
+import { Divider, FormControl, MenuItem, Paper, Select, Typography } from '@mui/material';
 import { Stack } from '@mui/system';
 import { volumeUnits } from './units';
-import { Area, AreaChart, CartesianGrid, ResponsiveContainer, XAxis, YAxis } from 'recharts';
+import { Area, AreaChart, CartesianGrid, Label, ReferenceArea, Tooltip, XAxis, YAxis } from 'recharts';
 import TapEntryProperties from './TapEntryProperties';
 import srmToRgb from './srmToRgb';
 
+import { ScrollContainer } from 'react-indiana-drag-scroll';
+import 'react-indiana-drag-scroll/dist/style.css'
+import { purple } from '@mui/material/colors';
+
 const RENDER_TICK_SECONDS = 10;
+
+const SECONDS_PER_HOUR = 60 * 60;
+const SECONDS_PER_DAY = 24 * SECONDS_PER_HOUR;
+
+const HOUR_WIDTH = 30;
+const DAY_WIDTH = 50;
+const POUR_SECOND_WIDTH = 2;
 
 export default function TapMeasurement({ data, isPaused, tapEntry, padding }) {
 
@@ -26,14 +37,70 @@ export default function TapMeasurement({ data, isPaused, tapEntry, padding }) {
     setVolumeUnit(e.target.value);
   };
 
+  let x = 0;
+  let currentPour = null;
+  let pours = [];
+
   const currentVU = volumeUnits[volumeUnit];
   const convertedData = Object.keys(data)
     .map((key) => { return {
       timestamp: Number(key) * 1000,
       value: Number((data[key] * currentVU.multiplier).toFixed(currentVU.digits))
-    }; })
-    .sort((a, b) => a.timestamp - b.timestamp);
+    }})
+    .sort((a, b) => a.timestamp - b.timestamp)
+    .flatMap((current, i, data) => {
+      if (i == 0) {
+        // first data point
+        return [{ ...current, x: x }];
+      }
 
+      const previous = data[i - 1];
+      const secondsSincePrevious = (current.timestamp - previous.timestamp) / 1000;
+      if (secondsSincePrevious > 10) {
+        // new pour should be started and the current one should be finished
+        x += secondsSincePrevious >= SECONDS_PER_DAY
+        ? secondsSincePrevious / SECONDS_PER_DAY * DAY_WIDTH
+        : secondsSincePrevious / SECONDS_PER_HOUR * HOUR_WIDTH;
+
+        let equalizerTimeShift = 1;
+        if (i + 1 < data.length) {
+          const next = data[i + 1];
+          equalizerTimeShift = (next.timestamp - current.timestamp) / 1000;
+        }
+        const equalizer = { timestamp: current.timestamp - equalizerTimeShift, value: previous.value, x: x };
+        x += equalizerTimeShift * POUR_SECOND_WIDTH;
+
+        if (currentPour != null) {
+          pours.push(currentPour);
+          currentPour = { startTime: equalizer.timestamp, startValue: equalizer.value, startX: equalizer.x };
+        }
+
+        return [equalizer, { ...current, x: x }];
+      } else {
+        // continuation of an existing pour
+        if (currentPour == null) {
+          currentPour = { startTime: current.timestamp, startValue: current.value, startX: x };
+        }
+
+        x += secondsSincePrevious * POUR_SECOND_WIDTH;
+        currentPour.endTime = current.timestamp;
+        currentPour.endValue = current.value;
+        currentPour.endX = x;
+
+        if (i == data.length - 1) {
+          // last data point
+          if (currentPour != null) {
+            pours.push(currentPour);
+            currentPour = null;
+          }
+        }
+
+        return [{ ...current, x: x }];
+      }
+    });
+
+  // TODO what should be the default lenght?
+  const graphWidth = convertedData.length > 0 ? convertedData[convertedData.length - 1].x : 100;
   const color = srmToRgb(tapEntry.srm);
 
   const currentValue = convertedData.length > 0 ? convertedData[convertedData.length - 1].value : NaN;
@@ -86,32 +153,49 @@ export default function TapMeasurement({ data, isPaused, tapEntry, padding }) {
             {displayValue}
           </Typography>
         </Stack>
-        <ResponsiveContainer width="100%" height={300}>
-          <AreaChart>
-          <defs>
-            <linearGradient id="colorGradient" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor={color} stopOpacity={0.8}/>
-              <stop offset="95%" stopColor={color} stopOpacity={0}/>
-            </linearGradient>
-          </defs>
+        <ScrollContainer className="graph-scroll-container">
+          <AreaChart width={graphWidth} height={300}>
+            <defs>
+              <linearGradient id="colorGradient" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor={color} stopOpacity={0.8}/>
+                <stop offset="95%" stopColor={color} stopOpacity={0}/>
+              </linearGradient>
+            </defs>
             <XAxis
-              dataKey="timestamp"
+              dataKey="x"
               domain={["dataMin", "dataMax"]}
-              name="Time"
-              tickFormatter={unixTime => ""}
               type="number" />
-            <YAxis dataKey="value" name="Value" min={0} />
-            <CartesianGrid />
+            <YAxis
+              dataKey="value"
+              min={0}
+              label={{ value: "Remaining volume", angle: -90, position: "insideLeft" }} />
+            <CartesianGrid
+              verticalCoordinatesGenerator={(props) => { console.log(props); return pours.map((p) => p.startX + props.offset.left);}}/>
+            {pours.map((pour, i) => {
+              return (
+                <ReferenceArea fill="rgba(0, 0, 0, 1)" key={"pour_" + i} x1={pour.startX} x2={pour.endX}>
+                  <Label
+                    fill={color}
+                    stroke="white"
+                    strokeWidth={0.75}
+                    fontWeight={1000}
+                    position={pour.startValue >= tapEntry.bottlingVolume / 2 ? "insideBottom" : "center"}>
+                    {Number(pour.startValue - pour.endValue).toFixed(currentVU.digits)}
+                  </Label>
+                </ReferenceArea>
+              );
+            })}
             <Area
               data={displayData}
-              type="monotoneX"
+              type="monotone"
               dataKey="value"
               strokeWidth={3}
               stroke={color}
               fillOpacity={1}
               fill="url(#colorGradient)" />
+            <Tooltip />
           </AreaChart>
-        </ResponsiveContainer>
+        </ScrollContainer>
       </Stack>
     </>
   );

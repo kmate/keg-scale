@@ -18,6 +18,7 @@ import TabPanel from './TabPanel';
 import TapMeasurement from './TapMeasurement';
 import TapSetupDialog from './TapSetupDialog';
 import useLocalStorage from './useLocalStorage';
+import createTapMockData from './createTapMockData';
 
 function ScaleToolbar({ children, icon, stateName }) {
   const Icon = icon;
@@ -103,6 +104,7 @@ function LiveMeasurementView({ scale, data, weights, onCalibrationClick }) {
 function RecordingView({ scale, data, fullScreen }) {
 
   // TODO add visual feed back and error handling + confirmation dialog before these actions
+  // maybe use https://www.npmjs.com/package/material-ui-confirm ?
 
   const handleContinueClick = () => {
     scale.continueRecording();
@@ -114,6 +116,13 @@ function RecordingView({ scale, data, fullScreen }) {
 
   const handleStopClick = () => {
     scale.stopRecording();
+    fullScreen.onExit();
+  };
+
+  const createMockData = (bottlingVolume, bottlingDate) => {
+    const mockData = createTapMockData(bottlingVolume, bottlingDate);
+    console.log(mockData);
+    return mockData;
   };
 
   return (
@@ -153,7 +162,9 @@ function RecordingView({ scale, data, fullScreen }) {
       {data.state && data.state.data && data.state.tapEntry &&
         <TapMeasurement
           isPaused={data.state.isPaused}
-          data={data.state.data}
+          data={data.state.tapEntry.name.indexOf("mock") >= 0
+            ? createMockData(data.state.tapEntry.bottlingVolume, data.state.tapEntry.bottlingDate)
+            : data.state.data}
           tapEntry={data.state.tapEntry}
           padding={3}/>}
     </>
@@ -182,7 +193,7 @@ export default function ScalePanel({ scale, data, weights, fullScreen }) {
 
   // TODO figure out how to show debug data
   return (
-    <Paper>
+    <Paper sx={{ width: 1, height: 1 }}>
       { data && data.state && (
         <>
           <Typography variant="overline" noWrap paragraph ml={1} mb={0}>{scale.label}</Typography>

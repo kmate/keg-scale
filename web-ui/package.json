@@ -42,6 +42,7 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-fetch-hook": "^1.9.5",
+    "react-indiana-drag-scroll": "^3.0.3-alpha",
     "react-use-trigger": "^0.3.4",
     "recharts": "^2.5.0",
     "reconnecting-websocket": "^4.4.0",
