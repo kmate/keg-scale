@@ -165,8 +165,7 @@ function RecordingView({ scale, data, fullScreen }) {
           data={data.state.tapEntry.name.indexOf("mock") >= 0
             ? createMockData(data.state.tapEntry.bottlingVolume, data.state.tapEntry.bottlingDate)
             : data.state.data}
-          tapEntry={data.state.tapEntry}
-          padding={3}/>}
+          tapEntry={data.state.tapEntry} />}
     </>
   );
 }

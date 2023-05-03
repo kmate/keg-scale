@@ -3,7 +3,15 @@
   font-family: Arial, Helvetica, sans-serif;
 }
 
-.graph-scroll-container {
+#chart-yAxisWrapper {
+  flex-grow: 0;
+  flex-shrink: 0;
+}
+
+.chart-container {
   background-color: rgba(255, 255, 255, 0.08);
-  overflow: auto hidden;
+}
+
+.chart-scroll-container {
+  overflow: auto hidden !important;
 }
