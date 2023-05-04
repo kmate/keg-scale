@@ -1,7 +1,8 @@
 import * as React from 'react';
 import useInterval from 'use-interval'
+import { useTheme } from '@mui/material/styles';
 
-import { Divider, FormControl, MenuItem, Paper, Select, Typography } from '@mui/material';
+import { Divider, FormControl, MenuItem, Select, Typography } from '@mui/material';
 import { Stack } from '@mui/system';
 import { volumeUnits } from './units';
 import { Area, AreaChart, CartesianGrid, Label, ReferenceArea, Tooltip, XAxis, YAxis } from 'recharts';
@@ -10,7 +11,6 @@ import srmToRgb from './srmToRgb';
 
 import { ScrollContainer } from 'react-indiana-drag-scroll';
 import 'react-indiana-drag-scroll/dist/style.css'
-import { purple } from '@mui/material/colors';
 
 const RENDER_TICK_SECONDS = 10;
 
@@ -140,6 +140,7 @@ function deriveXAxisTicks(compressedData) {
 */
 
 export default function TapMeasurement({ data, isPaused, tapEntry }) {
+  const theme = useTheme();
 
   // force re-render every few seconds
   const [_, setTick] = React.useState(false);
@@ -167,6 +168,7 @@ export default function TapMeasurement({ data, isPaused, tapEntry }) {
 
   const graphWidth = 3000 // displayData.length > 0 ? displayData[displayData.length - 1].x : 100;
   const color = srmToRgb(tapEntry.srm);
+  const axisColor = theme.palette.text.secondary;
 
   // this is an extremely hacky way to put the Y axis outside the chart,
   // hence "freeze it" against horizontal scrolling of the rest of the chart
@@ -180,7 +182,7 @@ export default function TapMeasurement({ data, isPaused, tapEntry }) {
       return;
     }
     const yAxis = yAxisCandidates[0];
-    const yAxisWidth = yAxis.getClientRects()[0].width;
+    const yAxisWidth = Math.ceil(yAxis.getClientRects()[0].width);
 
     yAxis.remove();
     yAxisWrapper.appendChild(yAxis);
@@ -244,20 +246,20 @@ export default function TapMeasurement({ data, isPaused, tapEntry }) {
         </svg>
         <ScrollContainer vertical="false" className="chart-scroll-container">
           <AreaChart width={graphWidth} height={300}>
-            <defs>
-              <linearGradient id="colorGradient" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor={color} stopOpacity={0.8}/>
-                <stop offset="95%" stopColor={color} stopOpacity={0}/>
-              </linearGradient>
-            </defs>
             <XAxis
               dataKey="timestamp"
               domain={["dataMin", "dataMax"]}
-              type="number" />
+              type="number"
+              axisLine={{ stroke: axisColor }}
+              tick={{ fill: axisColor }}
+              tickLine={{ stroke: axisColor }} />
             <YAxis
               dataKey="value"
-              min={0}>
-              <Label angle={-90} position="insideLeft" style={{ textAnchor: "middle" }}>Remaining volume</Label>
+              min={0 /* TODO set max to bottling volume + ~10% to make room for pour labels on top */}
+              axisLine={{ stroke: axisColor }}
+              tick={{ fill: axisColor }}
+              tickLine={{ stroke: axisColor }}>
+              <Label fill={axisColor} angle={-90} position="insideLeft" style={{ textAnchor: "middle" }}>Remaining volume</Label>
             </YAxis>
             <CartesianGrid
               verticalCoordinatesGenerator={(props) => { return pours.map((p) => p.startX + props.offset.left);}}/>
@@ -281,8 +283,8 @@ export default function TapMeasurement({ data, isPaused, tapEntry }) {
               dataKey="value"
               strokeWidth={3}
               stroke={color}
-              fillOpacity={1}
-              fill="url(#colorGradient)" />
+              fillOpacity={0.5}
+              fill={color} />
             <Tooltip />
           </AreaChart>
         </ScrollContainer>
