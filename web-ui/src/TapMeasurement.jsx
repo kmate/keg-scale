@@ -241,7 +241,7 @@ export default function TapMeasurement({ data, isPaused, tapEntry }) {
         </FormControl>
       </TapEntryProperties>
       <Divider />
-      <Stack direction="row" margin={1} className="chart-container">
+      <Stack direction="row" margin={1} paddingX={1} paddingTop={1} className="chart-container">
         <svg id="chart-yAxisWrapper" height={300}>
         </svg>
         <ScrollContainer vertical="false" className="chart-scroll-container">
@@ -259,7 +259,9 @@ export default function TapMeasurement({ data, isPaused, tapEntry }) {
               axisLine={{ stroke: axisColor }}
               tick={{ fill: axisColor }}
               tickLine={{ stroke: axisColor }}>
-              <Label fill={axisColor} angle={-90} position="insideLeft" style={{ textAnchor: "middle" }}>Remaining volume</Label>
+              <Label fill={axisColor} angle={-90} position="insideLeft" style={{ textAnchor: "middle" }}>
+                Remaining volume
+              </Label>
             </YAxis>
             <CartesianGrid
               verticalCoordinatesGenerator={(props) => { return pours.map((p) => p.startX + props.offset.left);}}/>
