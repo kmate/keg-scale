@@ -2,7 +2,7 @@ import * as React from 'react';
 import useFetch from "react-fetch-hook";
 import merge from 'lodash.merge';
 
-import { Box, Grid } from '@mui/material';
+import Grid from '@mui/material/Grid';
 
 import apiLocation from './apiLocation';
 import ErrorIndicator from './ErrorIndicator';
@@ -65,13 +65,13 @@ function ScalePanelGrid({ scaleConfig, weights }) {
   });
 
   return (
-    <Box sx={{ flexGrow: 1, p: 1 }}>
+    <>
       {fullScreenIndex >= 0 && scalePanels[fullScreenIndex]}
       {fullScreenIndex < 0 &&
-        <Grid container columns={2} spacing={1}>
+        <Grid container columns={2} spacing={1} padding={1}>
           {scalePanels}
         </Grid>}
-    </Box>
+    </>
   );
 }
 

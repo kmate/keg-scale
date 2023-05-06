@@ -1,13 +1,10 @@
 import * as React from 'react';
-import Box from '@mui/material/Box';
 
-export default function TabPanel(props) {
-  const { children, value, index, ...other } = props;
-
+export default function TabPanel({ value, index, children, ...props }) {
   return (
-    <div hidden={value !== index} {...other}>
+    <div hidden={value !== index} {...props}>
       {value === index && (
-        <Box>{children}</Box>
+        {...children}
       )}
     </div>
   );

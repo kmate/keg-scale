@@ -3,7 +3,7 @@ import ReconnectingWebSocket from 'reconnecting-websocket';
 
 import { useTheme } from '@mui/material/styles';
 import AppBar from '@mui/material/AppBar';
-import Box from '@mui/material/Box';
+import Stack from '@mui/material/Stack';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 
@@ -46,15 +46,14 @@ export default function MainTabs() {
   }, [debugLog]);
 
   return (
-    <Box sx={{ bgcolor: 'background.paper' }}>
+    <Stack direction="column">
       <AppBar position="static">
         <Tabs
           value={value}
           onChange={handleChange}
           indicatorColor="primary"
           textColor="inherit"
-          variant="fullWidth"
-        >
+          variant="fullWidth">
           <Tab label="Scales" icon={<ScaleIcon />} iconPosition="start" />
           <Tab label="Status" icon={<PermDeviceInformationIcon />} iconPosition="start" />
         </Tabs>
@@ -65,6 +64,6 @@ export default function MainTabs() {
       <TabPanel value={value} index={1} dir={theme.direction}>
         <StatusPanel debugLog={debugLog} setDebugLog={setDebugLog} />
       </TabPanel>
-    </Box>
+    </Stack>
   );
 }

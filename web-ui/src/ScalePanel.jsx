@@ -191,37 +191,33 @@ export default function ScalePanel({ scale, data, weights, fullScreen }) {
   };
 
   // TODO figure out how to show debug data
-  return (
-    <Paper sx={{ width: 1, height: 1 }}>
-      { data && data.state && (
-        <>
-          <Typography variant="overline" noWrap paragraph ml={1} mb={0}>{scale.label}</Typography>
-          <Divider />
-          <TabPanel value={data.state.name} index="offline">
-            <OfflineView />
-          </TabPanel>
-          <TabPanel value={data.state.name} index="standby">
-            <StandbyView scale={scale} onTapSetupClick={handleTapSetupClick} />
-          </TabPanel>
-          <TabPanel value={data.state.name} index="liveMeasurement">
-            <LiveMeasurementView scale={scale} data={data} weights={weights} onCalibrationClick={handleCalibrationClick} />
-          </TabPanel>
-          <TabPanel value={data.state.name} index="recording">
-            <RecordingView scale={scale} data={data} fullScreen={fullScreen} />
-          </TabPanel>
-          <CalibrationDialog
-            open={data.state.name != "offline" && calibrationIsOpen}
-            onClose={handleCalibrationClose}
-            scale={scale}
-            data={data}
-            weights={weights} />
-          <TapSetupDialog
-            open={data.state.name != "offline" && tapSetupIsOpen}
-            onClose={handleTapSetupClose}
-            scale={scale}
-            weights={weights} />
-        </>
-      )}
+  return data && data.state ? (
+    <Paper>
+      <Typography variant="overline" noWrap paragraph ml={1} mb={0}>{scale.label}</Typography>
+      <Divider />
+      <TabPanel value={data.state.name} index="offline">
+        <OfflineView />
+      </TabPanel>
+      <TabPanel value={data.state.name} index="standby">
+        <StandbyView scale={scale} onTapSetupClick={handleTapSetupClick} />
+      </TabPanel>
+      <TabPanel value={data.state.name} index="liveMeasurement">
+        <LiveMeasurementView scale={scale} data={data} weights={weights} onCalibrationClick={handleCalibrationClick} />
+      </TabPanel>
+      <TabPanel value={data.state.name} index="recording">
+        <RecordingView scale={scale} data={data} fullScreen={fullScreen} />
+      </TabPanel>
+      <CalibrationDialog
+        open={data.state.name != "offline" && calibrationIsOpen}
+        onClose={handleCalibrationClose}
+        scale={scale}
+        data={data}
+        weights={weights} />
+      <TapSetupDialog
+        open={data.state.name != "offline" && tapSetupIsOpen}
+        onClose={handleTapSetupClose}
+        scale={scale}
+        weights={weights} />
     </Paper>
-  );
+  ) : <></>;
 }
