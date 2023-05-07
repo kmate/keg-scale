@@ -1,23 +1,35 @@
 {
-    "general": {
-        "compiledAt": "Feb  5 2023 08:59:15",
-        "currentTime": "2023-02-05 09:36:06",
-        "bootTime": "2023-02-05 09:11:40"
-    },
-    "wifi": {
-        "ssid": "MOCK!",
-        "ip": "none"
-    },
-    "eeprom": {
-        "percentUsed": 11
-    },
-    "esp": {
-        "chipId": 3578034,
-        "flashChipId": 1458208,
-        "coreVersion": "3.0.2",
-        "sdkVersion": "2.2.2-dev(38a443e)",
-        "cpuFreqMHz": 80,
-        "sketchSize": 509632,
-        "freeSketchSpace": 1585152
-    }
+  "general": {
+    "compiledAt": "Apr 27 2023 13:57:44",
+    "currentTime": "2023-05-07 18:53:14",
+    "bootTime": "2023-05-06 18:10:46"
+  },
+  "wifi": {
+    "ssid": "MOCK!",
+    "ip": "xxx.xxx.xxx.xxx"
+  },
+  "heap": {
+    "freeDramHeap": 15168,
+    "dramHeapFragmentation": 9,
+    "freeIramHeap": 15168,
+    "iramHeapFragmentation": 9
+  },
+  "eeprom": {
+    "percentUsed": 22
+  },
+  "fs": {
+    "totalBytes": 2072576,
+    "freeBytes": 851968,
+    "blockSize": 8192,
+    "pageSize": 256
+  },
+  "esp": {
+    "chipId": 3578034,
+    "flashChipId": 1458208,
+    "coreVersion": "3.1.2",
+    "sdkVersion": "2.2.2-dev(38a443e)",
+    "cpuFreqMHz": 80,
+    "sketchSize": 551232,
+    "freeSketchSpace": 1544192
+  }
 }
