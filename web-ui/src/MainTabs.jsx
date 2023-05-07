@@ -15,6 +15,7 @@ import StatusPanel from './StatusPanel';
 import ScalesPanel from './ScalesPanel';
 import useLocalStorage from './useLocalStorage';
 import apiLocation from './apiLocation';
+import { useMock } from './mock';
 
 export default function MainTabs() {
   const theme = useTheme();
@@ -26,7 +27,7 @@ export default function MainTabs() {
   };
 
   React.useEffect(() => {
-    if (debugLog) {
+    if (debugLog && !useMock()) {
       console.info('Opening log socket...');
       const logSocket = new ReconnectingWebSocket(apiLocation('/log').replace(/^http/, 'ws'));
 

@@ -18,7 +18,6 @@ import TabPanel from './TabPanel';
 import TapMeasurement from './TapMeasurement';
 import TapSetupDialog from './TapSetupDialog';
 import useLocalStorage from './useLocalStorage';
-import createTapMockData from './createTapMockData';
 
 function ScaleToolbar({ children, icon, stateName }) {
   const Icon = icon;
@@ -119,12 +118,6 @@ function RecordingView({ scale, data, fullScreen }) {
     fullScreen.onExit();
   };
 
-  const createMockData = (bottlingVolume, bottlingDate) => {
-    const mockData = createTapMockData(bottlingVolume, bottlingDate);
-    console.log(mockData);
-    return mockData;
-  };
-
   return (
     <>
       <ScaleToolbar icon={SportsBarIcon} stateName={data && data.state && data.state.tapEntry && data.state.tapEntry.name}>
@@ -162,9 +155,7 @@ function RecordingView({ scale, data, fullScreen }) {
       {data.state && data.state.data && data.state.tapEntry &&
         <TapMeasurement
           isPaused={data.state.isPaused}
-          data={data.state.tapEntry.name.indexOf("mock") >= 0
-            ? createMockData(data.state.tapEntry.bottlingVolume, data.state.tapEntry.bottlingDate)
-            : data.state.data}
+          data={data.state.data}
           tapEntry={data.state.tapEntry} />}
     </>
   );

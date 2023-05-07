@@ -9,6 +9,7 @@ import ErrorIndicator from './ErrorIndicator';
 import LoadingIndicator from './LoadingIndicator';
 import ScalePanel from './ScalePanel';
 import Scales from './scales';
+import { creteMockScaleData, useMock } from './mock';
 
 function ScalePanelGrid({ scaleConfig, weights }) {
 
@@ -32,10 +33,14 @@ function ScalePanelGrid({ scaleConfig, weights }) {
   });
 
   React.useEffect(() => {
-    scales.open();
-    return () => {
-      scales.close();
-    };
+    if (useMock()) {
+      setScaleData(creteMockScaleData(scaleConfig));
+    } else {
+      scales.open();
+      return () => {
+        scales.close();
+      };
+    }
   }, [scaleConfig]);
 
   const [fullScreenIndex, setFullscreenIndex] = React.useState(-1);

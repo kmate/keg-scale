@@ -18,9 +18,6 @@
         "sdkVersion": "2.2.2-dev(38a443e)",
         "cpuFreqMHz": 80,
         "sketchSize": 509632,
-        "freeSketchSpace": 1585152,
-        "freeIramHeap": 17992,
-        "freeDramHeap": 22256,
-        "heapFragmentation": 14
+        "freeSketchSpace": 1585152
     }
 }
