@@ -213,21 +213,6 @@ export default function TapMeasurement({ data, isPaused, tapEntry }) {
   //  where to put the unit selector then? maybe the same row as the ABV, FG, etc.?
   // TODO add smaller crosshairs ever 1 / 0.5 dl?
 
-/*
-        <Stack direction="column" alignItems="center">
-          <Typography
-            color={color}
-            sx={{ WebkitTextStrokeWidth: 1, WebkitTextStrokeColor: "white" }}
-            fontWeight={1000}
-            variant="h1"
-            component="span"
-            ml={1}
-            mr={1}>
-            {displayValue}
-          </Typography>
-        </Stack>
-*/
-
   return (
     <>
       <TapEntryProperties entry={tapEntry} sx={{ mx: 1 }}>
@@ -241,54 +226,71 @@ export default function TapMeasurement({ data, isPaused, tapEntry }) {
         </FormControl>
       </TapEntryProperties>
       <Divider />
+      <div className="chart-display-value">
+        { /* FIXME a horizontal scrollbar started to appear on the whole page because of this! */ }
+        {/* FIXME for correct absolute positioning we need position: relative on parent I think */}
+          {false && <Typography
+            color={color}
+            sx={{ WebkitTextStrokeWidth: 1, WebkitTextStrokeColor: "white" }}
+            fontWeight={1000}
+            variant="h1"
+            component="span">
+            {displayValue}
+          </Typography>}
+      </div>
       <Stack direction="row" margin={1} paddingX={1} paddingTop={1} className="chart-container">
+        { /*
+          height should be 100% of the space available, and that should be half of the vertical space;
+          so each scale panel should take 1/Nth portion of the screen where N is the number of scales.
+          (we can optimize for 2, 4, etc.)
+          when fullscreen option enabled, that single scale panel should fit the whole screen (except app bar)!
+        */ }
         <svg id="chart-yAxisWrapper" height={300}>
         </svg>
         <ScrollContainer vertical="false" className="chart-scroll-container">
-          <AreaChart width={graphWidth} height={300}>
-            <XAxis
-              dataKey="timestamp"
-              domain={["dataMin", "dataMax"]}
-              type="number"
-              axisLine={{ stroke: axisColor }}
-              tick={{ fill: axisColor }}
-              tickLine={{ stroke: axisColor }} />
-            <YAxis
-              dataKey="value"
-              min={0 /* TODO set max to bottling volume + ~10% to make room for pour labels on top */}
-              axisLine={{ stroke: axisColor }}
-              tick={{ fill: axisColor }}
-              tickLine={{ stroke: axisColor }}>
-              <Label fill={axisColor} angle={-90} position="insideLeft" style={{ textAnchor: "middle" }}>
-                Remaining volume
-              </Label>
-            </YAxis>
-            <CartesianGrid
-              verticalCoordinatesGenerator={(props) => { return pours.map((p) => p.startX + props.offset.left);}}/>
-            {pours.map((pour, i) => {
-              return (
-                <ReferenceArea fill="rgba(0, 0, 0, 1)" key={"pour_" + i} x1={pour.startX} x2={pour.endX}>
-                  <Label
-                    fill={color}
-                    stroke="white"
-                    strokeWidth={0.75}
-                    fontWeight={1000}
-                    position={pour.startValue >= tapEntry.bottlingVolume / 2 ? "insideBottom" : "center"}>
-                    {Number(pour.startValue - pour.endValue).toFixed(currentVU.digits)}
-                  </Label>
-                </ReferenceArea>
-              );
-            })}
-            <Area
-              data={displayData}
-              type="monotone"
-              dataKey="value"
-              strokeWidth={3}
-              stroke={color}
-              fillOpacity={0.5}
-              fill={color} />
-            <Tooltip />
-          </AreaChart>
+            <AreaChart data={displayData} width={graphWidth} height={300}>
+              <XAxis
+                dataKey="timestamp"
+                domain={["dataMin", "dataMax"]}
+                type="number"
+                axisLine={{ stroke: axisColor }}
+                tick={{ fill: axisColor }}
+                tickLine={{ stroke: axisColor }} />
+              <YAxis
+                dataKey="value"
+                min={0 /* TODO set max to bottling volume + ~10% to make room for pour labels on top */}
+                axisLine={{ stroke: axisColor }}
+                tick={{ fill: axisColor }}
+                tickLine={{ stroke: axisColor }}>
+                <Label fill={axisColor} angle={-90} position="insideLeft" style={{ textAnchor: "middle" }}>
+                  Remaining volume
+                </Label>
+              </YAxis>
+              <CartesianGrid
+                verticalCoordinatesGenerator={(props) => { return pours.map((p) => p.startX + props.offset.left);}}/>
+              {pours.map((pour, i) => {
+                return (
+                  <ReferenceArea fill="rgba(0, 0, 0, 1)" key={"pour_" + i} x1={pour.startX} x2={pour.endX}>
+                    <Label
+                      fill={color}
+                      stroke="white"
+                      strokeWidth={0.75}
+                      fontWeight={1000}
+                      position={pour.startValue >= tapEntry.bottlingVolume / 2 ? "insideBottom" : "center"}>
+                      {Number(pour.startValue - pour.endValue).toFixed(currentVU.digits)}
+                    </Label>
+                  </ReferenceArea>
+                );
+              })}
+              <Area
+                type="monotone"
+                dataKey="value"
+                strokeWidth={3}
+                stroke={color}
+                fillOpacity={0.5}
+                fill={color} />
+              <Tooltip />
+            </AreaChart>
         </ScrollContainer>
       </Stack>
     </>

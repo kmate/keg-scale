@@ -2,13 +2,14 @@ import * as React from 'react';
 import useFetch from "react-fetch-hook";
 import merge from 'lodash.merge';
 
-import Grid from '@mui/material/Grid';
+import Box from '@mui/material/Box';
 
 import apiLocation from './apiLocation';
 import ErrorIndicator from './ErrorIndicator';
 import LoadingIndicator from './LoadingIndicator';
 import ScalePanel from './ScalePanel';
 import Scales from './scales';
+import useLocalStorage from './useLocalStorage';
 import { creteMockScaleData, useMock } from './mock';
 
 function ScalePanelGrid({ scaleConfig, weights }) {
@@ -43,39 +44,39 @@ function ScalePanelGrid({ scaleConfig, weights }) {
     }
   }, [scaleConfig]);
 
-  const [fullScreenIndex, setFullscreenIndex] = React.useState(-1);
+  const [fullScreenIndex, setFullScreenIndex] = useLocalStorage("fullScreenIndex", -1);
 
   const makeEnterFullScreenHandler = (index) => () => {
-    setFullscreenIndex(index);
+    setFullScreenIndex(index);
   }
 
   const exitFullScreenHandler = () => {
-    setFullscreenIndex(-1);
+    setFullScreenIndex(-1);
   }
 
   const scalePanels = scales.instances.map((scale, index) => {
     return (
-      <Grid item key={"scale_" + index} xs={2} md={1}>
-        <ScalePanel
-          scale={scale}
-          data={scaleData[index]}
-          weights={weights}
-          fullScreen={{
-            isActive: fullScreenIndex == index,
-            onEnter: makeEnterFullScreenHandler(index),
-            onExit: exitFullScreenHandler
-          }}/>
-      </Grid>
+      <ScalePanel
+        key={"scale_" + index}
+        scale={scale}
+        data={scaleData[index]}
+        weights={weights}
+        fullScreen={{
+          isActive: fullScreenIndex == index,
+          onEnter: makeEnterFullScreenHandler(index),
+          onExit: exitFullScreenHandler
+        }}/>
     );
   });
 
   return (
     <>
-      {fullScreenIndex >= 0 && scalePanels[fullScreenIndex]}
+      {fullScreenIndex >= 0 &&
+        <Box padding={1} height={1}>{scalePanels[fullScreenIndex]}</Box>}
       {fullScreenIndex < 0 &&
-        <Grid container columns={2} spacing={1} padding={1}>
+        <Box padding={1} className="scalesGrid">
           {scalePanels}
-        </Grid>}
+        </Box>}
     </>
   );
 }

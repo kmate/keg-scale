@@ -47,7 +47,7 @@ export default function MainTabs() {
   }, [debugLog]);
 
   return (
-    <Stack direction="column">
+    <Stack direction="column" height={1}>
       <AppBar position="static">
         <Tabs
           value={value}
@@ -59,7 +59,7 @@ export default function MainTabs() {
           <Tab label="Status" icon={<PermDeviceInformationIcon />} iconPosition="start" />
         </Tabs>
       </AppBar>
-      <TabPanel value={value} index={0} dir={theme.direction}>
+      <TabPanel value={value} index={0} dir={theme.direction} className="scalesTabPanel">
         <ScalesPanel />
       </TabPanel>
       <TabPanel value={value} index={1} dir={theme.direction}>
