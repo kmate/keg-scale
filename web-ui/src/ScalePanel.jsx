@@ -77,7 +77,7 @@ function LiveMeasurementView({ scale, data, weights, onCalibrationClick }) {
   };
 
   return (
-    <>
+    <Stack height={1}>
       <ScaleToolbar icon={BalanceIcon} stateName="Live measurement">
         <Tooltip title="Calibrate">
           <IconButton onClick={onCalibrationClick}>
@@ -91,13 +91,13 @@ function LiveMeasurementView({ scale, data, weights, onCalibrationClick }) {
         </Tooltip>
       </ScaleToolbar>
       <Divider />
-      <LiveMeasurement padding={3} value={data.state.data - tareOffset} />
+      <LiveMeasurement flexGrow={10} padding={3} value={data.state.data - tareOffset} />
       <Divider />
       <KnownWeights forTare weights={weights} onClick={handleKnownWeight}>
         <Button onClick={handleReset}>Reset</Button>
         <Button onClick={handleTare}>Tare</Button>
       </KnownWeights>
-    </>
+    </Stack>
   );
 }
 
@@ -193,10 +193,10 @@ export default function ScalePanel({ scale, data, weights, fullScreen }) {
         <TabPanel value={data.state.name} index="standby">
           <StandbyView scale={scale} onTapSetupClick={handleTapSetupClick} />
         </TabPanel>
-        <TabPanel value={data.state.name} index="liveMeasurement">
+        <TabPanel value={data.state.name} index="liveMeasurement" className="stretched-tab-panel">
           <LiveMeasurementView scale={scale} data={data} weights={weights} onCalibrationClick={handleCalibrationClick} />
         </TabPanel>
-        <TabPanel value={data.state.name} index="recording" className="recordingTabPanel">
+        <TabPanel value={data.state.name} index="recording" className="stretched-tab-panel">
           <RecordingView scale={scale} data={data} fullScreen={fullScreen} />
         </TabPanel>
       </Stack>

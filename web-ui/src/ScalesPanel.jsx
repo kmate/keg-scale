@@ -74,7 +74,7 @@ function ScalePanelGrid({ scaleConfig, weights }) {
       {fullScreenIndex >= 0 &&
         <Box padding={1} height={1}>{scalePanels[fullScreenIndex]}</Box>}
       {fullScreenIndex < 0 &&
-        <Box padding={1} className="scalesGrid">
+        <Box padding={1} className="scales-grid">
           {scalePanels}
         </Box>}
     </>

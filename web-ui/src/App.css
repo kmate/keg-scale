@@ -2,11 +2,11 @@ html, body, #root {
   height: 100vh;
 }
 
-.scalesTabPanel {
+.scales-tab-panel {
   height: 100%;
 }
 
-.scalesGrid {
+.scales-grid {
   --grid-layout-gap: 8px;
   --grid-column-count: 2;
   --grid-item--min-width: 450px;
@@ -21,7 +21,7 @@ html, body, #root {
   height: 100%;
 }
 
-.recordingTabPanel {
+.stretched-tab-panel {
   display: flex;
   flex-direction: column;
   height: 100%;

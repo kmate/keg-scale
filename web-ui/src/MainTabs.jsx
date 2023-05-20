@@ -59,7 +59,7 @@ export default function MainTabs() {
           <Tab label="Status" icon={<PermDeviceInformationIcon />} iconPosition="start" />
         </Tabs>
       </AppBar>
-      <TabPanel value={value} index={0} dir={theme.direction} className="scalesTabPanel">
+      <TabPanel value={value} index={0} dir={theme.direction} className="scales-tab-panel">
         <ScalesPanel />
       </TabPanel>
       <TabPanel value={value} index={1} dir={theme.direction}>

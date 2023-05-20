@@ -21,6 +21,7 @@ export default function LiveMeasurement({ value, padding }) {
     <Grid
       container
       padding={padding}
+      height={1}
       direction="column"
       alignItems="center"
       justifyContent="center">
