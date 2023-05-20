@@ -304,18 +304,6 @@ export default function TapMeasurement({ data, isPaused, tapEntry }) {
         </FormControl>
       </TapEntryProperties>
       <Divider />
-      <div className="chart-display-value">
-        { /* FIXME a horizontal scrollbar started to appear on the whole page because of this! */ }
-        {/* FIXME for correct absolute positioning we need position: relative on parent I think */}
-          {false && <Typography
-            color={color}
-            sx={{ WebkitTextStrokeWidth: 1, WebkitTextStrokeColor: "white" }}
-            fontWeight={1000}
-            variant="h1"
-            component="span">
-            {displayValue}
-          </Typography>}
-      </div>
       <Box className="chart-frame" sx={{ height: 1, padding: 1, margin: 1 }}>
         <Box className="chart-container">
           <div style={{ width: `${graphWidth}px`, height: "100%" }}>
@@ -323,6 +311,16 @@ export default function TapMeasurement({ data, isPaused, tapEntry }) {
           </div>
           <canvas id="chart-fixed-y-axis"></canvas>
         </Box>
+        <div className="chart-display-value">
+            <Typography
+              color={color}
+              sx={{ WebkitTextStrokeWidth: 1, WebkitTextStrokeColor: "white" }}
+              fontWeight={1000}
+              variant="h1"
+              component="span">
+              {displayValue}
+            </Typography>
+        </div>
       </Box>
     </>
   );
