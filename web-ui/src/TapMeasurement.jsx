@@ -28,7 +28,7 @@ ChartJS.register(
   Filler
 );
 
-const RENDER_TICK_SECONDS = 10;
+const RENDER_TICK_SECONDS = 60;
 
 const MILLISECONDS_PER_SECOND = 1000;
 const SECONDS_PER_HOUR = 60 * 60;
@@ -240,7 +240,8 @@ export default function TapMeasurement({ data, isPaused, tapEntry }) {
       const canvasWidth = copyWidth * scale;
       const canvasHeight = copyHeight * scale;
 
-      var targetCtx = document.getElementById(opts.canvasId).getContext("2d");
+      const yAxisCanvas = document.getElementById(opts.canvasId);
+      var targetCtx = yAxisCanvas.getContext("2d");
       targetCtx.scale(scale, scale);
       targetCtx.canvas.width = canvasWidth;
       targetCtx.canvas.height = canvasHeight;
@@ -253,6 +254,9 @@ export default function TapMeasurement({ data, isPaused, tapEntry }) {
 
       const sourceCanvas = chart.canvas;
       targetCtx.drawImage(sourceCanvas, 0, 0, canvasWidth, canvasHeight, 0, 0, canvasWidth, canvasHeight);
+
+      const container = yAxisCanvas.parentElement;
+      container.scrollTo({ behavior: "instant", left: chart.canvas.width });
     }
   };
 
@@ -265,12 +269,9 @@ export default function TapMeasurement({ data, isPaused, tapEntry }) {
     ],
   };
 
-  // TODO make the chart horizontally scrollable and scroll to the end by default
   // TODO apply a "maximum distance" between timestamps to make sure you don't have to scroll thorugh a week forever
   // TODO add markers of pours and add stats about pours, e.g. number of them and avg volume
   // TODO a pour could be defined by value changes close to each other i.e. in a few seconds
-  // TODO overlay the remaining volume number with the chart?
-  //  where to put the unit selector then? maybe the same row as the ABV, FG, etc.?
 
 /*
     <CartesianGrid
