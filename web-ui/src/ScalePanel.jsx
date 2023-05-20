@@ -185,7 +185,7 @@ export default function ScalePanel({ scale, data, weights, fullScreen }) {
   return data && data.state ? (
     <Paper sx={fullScreen.isActive ? { height: 1 } : {}}>
       <Stack direction="column" height={1}>
-        <Typography variant="overline" noWrap paragraph ml={1} mb={0}>{scale.label}</Typography>
+        <Typography variant="overline" noWrap paragraph ml={1} mb={0} flexShrink={0}>{scale.label}</Typography>
         <Divider />
         <TabPanel value={data.state.name} index="offline">
           <OfflineView />

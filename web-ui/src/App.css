@@ -27,18 +27,23 @@ html, body, #root {
   height: 100%;
 }
 
-#chart-yAxisWrapper {
-  flex-grow: 0;
-  flex-shrink: 0;
+.chart-frame {
+  background-color: rgba(255, 255, 255, 0.03);
+  position: relative;
 }
 
 .chart-container {
   height: 100%;
-  background-color: rgba(255, 255, 255, 0.03);
+  overflow: auto hidden;
+  /* we could make some vertical space for the progress bar if needed, e.g. padding-bottom: 16px; */
 }
 
-.chart-scroll-container {
-  overflow: auto hidden !important;
+.chart-container > canvas {
+  position: absolute;
+  left: 8px;
+  top:8px;
+  pointer-events: none;
+  border-right: 1px solid #1e1e1e;
 }
 
 .chart-display-value {

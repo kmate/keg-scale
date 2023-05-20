@@ -2,15 +2,31 @@ import * as React from 'react';
 import useInterval from 'use-interval'
 import { useTheme } from '@mui/material/styles';
 
-import { Divider, FormControl, MenuItem, Select, Typography } from '@mui/material';
+import { Box, Divider, FormControl, MenuItem, Select, Typography } from '@mui/material';
 import { Stack } from '@mui/system';
 import { volumeUnits } from './units';
-import { Area, AreaChart, CartesianGrid, Label, ReferenceArea, Tooltip, XAxis, YAxis } from 'recharts';
 import TapEntryProperties from './TapEntryProperties';
 import srmToRgb from './srmToRgb';
 
-import { ScrollContainer } from 'react-indiana-drag-scroll';
-import 'react-indiana-drag-scroll/dist/style.css'
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Tooltip,
+  Filler,
+} from 'chart.js';
+import { Line } from 'react-chartjs-2';
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Tooltip,
+  Filler
+);
 
 const RENDER_TICK_SECONDS = 10;
 
@@ -170,48 +186,110 @@ export default function TapMeasurement({ data, isPaused, tapEntry }) {
   const color = srmToRgb(tapEntry.srm);
   const axisColor = theme.palette.text.secondary;
 
-  // this is an extremely hacky way to put the Y axis outside the chart,
-  // hence "freeze it" against horizontal scrolling of the rest of the chart
-  React.useEffect(() => {
-    const yAxisWrapper = document.getElementById("chart-yAxisWrapper");
-    if (!yAxisWrapper) {
-      return;
+  const hex2rgba = (hex, alpha = 1) => {
+    const [r, g, b] = hex.match(/\w\w/g).map(x => parseInt(x, 16));
+    return `rgba(${r},${g},${b},${alpha})`;
+  };
+
+  const yAxisMax = Math.max(...displayData.map((x) => x.value)) * 1.1;
+
+  const options = {
+    animation: false,
+    maintainAspectRatio: false,
+    responsive: true,
+    scales: {
+      y: {
+        type: "linear",
+        beginAtZero: true,
+        grace: "10%",
+        ticks: {
+          stepSize: 0.5
+        }
+      }
+    },
+    elements: {
+      point: {
+        radius: 0
+      },
+      line: {
+        tension: .1,
+        backgroundColor: hex2rgba(color, .5),
+        borderColor: color,
+        borderWidth: 3,
+        fill: 'origin'
+      }
+    },
+    plugins: {
+      legend: {
+        display: false
+      },
+      fixedYAxis: {
+        canvasId: "chart-fixed-y-axis"
+      }
     }
-    const yAxisCandidates = document.getElementsByClassName("recharts-yAxis");
-    if (yAxisCandidates.length != 1) {
-      return;
+  };
+
+  const fixedYAxis = {
+    id: "fixedYAxis",
+    afterRender: (chart, _, opts) => {
+      const copyWidth = chart.scales.y.width + chart.scales.y.left;
+      // the +10 adjusts for the height of the bottom label
+      const copyHeight = chart.scales.y.height + chart.scales.y.top + 10;
+
+      const scale = window.devicePixelRatio;
+      const canvasWidth = copyWidth * scale;
+      const canvasHeight = copyHeight * scale;
+
+      var targetCtx = document.getElementById(opts.canvasId).getContext("2d");
+      targetCtx.scale(scale, scale);
+      targetCtx.canvas.width = canvasWidth;
+      targetCtx.canvas.height = canvasHeight;
+
+      targetCtx.canvas.style.width = `${copyWidth}px`;
+      targetCtx.canvas.style.height = `${copyHeight}px`;
+      // this color is the same as rgba(255, 255, 255, 0.03) but with alpha=1 on the current backround
+      targetCtx.fillStyle = '#252525';
+      targetCtx.fillRect(0, 0, canvasWidth, canvasHeight);
+
+      const sourceCanvas = chart.canvas;
+      targetCtx.drawImage(sourceCanvas, 0, 0, canvasWidth, canvasHeight, 0, 0, canvasWidth, canvasHeight);
     }
-    const yAxis = yAxisCandidates[0];
-    const yAxisWidth = Math.ceil(yAxis.getClientRects()[0].width);
+  };
 
-    yAxis.remove();
-    yAxisWrapper.appendChild(yAxis);
-    yAxisWrapper.style.flexBasis = yAxisWidth + "px";
-
-    const chartCandidates = document.getElementsByClassName("recharts-surface");
-    if (chartCandidates.length != 1) {
-      return;
-    }
-    const chart = chartCandidates[0];
-
-    chart.viewBox.baseVal.width -= yAxisWidth;
-    chart.viewBox.baseVal.x = yAxisWidth;
-    const newChartWidth = (chart.width.baseVal.value - yAxisWidth) + "px";
-    chart.setAttribute("width", newChartWidth);
-
-    const chartWrapper = chart.parentElement;
-    chartWrapper.style.width = newChartWidth;
-  }, [data, isPaused, tapEntry]);
+  const chartData = {
+    labels: displayData.map((x) => x.timestamp),
+    datasets: [
+      {
+        data: displayData.map((x) => x.value),
+      },
+    ],
+  };
 
   // TODO make the chart horizontally scrollable and scroll to the end by default
   // TODO apply a "maximum distance" between timestamps to make sure you don't have to scroll thorugh a week forever
-  //  also we could use a drag-scroll container to make it easier to use
-  //  min-width could be 100% to fill the view anyways then, and calculate the "real width" based on virtual the X coordinates
   // TODO add markers of pours and add stats about pours, e.g. number of them and avg volume
   // TODO a pour could be defined by value changes close to each other i.e. in a few seconds
   // TODO overlay the remaining volume number with the chart?
   //  where to put the unit selector then? maybe the same row as the ABV, FG, etc.?
-  // TODO add smaller crosshairs ever 1 / 0.5 dl?
+
+/*
+    <CartesianGrid
+        verticalCoordinatesGenerator={(props) => { return pours.map((p) => p.startX + props.offset.left);}}/>
+      {pours.map((pour, i) => {
+        return (
+          <ReferenceArea fill="rgba(0, 0, 0, 1)" key={"pour_" + i} x1={pour.startX} x2={pour.endX}>
+            <Label
+              fill={color}
+              stroke="white"
+              strokeWidth={0.75}
+              fontWeight={1000}
+              position={pour.startValue >= tapEntry.bottlingVolume / 2 ? "insideBottom" : "center"}>
+              {Number(pour.startValue - pour.endValue).toFixed(currentVU.digits)}
+            </Label>
+          </ReferenceArea>
+        );
+      })}
+*/
 
   return (
     <>
@@ -238,61 +316,14 @@ export default function TapMeasurement({ data, isPaused, tapEntry }) {
             {displayValue}
           </Typography>}
       </div>
-      <Stack direction="row" margin={1} paddingX={1} paddingTop={1} className="chart-container">
-        { /*
-          height should be 100% of the space available, and that should be half of the vertical space;
-          so each scale panel should take 1/Nth portion of the screen where N is the number of scales.
-          (we can optimize for 2, 4, etc.)
-          when fullscreen option enabled, that single scale panel should fit the whole screen (except app bar)!
-        */ }
-        <svg id="chart-yAxisWrapper" height={300}>
-        </svg>
-        <ScrollContainer vertical="false" className="chart-scroll-container">
-            <AreaChart data={displayData} width={graphWidth} height={300}>
-              <XAxis
-                dataKey="timestamp"
-                domain={["dataMin", "dataMax"]}
-                type="number"
-                axisLine={{ stroke: axisColor }}
-                tick={{ fill: axisColor }}
-                tickLine={{ stroke: axisColor }} />
-              <YAxis
-                dataKey="value"
-                min={0 /* TODO set max to bottling volume + ~10% to make room for pour labels on top */}
-                axisLine={{ stroke: axisColor }}
-                tick={{ fill: axisColor }}
-                tickLine={{ stroke: axisColor }}>
-                <Label fill={axisColor} angle={-90} position="insideLeft" style={{ textAnchor: "middle" }}>
-                  Remaining volume
-                </Label>
-              </YAxis>
-              <CartesianGrid
-                verticalCoordinatesGenerator={(props) => { return pours.map((p) => p.startX + props.offset.left);}}/>
-              {pours.map((pour, i) => {
-                return (
-                  <ReferenceArea fill="rgba(0, 0, 0, 1)" key={"pour_" + i} x1={pour.startX} x2={pour.endX}>
-                    <Label
-                      fill={color}
-                      stroke="white"
-                      strokeWidth={0.75}
-                      fontWeight={1000}
-                      position={pour.startValue >= tapEntry.bottlingVolume / 2 ? "insideBottom" : "center"}>
-                      {Number(pour.startValue - pour.endValue).toFixed(currentVU.digits)}
-                    </Label>
-                  </ReferenceArea>
-                );
-              })}
-              <Area
-                type="monotone"
-                dataKey="value"
-                strokeWidth={3}
-                stroke={color}
-                fillOpacity={0.5}
-                fill={color} />
-              <Tooltip />
-            </AreaChart>
-        </ScrollContainer>
-      </Stack>
+      <Box className="chart-frame" sx={{ height: 1, padding: 1, margin: 1 }}>
+        <Box className="chart-container">
+          <div style={{ width: `${graphWidth}px`, height: "100%" }}>
+              <Line options={options} data={chartData} plugins={[fixedYAxis]} id="chart-canvas" />
+          </div>
+          <canvas id="chart-fixed-y-axis"></canvas>
+        </Box>
+      </Box>
     </>
   );
 }
