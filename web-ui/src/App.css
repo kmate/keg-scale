@@ -21,6 +21,10 @@ html, body, #root {
   height: 100%;
 }
 
+.scale-paper:has(.stretched-tab-panel) {
+  height: 100%;
+}
+
 .stretched-tab-panel {
   display: flex;
   flex-direction: column;

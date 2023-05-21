@@ -2,10 +2,12 @@ import * as React from 'react';
 
 export default function TabPanel({ value, index, children, ...props }) {
   return (
-    <div style={ value !== index ? { display: "none" } : {} } {...props}>
-      {value === index && (
-        {...children}
-      )}
-    </div>
+    value === index
+      ? <div {...props}>
+          {value === index && (
+            {...children}
+          )}
+        </div>
+      : <></>
   );
 }

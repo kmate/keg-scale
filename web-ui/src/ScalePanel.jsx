@@ -10,7 +10,7 @@ import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import PowerSettingsNewIcon from '@mui/icons-material/PowerSettingsNew';
 import SportsBarIcon from '@mui/icons-material/SportsBar';
 import StopIcon from '@mui/icons-material/Stop';
-import { Button, Divider, IconButton, Paper, Toolbar, Tooltip, Typography } from '@mui/material';
+import { Box, Button, Divider, IconButton, Paper, Toolbar, Tooltip, Typography } from '@mui/material';
 import CalibrationDialog from './CalibrationDialog';
 import KnownWeights from './KnownWeights';
 import LiveMeasurement from './LiveMeasurement';
@@ -183,34 +183,36 @@ export default function ScalePanel({ scale, data, weights, fullScreen }) {
   };
 
   return data && data.state ? (
-    <Paper sx={fullScreen.isActive ? { height: 1 } : {}}>
-      <Stack direction="column" height={1}>
-        <Typography variant="overline" noWrap paragraph ml={1} mb={0} flexShrink={0}>{scale.label}</Typography>
-        <Divider />
-        <TabPanel value={data.state.name} index="offline">
-          <OfflineView />
-        </TabPanel>
-        <TabPanel value={data.state.name} index="standby">
-          <StandbyView scale={scale} onTapSetupClick={handleTapSetupClick} />
-        </TabPanel>
-        <TabPanel value={data.state.name} index="liveMeasurement" className="stretched-tab-panel">
-          <LiveMeasurementView scale={scale} data={data} weights={weights} onCalibrationClick={handleCalibrationClick} />
-        </TabPanel>
-        <TabPanel value={data.state.name} index="recording" className="stretched-tab-panel">
-          <RecordingView scale={scale} data={data} fullScreen={fullScreen} />
-        </TabPanel>
-      </Stack>
-      <CalibrationDialog
-        open={data.state.name != "offline" && calibrationIsOpen}
-        onClose={handleCalibrationClose}
-        scale={scale}
-        data={data}
-        weights={weights} />
-      <TapSetupDialog
-        open={data.state.name != "offline" && tapSetupIsOpen}
-        onClose={handleTapSetupClose}
-        scale={scale}
-        weights={weights} />
-    </Paper>
+    <Box height={1}>
+      <Paper sx={ fullScreen.isActive ? { height: 1 } : {}} className="scale-paper">
+        <Stack direction="column" height={1}>
+          <Typography variant="overline" noWrap paragraph ml={1} mb={0} flexShrink={0}>{scale.label}</Typography>
+          <Divider />
+          <TabPanel value={data.state.name} index="offline">
+            <OfflineView />
+          </TabPanel>
+          <TabPanel value={data.state.name} index="standby">
+            <StandbyView scale={scale} onTapSetupClick={handleTapSetupClick} />
+          </TabPanel>
+          <TabPanel value={data.state.name} index="liveMeasurement" className="stretched-tab-panel">
+            <LiveMeasurementView scale={scale} data={data} weights={weights} onCalibrationClick={handleCalibrationClick} />
+          </TabPanel>
+          <TabPanel value={data.state.name} index="recording" className="stretched-tab-panel">
+            <RecordingView scale={scale} data={data} fullScreen={fullScreen} />
+          </TabPanel>
+        </Stack>
+        <CalibrationDialog
+          open={data.state.name != "offline" && calibrationIsOpen}
+          onClose={handleCalibrationClose}
+          scale={scale}
+          data={data}
+          weights={weights} />
+        <TapSetupDialog
+          open={data.state.name != "offline" && tapSetupIsOpen}
+          onClose={handleTapSetupClose}
+          scale={scale}
+          weights={weights} />
+      </Paper>
+    </Box>
   ) : <></>;
 }
