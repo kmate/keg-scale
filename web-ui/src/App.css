@@ -36,6 +36,10 @@ html, body, #root {
   position: relative;
 }
 
+.chart-frame canvas {
+  pointer-events: none;
+}
+
 .chart-container {
   height: 100%;
   overflow: auto hidden;
@@ -55,8 +59,4 @@ html, body, #root {
   position: absolute;
   right: 16px;
   top: 16px;
-}
-
-canvas {
-  pointer-events: none;
 }
