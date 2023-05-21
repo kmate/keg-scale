@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { useConfirm } from 'material-ui-confirm';
 
 import AdjustIcon from '@mui/icons-material/Adjust';
 import BalanceIcon from '@mui/icons-material/Balance';
@@ -10,7 +11,7 @@ import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import PowerSettingsNewIcon from '@mui/icons-material/PowerSettingsNew';
 import SportsBarIcon from '@mui/icons-material/SportsBar';
 import StopIcon from '@mui/icons-material/Stop';
-import { Box, Button, Divider, IconButton, Paper, Toolbar, Tooltip, Typography } from '@mui/material';
+import { Alert, Box, Button, Divider, IconButton, Paper, Snackbar, Toolbar, Tooltip, Typography } from '@mui/material';
 import CalibrationDialog from './CalibrationDialog';
 import KnownWeights from './KnownWeights';
 import LiveMeasurement from './LiveMeasurement';
@@ -102,21 +103,48 @@ function LiveMeasurementView({ scale, data, weights, onCalibrationClick }) {
 }
 
 function RecordingView({ scale, data, fullScreen }) {
-
-  // TODO add visual feed back and error handling + confirmation dialog before these actions
-  // maybe use https://www.npmjs.com/package/material-ui-confirm ?
+  const [feedback, setFeedback] = React.useState({ isOpen: false, message: '', severity: 'success' });
+  const confirm = useConfirm();
 
   const handleContinueClick = () => {
-    scale.continueRecording();
+    confirm({ description: "Do you want to continue recording?" }).then(() => {
+      scale.continueRecording()
+        .then(() => {
+          setFeedback({ isOpen: true, message: 'Recording continues!', severity: 'success' });
+        })
+        .catch(() => {
+          setFeedback({ isOpen: true, message: 'Continue recording failed!', severity: 'error' });
+        });
+    }).catch(() => {});
   };
 
   const handlePauseClick = () => {
-    scale.pauseRecording();
+    confirm({ description: "Do you want to pause recording?" }).then(() => {
+      scale.pauseRecording()
+        .then(() => {
+          setFeedback({ isOpen: true, message: 'Recording paused!', severity: 'success' });
+        })
+        .catch(() => {
+          setFeedback({ isOpen: true, message: 'Pause recording failed!', severity: 'error' });
+        });
+    }).catch(() => {});
   };
 
   const handleStopClick = () => {
-    scale.stopRecording();
-    fullScreen.onExit();
+    confirm({ description: "Do you want to stop recording?" }).then(() => {
+      scale.stopRecording()
+        .then(() => {
+          setFeedback({ isOpen: true, message: 'Recording stopped!', severity: 'success' });
+          fullScreen.onExit();
+        })
+        .catch(() => {
+          setFeedback({ isOpen: true, message: 'Stop recording failed!', severity: 'error' });
+        });
+    }).catch(() => {});
+  };
+
+  const handleFeedbackClose = () => {
+    setFeedback({ ...feedback, isOpen: false });
   };
 
   return (
@@ -158,6 +186,11 @@ function RecordingView({ scale, data, fullScreen }) {
           isPaused={data.state.isPaused}
           data={data.state.data}
           tapEntry={data.state.tapEntry} />}
+      <Snackbar open={feedback.isOpen} autoHideDuration={1000} onClose={handleFeedbackClose}>
+        <Alert onClose={handleFeedbackClose} severity={feedback.severity}>
+          {feedback.message}
+        </Alert>
+      </Snackbar>
     </>
   );
 }
