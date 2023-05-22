@@ -3,7 +3,6 @@ import useInterval from 'use-interval'
 import { useTheme } from '@mui/material/styles';
 
 import { Box, Divider, FormControl, MenuItem, Select, Typography } from '@mui/material';
-import { Stack } from '@mui/system';
 import { volumeUnits } from './units';
 import TapEntryProperties from './TapEntryProperties';
 import srmToRgb from './srmToRgb';
@@ -18,10 +17,12 @@ import {
   Filler,
 } from 'chart.js';
 import { Line } from 'react-chartjs-2';
+import PourScale from './PourScale';
 
 ChartJS.register(
   CategoryScale,
   LinearScale,
+  PourScale,
   PointElement,
   LineElement,
   Tooltip,
@@ -84,7 +85,15 @@ function equalizeData(convertedData) {
 
 // TODO "compress" time (N pixels for empty 6H windows, M pixels for 1H in the non-empty ones)
 function compressData(equalizedData) {
-  return equalizedData;
+  const lastIndex = equalizeData.length - 1;
+  const startState = { result: [], lastX: 0 };
+
+  return equalizedData.reduce(({ result, lastX }, value, index) => {
+    value.x = lastX;
+    lastX += 10;
+    result.push(value);
+    return { result, lastX };
+  }, startState).result;
 }
 
 // TODO derive/group "pours" to be able to mark them on the chart
@@ -155,6 +164,25 @@ function deriveXAxisTicks(compressedData) {
   });
 */
 
+/*
+    <CartesianGrid
+        verticalCoordinatesGenerator={(props) => { return pours.map((p) => p.startX + props.offset.left);}}/>
+      {pours.map((pour, i) => {
+        return (
+          <ReferenceArea fill="rgba(0, 0, 0, 1)" key={"pour_" + i} x1={pour.startX} x2={pour.endX}>
+            <Label
+              fill={color}
+              stroke="white"
+              strokeWidth={0.75}
+              fontWeight={1000}
+              position={pour.startValue >= tapEntry.bottlingVolume / 2 ? "insideBottom" : "center"}>
+              {Number(pour.startValue - pour.endValue).toFixed(currentVU.digits)}
+            </Label>
+          </ReferenceArea>
+        );
+      })}
+*/
+
 export default function TapMeasurement({ data, isPaused, tapEntry }) {
   const theme = useTheme();
 
@@ -177,32 +205,52 @@ export default function TapMeasurement({ data, isPaused, tapEntry }) {
   const pours = derivePours(compressedData);
   const xAxisTicks = deriveXAxisTicks(compressedData);
 
-  // TODO what should be the default lenght?
+  // TODO what should be the default value?
   const displayData = compressedData;
   const currentValue = displayData.length > 0 ? displayData[displayData.length - 1].value : NaN;
   const displayValue = 1 / currentValue !== -Infinity && !Number.isNaN(currentValue) ? currentValue : 0;
 
   const graphWidth = 3000 // displayData.length > 0 ? displayData[displayData.length - 1].x : 100;
   const color = srmToRgb(tapEntry.srm);
-  const axisColor = theme.palette.text.secondary;
+  const gridColor= "#393939";
+  const tickColor = theme.palette.text.secondary;
 
   const hex2rgba = (hex, alpha = 1) => {
     const [r, g, b] = hex.match(/\w\w/g).map(x => parseInt(x, 16));
     return `rgba(${r},${g},${b},${alpha})`;
   };
 
-  const yAxisMax = Math.max(...displayData.map((x) => x.value)) * 1.1;
-
-  const options = {
+  const chartOptions = {
     animation: false,
     maintainAspectRatio: false,
     responsive: true,
     scales: {
+      x: {
+        type: "pour",
+        alignToPixels: true,
+        border: {
+          color: gridColor
+        },
+        grid: {
+          color: gridColor
+        },
+        ticks: {
+          color: tickColor
+        }
+      },
       y: {
         type: "linear",
+        alignToPixels: true,
         beginAtZero: true,
         grace: "10%",
+        border: {
+          color: gridColor
+        },
+        grid: {
+          color: gridColor
+        },
         ticks: {
+          color: tickColor,
           stepSize: 0.5
         }
       }
@@ -223,6 +271,9 @@ export default function TapMeasurement({ data, isPaused, tapEntry }) {
       legend: {
         display: false
       },
+      tooltip: {
+        enabled: false
+      },
       fixedYAxis: {
         canvasId: "chart-fixed-y-axis"
       }
@@ -232,7 +283,7 @@ export default function TapMeasurement({ data, isPaused, tapEntry }) {
   const fixedYAxis = {
     id: "fixedYAxis",
     afterRender: (chart, _, opts) => {
-      const copyWidth = chart.scales.y.width + chart.scales.y.left;
+      const copyWidth = chart.scales.y.width + chart.scales.y.left + 1;
       // the +10 adjusts for the height of the bottom label
       const copyHeight = chart.scales.y.height + chart.scales.y.top + 10;
 
@@ -249,11 +300,19 @@ export default function TapMeasurement({ data, isPaused, tapEntry }) {
       targetCtx.canvas.style.width = `${copyWidth}px`;
       targetCtx.canvas.style.height = `${copyHeight}px`;
       // this color is the same as rgba(255, 255, 255, 0.03) but with alpha=1 on the current backround
+      targetCtx.save();
       targetCtx.fillStyle = '#252525';
       targetCtx.fillRect(0, 0, canvasWidth, canvasHeight);
+      targetCtx.restore();
 
       const sourceCanvas = chart.canvas;
       targetCtx.drawImage(sourceCanvas, 0, 0, canvasWidth, canvasHeight, 0, 0, canvasWidth, canvasHeight);
+
+      const sourceCtx = chart.ctx;
+      sourceCtx.save();
+      sourceCtx.fillStyle = '#252525';
+      sourceCtx.fillRect(0, 0, copyWidth, copyHeight);
+      sourceCtx.restore();
 
       const container = yAxisCanvas.parentElement;
       container.scrollTo({ behavior: "instant", left: chart.canvas.width });
@@ -268,29 +327,6 @@ export default function TapMeasurement({ data, isPaused, tapEntry }) {
       },
     ],
   };
-
-  // TODO apply a "maximum distance" between timestamps to make sure you don't have to scroll thorugh a week forever
-  // TODO add markers of pours and add stats about pours, e.g. number of them and avg volume
-  // TODO a pour could be defined by value changes close to each other i.e. in a few seconds
-
-/*
-    <CartesianGrid
-        verticalCoordinatesGenerator={(props) => { return pours.map((p) => p.startX + props.offset.left);}}/>
-      {pours.map((pour, i) => {
-        return (
-          <ReferenceArea fill="rgba(0, 0, 0, 1)" key={"pour_" + i} x1={pour.startX} x2={pour.endX}>
-            <Label
-              fill={color}
-              stroke="white"
-              strokeWidth={0.75}
-              fontWeight={1000}
-              position={pour.startValue >= tapEntry.bottlingVolume / 2 ? "insideBottom" : "center"}>
-              {Number(pour.startValue - pour.endValue).toFixed(currentVU.digits)}
-            </Label>
-          </ReferenceArea>
-        );
-      })}
-*/
 
   return (
     <>
@@ -308,7 +344,7 @@ export default function TapMeasurement({ data, isPaused, tapEntry }) {
       <Box className="chart-frame" sx={{ height: 1, padding: 1, margin: 1 }}>
         <Box className="chart-container">
           <div style={{ width: `${graphWidth}px`, height: "100%" }}>
-              <Line options={options} data={chartData} plugins={[fixedYAxis]} id="chart-canvas" />
+              <Line options={chartOptions} data={chartData} plugins={[fixedYAxis]} id="chart-canvas" />
           </div>
           <canvas id="chart-fixed-y-axis"></canvas>
         </Box>

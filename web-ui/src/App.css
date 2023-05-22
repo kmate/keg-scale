@@ -51,7 +51,6 @@ html, body, #root {
   left: 8px;
   top:8px;
   pointer-events: none;
-  border-right: 1px solid #1e1e1e;
 }
 
 .chart-display-value {
