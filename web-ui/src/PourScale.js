@@ -33,15 +33,11 @@ export default class PourScale extends Scale {
       timestampToValue
     );
 
-    console.log(filtered);
-
     this.pours = pours;
     this.ticks = this.#deriveTickLabelAndPosition(filtered);
     this.timestampToTick = new Map(
       this.ticks.map((tick) => [tick.timestamp, tick])
     );
-
-    console.log(this.ticks);
 
     return this.ticks;
   }
@@ -266,6 +262,7 @@ export default class PourScale extends Scale {
   // @param value : the value to get the pixel for
   // @param [index] : index into the data array of the value
   getPixelForValue(_value, index) {
+    // TODO cache this data for better performance when generating ticks and pours
     const timestamps = this.chart.data.labels;
     const timestamp = timestamps[index];
 
