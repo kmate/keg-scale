@@ -240,7 +240,7 @@ export default function TapMeasurement({ data, isPaused, tapEntry }) {
     afterBuildTicks: (chart) => {
       const scale = chart.scales.x;
       if (scale.ticks.length > 0) {
-        const newWidth = Math.ceil(scale._startPixel + scale.ticks[scale.ticks.length - 1].x + 100);
+        const newWidth = Math.ceil(scale._startPixel + scale.ticks[scale.ticks.length - 1].x + 60);
         if (newWidth > graphWidth) {
           setGraphWidth(newWidth);
         }

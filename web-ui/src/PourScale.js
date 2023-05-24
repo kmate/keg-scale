@@ -37,6 +37,9 @@ export default class PourScale extends Scale {
 
     this.pours = pours;
     this.ticks = this.#deriveTickLabelAndPosition(filtered);
+    this.timestampToTick = new Map(
+      this.ticks.map((tick) => [tick.timestamp, tick])
+    );
 
     console.log(this.ticks);
 
@@ -200,7 +203,7 @@ export default class PourScale extends Scale {
           true
         );
 
-        const pour = this.#pourForTimestamp(timestamp, this.pours);
+        const pour = this.#pourForTimestamp(timestamp);
         if (pour) {
           // almost all ticks should fall into this
           const isStart = pour.start == timestamp;
@@ -245,12 +248,12 @@ export default class PourScale extends Scale {
         }
       }
 
-      return { value: label, x: lastX };
+      return { value: label, x: lastX, timestamp: timestamp };
     });
   }
 
-  #pourForTimestamp(timestamp, pours) {
-    return pours.find(
+  #pourForTimestamp(timestamp) {
+    return this.pours.find(
       (pour) => !pour.start.isAfter(timestamp) && !pour.end.isBefore(timestamp)
     );
   }
@@ -263,9 +266,26 @@ export default class PourScale extends Scale {
   // @param value : the value to get the pixel for
   // @param [index] : index into the data array of the value
   getPixelForValue(_value, index) {
-    //console.log("getPixelForValue", value, index);
-    // TODO / FIXME? implement this properly
-    return index * 10 + this.left + 1; // note that the +1 is needed for the fixed Y axis to work properly...
+    const timestamps = this.chart.data.labels;
+    const timestamp = timestamps[index];
+
+    const tick = this.timestampToTick.get(timestamp);
+    if (tick) {
+      return this._startPixel + tick.x + 1;
+    }
+
+    const pour = this.#pourForTimestamp(timestamp);
+    if (pour) {
+      const pourWidth = pour.endX - pour.startX;
+      const pourSeconds = pour.end.diff(pour.start, "second", true);
+      const secondsFromStart = timestamp.diff(pour.start, "second", true);
+      const pourX = pour.startX + pourWidth * (secondsFromStart / pourSeconds);
+      return this._startPixel + pourX + 1;
+    }
+
+    // this must be the last point
+    const lastTick = this.ticks[this.ticks.length - 1];
+    return this._startPixel + lastTick.x + 1;
   }
 
   // Get the label to show for the given value
@@ -286,7 +306,7 @@ export default class PourScale extends Scale {
 
     const ctx = this.chart.ctx;
     ctx.save();
-    this.pours.map((pour) => {
+    this.pours.map((pour, index) => {
       const pourX = this._startPixel + pour.startX;
       const pourWidth = pour.endX - pour.startX;
       const pourMiddle = pourX + pourWidth / 2;
@@ -308,12 +328,13 @@ export default class PourScale extends Scale {
       ctx.fillText(displayVolume, pourMiddle, volumeY);
       ctx.strokeText(displayVolume, pourMiddle, volumeY);
 
-      // draw seconds taken
-      const displaySeconds = `(${pour.end.diff(pour.start, "second")}s)`;
+      // draw pour number and seconds taken
+      const pourSeconds = pour.end.diff(pour.start, "second");
+      const pourMeta = `(#${index + 1}, ${pourSeconds}s)`;
       const secondsY = 58;
       ctx.font = "bold 16px " + this.options.ticks.font.family;
       ctx.fillStyle = "rgba(0, 0, 0, 0.8)";
-      ctx.fillText(displaySeconds, pourMiddle, secondsY);
+      ctx.fillText(pourMeta, pourMiddle, secondsY);
     });
     ctx.restore();
   }
