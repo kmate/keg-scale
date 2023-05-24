@@ -7,6 +7,7 @@ import { volumeUnits } from './units';
 import TapEntryProperties from './TapEntryProperties';
 import srmToRgb from './srmToRgb';
 
+import dayjs from 'dayjs';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -17,7 +18,7 @@ import {
   Filler,
 } from 'chart.js';
 import { Line } from 'react-chartjs-2';
-import PourScale from './PourScale';
+import PourScale, { POUR_GAP_SECONDS } from './PourScale';
 
 ChartJS.register(
   CategoryScale,
@@ -31,25 +32,13 @@ ChartJS.register(
 
 const RENDER_TICK_SECONDS = 60;
 
-const MILLISECONDS_PER_SECOND = 1000;
-const SECONDS_PER_HOUR = 60 * 60;
-const SECONDS_PER_DAY = 24 * SECONDS_PER_HOUR;
-
-const HOUR_WIDTH = 30;
-const DAY_WIDTH = 50;
-const POUR_SECOND_WIDTH = 2;
-
-function diffInSeconds(tsA, tsB) {
-  return (tsA - tsB) / MILLISECONDS_PER_SECOND;
-}
-
 function convertData(rawData, volumeUnit) {
   return Object.keys(rawData)
     .map((key) => { return {
-      timestamp: Number(key) * MILLISECONDS_PER_SECOND,
+      timestamp: dayjs.unix(Number(key)),
       value: Number((rawData[key] * volumeUnit.multiplier).toFixed(volumeUnit.digits))
     }})
-    .sort((a, b) => a.timestamp - b.timestamp);
+    .sort((a, b) => +a.timestamp - +b.timestamp);
 }
 
 function equalizeData(convertedData) {
@@ -60,15 +49,15 @@ function equalizeData(convertedData) {
     }
 
     const previous = data[i - 1];
-    const secondsSincePrevious = diffInSeconds(current.timestamp, previous.timestamp);
-    if (secondsSincePrevious > 10) {
+    const secondsSincePrevious = current.timestamp.diff(previous.timestamp, "second");
+    if (secondsSincePrevious > POUR_GAP_SECONDS) {
       // new pour, equalizer should be added
-      let equalizerTimeShift = 1;
+      let equalizerShiftSeconds = 1;
       if (i + 1 < data.length) {
         const next = data[i + 1];
-        equalizerTimeShift = diffInSeconds(next.timestamp, current.timestamp);
+        equalizerShiftSeconds = next.timestamp.diff(current.timestamp, "second");
       }
-      const equalizer = { timestamp: current.timestamp - equalizerTimeShift, value: previous.value };
+      const equalizer = { timestamp: current.timestamp.subtract(equalizerShiftSeconds, "second"), value: previous.value };
       return [equalizer, current];
     } else {
       // continuation of an existing pour
@@ -77,110 +66,27 @@ function equalizeData(convertedData) {
   });
 
   if (equalizedData.length > 0) {
-    equalizedData.push({ timestamp: new Date().getTime(), value: equalizedData[equalizedData.length - 1].value });
+    equalizedData.push({ timestamp: dayjs(), value: equalizedData[equalizedData.length - 1].value });
   }
 
   return equalizedData;
 }
 
-// TODO "compress" time (N pixels for empty 6H windows, M pixels for 1H in the non-empty ones)
-function compressData(equalizedData) {
-  const lastIndex = equalizeData.length - 1;
-  const startState = { result: [], lastX: 0 };
-
-  return equalizedData.reduce(({ result, lastX }, value, index) => {
-    value.x = lastX;
-    lastX += 10;
-    result.push(value);
-    return { result, lastX };
-  }, startState).result;
-}
-
-// TODO derive/group "pours" to be able to mark them on the chart
-function derivePours(compressedData) {
-  return [];
-}
-
-// TODO derive X axis points/ticks
-//  - midnight only for empty days,
-//  - 6H markers on non-empty window boundaries,
-//  - 1H ticks inside the non-empty windows
-//  - should we derive the labels here as well?
-function deriveXAxisTicks(compressedData) {
-  return compressedData;
-}
-
-// TODO remove this block after we don't need more code from it to implement the above methods
 /*
-  .flatMap((current, i, data) => {
-    if (i == 0) {
-      // first data point
-      return [{ ...current, x: x }];
-    }
-
-    const previous = data[i - 1];
-    const secondsSincePrevious = (current.timestamp - previous.timestamp) / 1000;
-    if (secondsSincePrevious > 10) {
-      // new pour should be started and the current one should be finished
-      x += secondsSincePrevious >= SECONDS_PER_DAY
-      ? secondsSincePrevious / SECONDS_PER_DAY * DAY_WIDTH
-      : secondsSincePrevious / SECONDS_PER_HOUR * HOUR_WIDTH;
-
-      let equalizerTimeShift = 1;
-      if (i + 1 < data.length) {
-        const next = data[i + 1];
-        equalizerTimeShift = (next.timestamp - current.timestamp) / 1000;
-      }
-      const equalizer = { timestamp: current.timestamp - equalizerTimeShift, value: previous.value, x: x };
-      x += equalizerTimeShift * POUR_SECOND_WIDTH;
-
-      if (currentPour != null) {
-        pours.push(currentPour);
-        currentPour = { startTime: equalizer.timestamp, startValue: equalizer.value, startX: equalizer.x };
-      }
-
-      return [equalizer, { ...current, x: x }];
-    } else {
-      // continuation of an existing pour
-      if (currentPour == null) {
-        currentPour = { startTime: current.timestamp, startValue: current.value, startX: x };
-      }
-
-      x += secondsSincePrevious * POUR_SECOND_WIDTH;
-      currentPour.endTime = current.timestamp;
-      currentPour.endValue = current.value;
-      currentPour.endX = x;
-
-      if (i == data.length - 1) {
-        // last data point
-        if (currentPour != null) {
-          pours.push(currentPour);
-          currentPour = null;
-        }
-      }
-
-      return [{ ...current, x: x }];
-    }
-  });
-*/
-
-/*
-    <CartesianGrid
-        verticalCoordinatesGenerator={(props) => { return pours.map((p) => p.startX + props.offset.left);}}/>
-      {pours.map((pour, i) => {
-        return (
-          <ReferenceArea fill="rgba(0, 0, 0, 1)" key={"pour_" + i} x1={pour.startX} x2={pour.endX}>
-            <Label
-              fill={color}
-              stroke="white"
-              strokeWidth={0.75}
-              fontWeight={1000}
-              position={pour.startValue >= tapEntry.bottlingVolume / 2 ? "insideBottom" : "center"}>
-              {Number(pour.startValue - pour.endValue).toFixed(currentVU.digits)}
-            </Label>
-          </ReferenceArea>
-        );
-      })}
+  {pours.map((pour, i) => {
+    return (
+      <ReferenceArea fill="rgba(0, 0, 0, 1)" key={"pour_" + i} x1={pour.startX} x2={pour.endX}>
+        <Label
+          fill={color}
+          stroke="white"
+          strokeWidth={0.75}
+          fontWeight={1000}
+          position={pour.startValue >= tapEntry.bottlingVolume / 2 ? "insideBottom" : "center"}>
+          {Number(pour.startValue - pour.endValue).toFixed(currentVU.digits)}
+        </Label>
+      </ReferenceArea>
+    );
+  })}
 */
 
 export default function TapMeasurement({ data, isPaused, tapEntry }) {
@@ -200,18 +106,16 @@ export default function TapMeasurement({ data, isPaused, tapEntry }) {
     setVolumeUnit(e.target.value);
   };
 
-  const currentVU = volumeUnits[volumeUnit];
-  const compressedData = compressData(equalizeData(convertData(data, currentVU)));
-  const pours = derivePours(compressedData);
-  const xAxisTicks = deriveXAxisTicks(compressedData);
+  const [graphWidth, setGraphWidth] = React.useState(100);
 
-  // TODO what should be the default value?
-  const displayData = compressedData;
+  const currentVU = volumeUnits[volumeUnit];
+  const displayData = equalizeData(convertData(data, currentVU));
   const currentValue = displayData.length > 0 ? displayData[displayData.length - 1].value : NaN;
   const displayValue = 1 / currentValue !== -Infinity && !Number.isNaN(currentValue) ? currentValue : 0;
 
-  const graphWidth = 3000 // displayData.length > 0 ? displayData[displayData.length - 1].x : 100;
   const color = srmToRgb(tapEntry.srm);
+  // this color is the same as rgba(255, 255, 255, 0.03) but with alpha=1 on the current backround
+  const backroundColor = "#252525";
   const gridColor= "#393939";
   const tickColor = theme.palette.text.secondary;
 
@@ -235,7 +139,15 @@ export default function TapMeasurement({ data, isPaused, tapEntry }) {
           color: gridColor
         },
         ticks: {
-          color: tickColor
+          autoSkip: false,
+          color: tickColor,
+          digits: currentVU.digits,
+          font: {
+            family: theme.typography.fontFamily,
+            size: theme.typography.fontSize
+          },
+          maxRotation: 0,
+          pourColor: color
         }
       },
       y: {
@@ -251,6 +163,10 @@ export default function TapMeasurement({ data, isPaused, tapEntry }) {
         },
         ticks: {
           color: tickColor,
+          font: {
+            family: theme.typography.fontFamily,
+            size: theme.typography.fontSize
+          },
           stepSize: 0.5
         }
       }
@@ -283,6 +199,7 @@ export default function TapMeasurement({ data, isPaused, tapEntry }) {
   const fixedYAxis = {
     id: "fixedYAxis",
     afterRender: (chart, _, opts) => {
+      // the +1 adjusts for the border line of the axis
       const copyWidth = chart.scales.y.width + chart.scales.y.left + 1;
       // the +10 adjusts for the height of the bottom label
       const copyHeight = chart.scales.y.height + chart.scales.y.top + 10;
@@ -299,9 +216,8 @@ export default function TapMeasurement({ data, isPaused, tapEntry }) {
 
       targetCtx.canvas.style.width = `${copyWidth}px`;
       targetCtx.canvas.style.height = `${copyHeight}px`;
-      // this color is the same as rgba(255, 255, 255, 0.03) but with alpha=1 on the current backround
       targetCtx.save();
-      targetCtx.fillStyle = '#252525';
+      targetCtx.fillStyle = backroundColor;
       targetCtx.fillRect(0, 0, canvasWidth, canvasHeight);
       targetCtx.restore();
 
@@ -310,12 +226,25 @@ export default function TapMeasurement({ data, isPaused, tapEntry }) {
 
       const sourceCtx = chart.ctx;
       sourceCtx.save();
-      sourceCtx.fillStyle = '#252525';
+      sourceCtx.fillStyle = backroundColor;
       sourceCtx.fillRect(0, 0, copyWidth, copyHeight);
       sourceCtx.restore();
 
       const container = yAxisCanvas.parentElement;
       container.scrollTo({ behavior: "instant", left: chart.canvas.width });
+    }
+  };
+
+  const pourScaleBasedWidth = {
+    id: "pourScaleBasedWidth",
+    afterBuildTicks: (chart) => {
+      const scale = chart.scales.x;
+      if (scale.ticks.length > 0) {
+        const newWidth = Math.ceil(scale._startPixel + scale.ticks[scale.ticks.length - 1].x + 100);
+        if (newWidth > graphWidth) {
+          setGraphWidth(newWidth);
+        }
+      }
     }
   };
 
@@ -344,7 +273,7 @@ export default function TapMeasurement({ data, isPaused, tapEntry }) {
       <Box className="chart-frame" sx={{ height: 1, padding: 1, margin: 1 }}>
         <Box className="chart-container">
           <div style={{ width: `${graphWidth}px`, height: "100%" }}>
-              <Line options={chartOptions} data={chartData} plugins={[fixedYAxis]} id="chart-canvas" />
+              <Line options={chartOptions} data={chartData} plugins={[fixedYAxis, pourScaleBasedWidth]} id="chart-canvas" />
           </div>
           <canvas id="chart-fixed-y-axis"></canvas>
         </Box>
