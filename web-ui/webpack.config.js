@@ -20,7 +20,13 @@ module.exports = {
         exclude: /(node_modules|bower_components)/,
         loader: 'babel-loader',
         options: {
-          presets: ['@babel/env'],
+          presets: [[
+            '@babel/env',
+            {
+              'modules': false,
+              'targets': '> 1%, last 3 versions, not dead'
+            }
+          ]],
           plugins: [isDevelopment && require.resolve('react-refresh/babel')].filter(Boolean),
         }
       },
@@ -34,7 +40,7 @@ module.exports = {
   output: {
     path: outputPath,
     publicPath: '',
-    filename: '[name].js',
+    filename: '[name].js'
   },
   optimization: {
     minimize: true,
