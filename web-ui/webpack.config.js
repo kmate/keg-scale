@@ -9,7 +9,9 @@ const outputPath = path.resolve(__dirname, '../data/html/');
 const isDevelopment = process.env.NODE_ENV !== 'production';
 
 module.exports = {
-  entry: './src/index.jsx',
+  entry: {
+    app: './src/index.jsx'
+  },
   mode: isDevelopment ? 'development' : 'production',
   module: {
     rules: [
@@ -32,7 +34,7 @@ module.exports = {
   output: {
     path: outputPath,
     publicPath: '',
-    filename: 'bundle.js',
+    filename: '[name].js',
   },
   optimization: {
     minimize: true,
@@ -46,6 +48,25 @@ module.exports = {
         },
       }),
     ],
+    splitChunks: {
+      cacheGroups: {
+        reactVendor: {
+          test: /[\\/]node_modules[\\/](react|react-dom|react-router-dom)[\\/]/,
+          name: 'vendor-react',
+          chunks: 'all',
+        },
+        muiVendor: {
+          test: /[\\/]node_modules[\\/]@mui[\\/]/,
+          name: 'vendor-mui',
+          chunks: 'all',
+        },
+        chartjsVendor: {
+          test: /[\\/]node_modules[\\/]chart\.js[\\/]/,
+          name: 'vendor-chartjs',
+          chunks: 'all',
+        },
+      },
+    },
   },
   devServer: {
     static: {
