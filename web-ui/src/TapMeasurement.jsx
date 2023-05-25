@@ -84,8 +84,12 @@ export default function TapMeasurement({ data, isPaused, tapEntry }) {
   // force re-render every few seconds
   const [_, setTick] = React.useState(false);
   useInterval(() => {
-    if (!isPaused) {
-      // TODO only do the refresh when the chart is scrolled to the end (i.e. far right)!
+    const chartContainer = document.getElementsByClassName("chart-container")[0];
+    const scrolledToEnd = chartContainer
+      ? chartContainer.scrollLeft == chartContainer.scrollWidth - chartContainer.clientWidth
+      : true;
+
+    if (!isPaused && scrolledToEnd) {
       setTick((t) => !t);
     }
   }, RENDER_TICK_SECONDS * 1000);
