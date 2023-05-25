@@ -140,7 +140,7 @@ public:
     }
 
     Logger.printf("[Recorder] Pause recording for scale %d.\n", index);
-    this->entries[index]->isPaused = false;
+    this->entries[index]->isPaused = true;
   }
 
   void stop(int index) {
