@@ -57,10 +57,10 @@ export default class PourScale extends Scale {
       )
       .ticks.flat();
 
-    // adds last item
+    // adds last item, which must be the "now" placeholder
     ticks.push({
       timestamp: dayjs(timestamps[timestamps.length - 1]),
-      jump: null,
+      jump: [0, "now"],
     });
 
     return ticks;
@@ -179,17 +179,20 @@ export default class PourScale extends Scale {
   }
 
   #deriveTickLabelAndPosition(filteredTicks) {
+    const SECONDS_PER_MINUTE = 60;
+    const SECONDS_PER_HOUR = 60 * SECONDS_PER_MINUTE;
     const POUR_SECOND_WIDTH = 5;
-    const NON_POUR_SECOND_WIDTH = 80 / (60 * 60);
-    const HOUR_JUMP_WIDTH = 10;
-    const OTHER_JUMP_WIDTH = 40;
+    const NON_POUR_SECOND_WIDTH = 80 / SECONDS_PER_HOUR;
+    const ONE_HOUR_JUMP_WIDTH = 10;
+    const ANY_OTHER_JUMP_WIDTH = 40;
 
     const numTicks = filteredTicks.length;
     let lastX = 0;
     return filteredTicks.map(({ timestamp, jump }, index) => {
       let label = "";
       if (index == 0) {
-        label = [timestamp.format("MMM D."), timestamp.format("HH:mm")];
+        // this should be the bottling date anyways
+        label = [timestamp.format("MMM"), timestamp.format("D.")];
       } else if (jump == null) {
         label = timestamp.format("HH:mm");
         const previous = filteredTicks[index - 1];
@@ -201,12 +204,13 @@ export default class PourScale extends Scale {
 
         const pour = this.#pourForTimestamp(timestamp);
         if (pour) {
-          // almost all ticks should fall into this
+          // all ticks without a jump should fall into this case
           const isStart = pour.start == timestamp;
           const isEnd = pour.end == timestamp;
-          lastX += isStart
-            ? secondsSinceLast * NON_POUR_SECOND_WIDTH
-            : secondsSinceLast * POUR_SECOND_WIDTH;
+          lastX +=
+            isStart && secondsSinceLast >= SECONDS_PER_MINUTE
+              ? secondsSinceLast * NON_POUR_SECOND_WIDTH
+              : secondsSinceLast * POUR_SECOND_WIDTH;
 
           if (isStart) {
             pour.startX = lastX;
@@ -216,9 +220,6 @@ export default class PourScale extends Scale {
             label = "";
             pour.endX = lastX;
           }
-        } else {
-          // this must be the tick of the last data point - i.e. "now"
-          lastX += secondsSinceLast * NON_POUR_SECOND_WIDTH;
         }
       } else {
         const [jumpAmount, jumpUnit] = jump;
@@ -228,10 +229,24 @@ export default class PourScale extends Scale {
           } else {
             label = [timestamp.format("HH:mm")];
           }
-          lastX += jumpAmount * HOUR_JUMP_WIDTH;
+          lastX += jumpAmount * ONE_HOUR_JUMP_WIDTH;
+        } else if (jumpUnit == "now") {
+          const previous = filteredTicks[index - 1];
+          const secondsSinceLast = timestamp.diff(
+            previous.timestamp,
+            "second",
+            true
+          );
+          lastX += secondsSinceLast * NON_POUR_SECOND_WIDTH;
+
+          if (secondsSinceLast <= SECONDS_PER_HOUR) {
+            label = "";
+          } else {
+            label = [timestamp.format("HH:mm")];
+          }
         } else {
           label = [timestamp.format("MMM"), timestamp.format("D.")];
-          lastX += OTHER_JUMP_WIDTH;
+          lastX += ANY_OTHER_JUMP_WIDTH;
         }
 
         if (index < numTicks - 1) {

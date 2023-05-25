@@ -30,7 +30,7 @@ ChartJS.register(
   Filler
 );
 
-const RENDER_TICK_SECONDS = 60;
+const RENDER_TICK_SECONDS = 5;
 
 function convertData(rawData, volumeUnit) {
   return Object.keys(rawData)
@@ -41,7 +41,7 @@ function convertData(rawData, volumeUnit) {
     .sort((a, b) => +a.timestamp - +b.timestamp);
 }
 
-function equalizeData(convertedData) {
+function equalizeData(convertedData, bottlingDate) {
   const equalizedData = convertedData.flatMap((current, i, data) => {
     if (i == 0) {
       // first data point, no equalizer
@@ -66,28 +66,17 @@ function equalizeData(convertedData) {
   });
 
   if (equalizedData.length > 0) {
+    // change the date of the first data point to be the bottling date
+    if (bottlingDate) {
+      equalizedData[0].timestamp = dayjs(bottlingDate);
+    }
+
+    // add data point for "now"
     equalizedData.push({ timestamp: dayjs(), value: equalizedData[equalizedData.length - 1].value });
   }
 
   return equalizedData;
 }
-
-/*
-  {pours.map((pour, i) => {
-    return (
-      <ReferenceArea fill="rgba(0, 0, 0, 1)" key={"pour_" + i} x1={pour.startX} x2={pour.endX}>
-        <Label
-          fill={color}
-          stroke="white"
-          strokeWidth={0.75}
-          fontWeight={1000}
-          position={pour.startValue >= tapEntry.bottlingVolume / 2 ? "insideBottom" : "center"}>
-          {Number(pour.startValue - pour.endValue).toFixed(currentVU.digits)}
-        </Label>
-      </ReferenceArea>
-    );
-  })}
-*/
 
 export default function TapMeasurement({ data, isPaused, tapEntry }) {
   const theme = useTheme();
@@ -96,6 +85,7 @@ export default function TapMeasurement({ data, isPaused, tapEntry }) {
   const [_, setTick] = React.useState(false);
   useInterval(() => {
     if (!isPaused) {
+      // TODO only do the refresh when the chart is scrolled to the end (i.e. far right)!
       setTick((t) => !t);
     }
   }, RENDER_TICK_SECONDS * 1000);
@@ -109,7 +99,7 @@ export default function TapMeasurement({ data, isPaused, tapEntry }) {
   const [graphWidth, setGraphWidth] = React.useState(100);
 
   const currentVU = volumeUnits[volumeUnit];
-  const displayData = equalizeData(convertData(data, currentVU));
+  const displayData = equalizeData(convertData(data, currentVU), tapEntry.bottlingDate);
   const currentValue = displayData.length > 0 ? displayData[displayData.length - 1].value : NaN;
   const displayValue = 1 / currentValue !== -Infinity && !Number.isNaN(currentValue) ? currentValue : 0;
 
