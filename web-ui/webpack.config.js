@@ -36,7 +36,14 @@ module.exports = {
       },
     ]
   },
-  resolve: { extensions: ['*', '.js', '.jsx'] },
+  resolve: {
+    alias: {
+      'react': 'preact/compat',
+      'react-dom': 'preact/compat',
+      'react/jsx-runtime': 'preact/jsx-runtime'
+    },
+    extensions: ['.*', '.js', '.jsx']
+  },
   output: {
     path: outputPath,
     publicPath: '',
@@ -56,11 +63,6 @@ module.exports = {
     ],
     splitChunks: {
       cacheGroups: {
-        reactVendor: {
-          test: /[\\/]node_modules[\\/](react|react-dom|react-router-dom)[\\/]/,
-          name: 'vendor-react',
-          chunks: 'all',
-        },
         muiVendor: {
           test: /[\\/]node_modules[\\/]@mui[\\/]/,
           name: 'vendor-mui',
