@@ -4,6 +4,7 @@ import { useConfirm } from 'material-ui-confirm';
 import AdjustIcon from '@mui/icons-material/Adjust';
 import BalanceIcon from '@mui/icons-material/Balance';
 import CloudOffIcon from '@mui/icons-material/CloudOff';
+import DownloadIcon from '@mui/icons-material/Download';
 import FullscreenIcon from '@mui/icons-material/Fullscreen';
 import FullscreenExitIcon from '@mui/icons-material/FullscreenExit';
 import PauseIcon from '@mui/icons-material/Pause';
@@ -20,6 +21,7 @@ import TapMeasurement from './TapMeasurement';
 import TapSetupDialog from './TapSetupDialog';
 import useLocalStorage from './useLocalStorage';
 import { Stack } from '@mui/system';
+import apiLocation from './apiLocation';
 
 function ScaleToolbar({ children, icon, stateName }) {
   const Icon = icon;
@@ -106,6 +108,22 @@ function RecordingView({ scale, data, fullScreen }) {
   const [feedback, setFeedback] = React.useState({ isOpen: false, message: '', severity: 'success' });
   const confirm = useConfirm();
 
+  const handleDownloadClick = () => {
+    fetch(apiLocation("/recording/download/?index=" + scale.index), { method: "GET" }).then((response) => {
+      if (!response.ok) {
+        setFeedback({ isOpen: true, message: 'Download recording data failed!', severity: 'error' });
+        return Promise.reject(response);
+      } else {
+        return response.blob();
+      }
+    }).then((blob) => {
+      const a = document.createElement("a");
+      a.href = window.URL.createObjectURL(blob);
+      a.download = data.state.tapEntry.name + ".json";
+      a.click();
+    });
+  }
+
   const handleContinueClick = () => {
     confirm({ description: "Do you want to continue recording?" }).then(() => {
       scale.continueRecording()
@@ -151,11 +169,18 @@ function RecordingView({ scale, data, fullScreen }) {
     <>
       <ScaleToolbar icon={SportsBarIcon} stateName={data && data.state && data.state.tapEntry && data.state.tapEntry.name}>
         {data.state && data.state.isPaused &&
-          <Tooltip title="Continue recording">
-            <IconButton onClick={handleContinueClick}>
-              <PlayArrowIcon />
-            </IconButton>
-          </Tooltip>}
+          <>
+            <Tooltip title="Download data">
+              <IconButton onClick={handleDownloadClick}>
+                <DownloadIcon />
+              </IconButton>
+            </Tooltip>
+            <Tooltip title="Continue recording">
+              <IconButton onClick={handleContinueClick}>
+                <PlayArrowIcon />
+              </IconButton>
+            </Tooltip>
+          </>}
         {data.state && !data.state.isPaused &&
           <Tooltip title="Pause recording">
             <IconButton onClick={handlePauseClick}>

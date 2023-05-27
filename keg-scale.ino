@@ -150,7 +150,7 @@ void setupScales() {
 }
 
 void setupHTTP() {
-  server = new WebServer(config, persistentConfig, catalog, scales);
+  server = new WebServer(config, persistentConfig, catalog, scales, recorder);
   server->begin();
   Serial.println("HTTP server started.");
 }
