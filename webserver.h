@@ -94,7 +94,7 @@ class WebServer {
         JsonObject root = doc.to<JsonObject>();
         this->recorder.render(index, root, true);
         serializeJson(doc, *response);
-        response->addHeader("Content-Disposition", String("attachment; filename=\"") + root["tapEntry"]["name"].as<String>() + ".json\"");
+        response->addHeader("Content-Disposition", String("attachment; filename=\"") + root["tapEntry"]["name"].as<String>() + ".keg.json\"");
         request->send(response);
       }
     });

@@ -44,6 +44,7 @@
     "preact": "^10.15.1",
     "promise-controller": "^1.0.0",
     "react-chartjs-2": "^5.2.0",
+    "react-dropzone": "^14.2.3",
     "react-fetch-hook": "^1.9.5",
     "react-use-trigger": "^0.3.4",
     "reconnecting-websocket": "^4.4.0",

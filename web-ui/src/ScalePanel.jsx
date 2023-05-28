@@ -12,16 +12,18 @@ import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import PowerSettingsNewIcon from '@mui/icons-material/PowerSettingsNew';
 import SportsBarIcon from '@mui/icons-material/SportsBar';
 import StopIcon from '@mui/icons-material/Stop';
+import UploadIcon from '@mui/icons-material/Upload';
 import { Alert, Box, Button, Divider, IconButton, Paper, Snackbar, Toolbar, Tooltip, Typography } from '@mui/material';
+import { Stack } from '@mui/system';
+import apiLocation from './apiLocation';
 import CalibrationDialog from './CalibrationDialog';
 import KnownWeights from './KnownWeights';
 import LiveMeasurement from './LiveMeasurement';
 import TabPanel from './TabPanel';
 import TapMeasurement from './TapMeasurement';
 import TapSetupDialog from './TapSetupDialog';
+import UploadTapDataDialog from './UploadTapDataDialog';
 import useLocalStorage from './useLocalStorage';
-import { Stack } from '@mui/system';
-import apiLocation from './apiLocation';
 
 function ScaleToolbar({ children, icon, stateName }) {
   const Icon = icon;
@@ -39,13 +41,18 @@ function OfflineView() {
   return <ScaleToolbar icon={CloudOffIcon} stateName="Offline" />;
 }
 
-function StandbyView({ scale, onTapSetupClick }) {
+function StandbyView({ scale, onUploadTapDataClick, onTapSetupClick }) {
   const handleLiveMeasurementClick = () => {
     scale.liveMeasurement();
   };
 
   return (
     <ScaleToolbar icon={PowerSettingsNewIcon} stateName="Standby">
+      <Tooltip title="Upload tap data">
+        <IconButton onClick={onUploadTapDataClick}>
+          <UploadIcon />
+        </IconButton>
+      </Tooltip>
       <Tooltip title="Tap setup">
         <IconButton onClick={onTapSetupClick}>
           <SportsBarIcon />
@@ -108,7 +115,7 @@ function RecordingView({ scale, data, fullScreen }) {
   const [feedback, setFeedback] = React.useState({ isOpen: false, message: '', severity: 'success' });
   const confirm = useConfirm();
 
-  const handleDownloadClick = () => {
+  const handleDownloadTapDataClick = () => {
     fetch(apiLocation("/recording/download/?index=" + scale.index), { method: "GET" }).then((response) => {
       if (!response.ok) {
         setFeedback({ isOpen: true, message: 'Download recording data failed!', severity: 'error' });
@@ -119,7 +126,7 @@ function RecordingView({ scale, data, fullScreen }) {
     }).then((blob) => {
       const a = document.createElement("a");
       a.href = window.URL.createObjectURL(blob);
-      a.download = data.state.tapEntry.name + ".json";
+      a.download = data.state.tapEntry.name + ".keg.json";
       a.click();
     });
   }
@@ -170,8 +177,8 @@ function RecordingView({ scale, data, fullScreen }) {
       <ScaleToolbar icon={SportsBarIcon} stateName={data && data.state && data.state.tapEntry && data.state.tapEntry.name}>
         {data.state && data.state.isPaused &&
           <>
-            <Tooltip title="Download data">
-              <IconButton onClick={handleDownloadClick}>
+            <Tooltip title="Download tap data">
+              <IconButton onClick={handleDownloadTapDataClick}>
                 <DownloadIcon />
               </IconButton>
             </Tooltip>
@@ -208,6 +215,7 @@ function RecordingView({ scale, data, fullScreen }) {
       <Divider />
       {data.state && data.state.data && data.state.tapEntry &&
         <TapMeasurement
+          scaleIndex={scale.index}
           isPaused={data.state.isPaused}
           data={data.state.data}
           tapEntry={data.state.tapEntry} />}
@@ -223,6 +231,7 @@ function RecordingView({ scale, data, fullScreen }) {
 export default function ScalePanel({ scale, data, weights, fullScreen }) {
   const [calibrationIsOpen, setCalibrationIsOpen] = React.useState(false);
   const [tapSetupIsOpen, setTapSetupIsOpen] = React.useState(false);
+  const [uploadTapDataIsOpen, setUploadTapDataIsOpen] = React.useState(false);
 
   const handleCalibrationClick = () => {
     setCalibrationIsOpen(true);
@@ -240,6 +249,14 @@ export default function ScalePanel({ scale, data, weights, fullScreen }) {
     setTapSetupIsOpen(false);
   };
 
+  const handleUploadTapDataClick = () => {
+    setUploadTapDataIsOpen(true);
+  }
+
+  const handleUploadDataClose = () => {
+    setUploadTapDataIsOpen(false);
+  }
+
   return data && data.state ? (
     <Box height={1}>
       <Paper sx={ fullScreen.isActive ? { height: 1 } : {}} className="scale-paper">
@@ -250,7 +267,7 @@ export default function ScalePanel({ scale, data, weights, fullScreen }) {
             <OfflineView />
           </TabPanel>
           <TabPanel value={data.state.name} index="standby">
-            <StandbyView scale={scale} onTapSetupClick={handleTapSetupClick} />
+            <StandbyView scale={scale} onTapSetupClick={handleTapSetupClick} onUploadTapDataClick={handleUploadTapDataClick} />
           </TabPanel>
           <TabPanel value={data.state.name} index="liveMeasurement" className="stretched-tab-panel">
             <LiveMeasurementView scale={scale} data={data} weights={weights} onCalibrationClick={handleCalibrationClick} />
@@ -270,6 +287,11 @@ export default function ScalePanel({ scale, data, weights, fullScreen }) {
           onClose={handleTapSetupClose}
           scale={scale}
           weights={weights} />
+        <UploadTapDataDialog
+          open={data.state.name != "offline" && uploadTapDataIsOpen}
+          onClose={handleUploadDataClose}
+          scale={scale}
+          />
       </Paper>
     </Box>
   ) : <></>;
