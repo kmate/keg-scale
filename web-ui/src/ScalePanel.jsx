@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { useConfirm } from 'material-ui-confirm';
+import sanitize from 'sanitize-filename';
 
 import AdjustIcon from '@mui/icons-material/Adjust';
 import BalanceIcon from '@mui/icons-material/Balance';
@@ -13,7 +14,7 @@ import PowerSettingsNewIcon from '@mui/icons-material/PowerSettingsNew';
 import SportsBarIcon from '@mui/icons-material/SportsBar';
 import StopIcon from '@mui/icons-material/Stop';
 import UploadIcon from '@mui/icons-material/Upload';
-import { Alert, Box, Button, Divider, IconButton, Paper, Snackbar, Toolbar, Tooltip, Typography } from '@mui/material';
+import { Alert, Box, Button, DialogContentText, Divider, IconButton, Paper, Snackbar, Toolbar, Tooltip, Typography } from '@mui/material';
 import { Stack } from '@mui/system';
 import CalibrationDialog from './CalibrationDialog';
 import KnownWeights from './KnownWeights';
@@ -114,16 +115,22 @@ function RecordingView({ scale, data, fullScreen }) {
   const [feedback, setFeedback] = React.useState({ isOpen: false, message: '', severity: 'success' });
   const confirm = useConfirm();
 
-  const handleDownloadTapDataClick = () => {
+  const downloadTapData = () => {
     try {
       const blob = new Blob([JSON.stringify(data.state)], { type: "application/json" });
       const a = document.createElement("a");
       a.href = window.URL.createObjectURL(blob);
-      a.download = data.state.tapEntry.name + ".keg.json";
+      a.download = sanitize(data.state.tapEntry.bottlingDate + " " + data.state.tapEntry.name) + ".keg.json";
       a.click();
+      return true;
     } catch {
       setFeedback({ isOpen: true, message: 'Download recording data failed!', severity: 'error' });
+      return false;
     }
+  };
+
+  const handleDownloadTapDataClick = () => {
+    downloadTapData();
   }
 
   const handleContinueClick = () => {
@@ -151,9 +158,16 @@ function RecordingView({ scale, data, fullScreen }) {
   };
 
   const handleStopClick = () => {
-    // TODO there should be a toggle that is ON by default to download the recording data!
-    confirm({ description: "Do you want to stop recording?" }).then(() => {
-      scale.stopRecording()
+    const dialogContent =
+      <DialogContentText>
+        Do you want to stop recording?<br/>
+        (This will download you a copy of the tap data.)
+      </DialogContentText>;
+
+    confirm({ content: dialogContent }).then(() => {
+      if (downloadTapData()) {
+        // only stop recording if download succeeded
+        scale.stopRecording()
         .then(() => {
           setFeedback({ isOpen: true, message: 'Recording stopped!', severity: 'success' });
           fullScreen.onExit();
@@ -161,6 +175,7 @@ function RecordingView({ scale, data, fullScreen }) {
         .catch(() => {
           setFeedback({ isOpen: true, message: 'Stop recording failed!', severity: 'error' });
         });
+      }
     }).catch(() => {});
   };
 

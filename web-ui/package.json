@@ -48,6 +48,7 @@
     "react-fetch-hook": "^1.9.5",
     "react-use-trigger": "^0.3.4",
     "reconnecting-websocket": "^4.4.0",
+    "sanitize-filename": "^1.6.3",
     "use-interval": "^1.4.0",
     "use-long-press": "^3.1.3"
   }
