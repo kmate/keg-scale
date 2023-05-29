@@ -110,7 +110,7 @@ struct RecordingEntry {
     strptime(obj["startDateTime"], "%Y-%m-%d %H:%M:%S", &startDateTimeTm);
     entry->startDateTime = mktime(&startDateTimeTm);
 
-    entry->isPaused = obj["isPaused"] | true;g
+    entry->isPaused = obj["isPaused"] | true;
 
     memset(entry->rawData, 0, sizeof(entry->rawData));
     JsonObject data = obj["data"].as<JsonObject>();
