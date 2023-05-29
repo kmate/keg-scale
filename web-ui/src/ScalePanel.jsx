@@ -15,7 +15,6 @@ import StopIcon from '@mui/icons-material/Stop';
 import UploadIcon from '@mui/icons-material/Upload';
 import { Alert, Box, Button, Divider, IconButton, Paper, Snackbar, Toolbar, Tooltip, Typography } from '@mui/material';
 import { Stack } from '@mui/system';
-import apiLocation from './apiLocation';
 import CalibrationDialog from './CalibrationDialog';
 import KnownWeights from './KnownWeights';
 import LiveMeasurement from './LiveMeasurement';
@@ -116,19 +115,15 @@ function RecordingView({ scale, data, fullScreen }) {
   const confirm = useConfirm();
 
   const handleDownloadTapDataClick = () => {
-    fetch(apiLocation("/recording/download/?index=" + scale.index), { method: "GET" }).then((response) => {
-      if (!response.ok) {
-        setFeedback({ isOpen: true, message: 'Download recording data failed!', severity: 'error' });
-        return Promise.reject(response);
-      } else {
-        return response.blob();
-      }
-    }).then((blob) => {
+    try {
+      const blob = new Blob([JSON.stringify(data.state)], { type: "application/json" });
       const a = document.createElement("a");
       a.href = window.URL.createObjectURL(blob);
       a.download = data.state.tapEntry.name + ".keg.json";
       a.click();
-    });
+    } catch {
+      setFeedback({ isOpen: true, message: 'Download recording data failed!', severity: 'error' });
+    }
   }
 
   const handleContinueClick = () => {
@@ -156,6 +151,7 @@ function RecordingView({ scale, data, fullScreen }) {
   };
 
   const handleStopClick = () => {
+    // TODO there should be a toggle that is ON by default to download the recording data!
     confirm({ description: "Do you want to stop recording?" }).then(() => {
       scale.stopRecording()
         .then(() => {

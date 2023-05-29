@@ -83,24 +83,6 @@ class WebServer {
     });
   }
 
-  void addRecordingHandlers() {
-    this->server.on("/recording/download", HTTP_GET, [this](AsyncWebServerRequest *request) {
-      if (!request->hasParam("index")) {
-        request->send(400, "text/plain", "no index provided");
-      } else {
-        int index = request->getParam("index")->value().toInt();
-        AsyncResponseStream *response = request->beginResponseStream("application/json");
-        StaticJsonDocument<1024> doc;
-        JsonObject root = doc.to<JsonObject>();
-        this->recorder.render(index, root, true);
-        serializeJson(doc, *response);
-        response->addHeader("Content-Disposition", String("attachment; filename=\"") + root["tapEntry"]["name"].as<String>() + ".keg.json\"");
-        request->send(response);
-      }
-    });
-    // TODO add upload handler
-  }
-
   void addScalesHandler() {
     this->server.addHandler(this->scales.getSocket());
   }
@@ -169,7 +151,6 @@ public:
     this->addConfigHandler();
     this->addPersistHandler();
     this->addCatalogHandlers();
-    this->addRecordingHandlers();
     this->addScalesHandler();
     this->addStatusHandler();
     this->addLogHandler();
