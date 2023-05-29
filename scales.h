@@ -10,7 +10,7 @@
 #include "recorder.h"
 #include "scale.h"
 
-#define MAX_COMMAND_JSON_SIZE 512
+#define MAX_COMMAND_JSON_SIZE 512 // FIXME this will be too small for most realistic uploads - those can be as large as 16KB!
 #define MAX_ERROR_JSON_SIZE   128
 
 class Scales {
