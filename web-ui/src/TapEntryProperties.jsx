@@ -1,5 +1,7 @@
 import * as React from 'react';
-import { Divider, Stack, Typography } from "@mui/material";
+import Divider from "@mui/material/Divider";
+import Stack from "@mui/material/Stack";
+import Typography from "@mui/material/Typography";
 
 function PropertyLabel({ children }) {
   return <Typography mx={1} variant="body2" color="text.secondary">{children}</Typography>;

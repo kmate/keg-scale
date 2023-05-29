@@ -1,15 +1,26 @@
 import * as React from 'react';
 import apiLocation from './apiLocation';
 
+import useTheme from '@mui/material/styles/useTheme';
 import useMediaQuery from '@mui/material/useMediaQuery';
-import { useTheme } from '@mui/material/styles';
 
-import { Alert, Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, Divider, List, ListItem, Snackbar, Typography } from "@mui/material";
-import { Stack } from '@mui/system';
+import Alert from "@mui/material/Alert";
+import Box from "@mui/material/Box";
+import Button from "@mui/material/Button";
+import Dialog from "@mui/material/Dialog";
+import DialogActions from "@mui/material/DialogActions";
+import DialogContent from "@mui/material/DialogContent";
+import DialogTitle from "@mui/material/DialogTitle";
+import Divider from "@mui/material/Divider";
+import List from "@mui/material/List";
+import ListItem from "@mui/material/ListItem";
+import Snackbar from "@mui/material/Snackbar";
+import Stack from '@mui/material/Stack';
+import Typography from "@mui/material/Typography";
 
-import LiveMeasurement from './LiveMeasurement';
-import KnownWeights from './KnownWeights';
 import InputWithUnit from './InputWithUnit';
+import KnownWeights from './KnownWeights';
+import LiveMeasurement from './LiveMeasurement';
 import { massUnits } from './units';
 
 export default function CalibrationDialog({ scale, data, weights, open, onClose }) {

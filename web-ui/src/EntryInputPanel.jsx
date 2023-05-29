@@ -2,8 +2,17 @@ import * as React from 'react';
 
 import LinkIcon from '@mui/icons-material/Link';
 import SquareIcon from '@mui/icons-material/Square';
-import { FormControlLabel, Grid, IconButton, InputAdornment, Switch, TextField, Tooltip, Typography } from '@mui/material';
-import { Stack } from '@mui/system';
+
+import FormControlLabel from '@mui/material/FormControlLabel';
+import Grid from '@mui/material/Grid';
+import IconButton from '@mui/material/IconButton';
+import InputAdornment from '@mui/material/InputAdornment';
+import Stack from '@mui/material/Stack';
+import Switch from '@mui/material/Switch';
+import TextField from '@mui/material/TextField';
+import Tooltip from '@mui/material/Tooltip';
+import Typography from '@mui/material/Typography';
+
 import { DatePicker } from '@mui/x-date-pickers';
 import DensityInput from './DensityInput';
 import InputWithUnit from './InputWithUnit';

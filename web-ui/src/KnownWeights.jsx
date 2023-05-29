@@ -1,6 +1,10 @@
-import { Button, Divider, ToggleButton, ToggleButtonGroup } from '@mui/material';
-import { Stack } from '@mui/system';
 import * as React from 'react';
+
+import Button from '@mui/material/Button';
+import Divider from '@mui/material/Divider';
+import Stack from '@mui/material/Stack';
+import ToggleButton from '@mui/material/ToggleButton';
+import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 
 export default function KnownWeights({ children, isToggle, selectFirst, onClick, weights, forTare, forCalibration }) {
 

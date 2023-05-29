@@ -1,6 +1,9 @@
 import * as React from 'react';
 
-import { InputAdornment, MenuItem, Select, TextField } from '@mui/material';
+import InputAdornment from '@mui/material/InputAdornment';
+import MenuItem from '@mui/material/MenuItem';
+import Select from '@mui/material/Select';
+import TextField from '@mui/material/TextField';
 import useLocalStorage from './useLocalStorage';
 
 export default function InputWithUnit({ label, units, defaultUnit, value, defaultValue, onChange, onError, isValid, startAdornment, ...props }) {

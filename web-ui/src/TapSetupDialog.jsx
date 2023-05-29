@@ -4,15 +4,27 @@ import createTrigger from "react-use-trigger";
 import apiLocation from './apiLocation';
 
 import useMediaQuery from '@mui/material/useMediaQuery';
-import { useTheme } from '@mui/material/styles';
+import useTheme from '@mui/material/styles/useTheme';
 
-import { Alert, Button, Dialog, DialogActions, DialogContent, DialogTitle, Divider, FormControlLabel, IconButton, Snackbar, Switch, Tooltip, Typography } from "@mui/material";
-import { Stack } from '@mui/system';
 import RefreshIcon from '@mui/icons-material/Refresh';
+import Alert from "@mui/material/Alert";
+import Button from "@mui/material/Button";
+import Dialog from "@mui/material/Dialog";
+import DialogActions from "@mui/material/DialogActions";
+import DialogContent from "@mui/material/DialogContent";
+import DialogTitle from "@mui/material/DialogTitle";
+import Divider from "@mui/material/Divider";
+import FormControlLabel from "@mui/material/FormControlLabel";
+import IconButton from "@mui/material/IconButton";
+import Snackbar from "@mui/material/Snackbar";
+import Stack from '@mui/material/Stack';
+import Switch from "@mui/material/Switch";
+import Tooltip from "@mui/material/Tooltip";
+import Typography from "@mui/material/Typography";
 
+import dayjs from 'dayjs';
 import CatalogInputPanel from './CatalogInputPanel';
 import EntryInputPanel from './EntryInputPanel';
-import dayjs from 'dayjs';
 
 const catalogRefreshTrigger = createTrigger();
 

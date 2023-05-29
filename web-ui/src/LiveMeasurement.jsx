@@ -1,7 +1,11 @@
 import * as React from 'react';
 import { measuredUnits } from './units';
 
-import { FormControl, Grid, MenuItem, Select, Typography } from '@mui/material';
+import FormControl from '@mui/material/FormControl';
+import Grid from '@mui/material/Grid';
+import MenuItem from '@mui/material/MenuItem';
+import Select from '@mui/material/Select';
+import Typography from '@mui/material/Typography';
 import DensityInput from './DensityInput';
 
 export default function LiveMeasurement({ value, padding }) {

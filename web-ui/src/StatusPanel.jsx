@@ -5,7 +5,16 @@ import copy from "copy-to-clipboard";
 import apiLocation from './apiLocation';
 import formatBytes from './formatBytes';
 
-import { Divider, FormControlLabel, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Stack, Switch, Tooltip } from '@mui/material';
+import Divider from '@mui/material/Divider';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemButton from '@mui/material/ListItemButton';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import ListItemText from '@mui/material/ListItemText';
+import Stack from '@mui/material/Stack';
+import Switch from '@mui/material/Switch';
+import Tooltip from '@mui/material/Tooltip';
 import ErrorIndicator from './ErrorIndicator';
 import LoadingIndicator from './LoadingIndicator';
 

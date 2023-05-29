@@ -2,8 +2,12 @@ import * as React from 'react';
 import useFetch from "react-fetch-hook";
 import useTrigger from "react-use-trigger/useTrigger";
 
-import { IconButton, List, ThemeProvider, Tooltip } from "@mui/material";
-import { createTheme, useTheme } from '@mui/material/styles';
+import IconButton from "@mui/material/IconButton";
+import List from "@mui/material/List";
+import Tooltip from "@mui/material/Tooltip";
+import createTheme from '@mui/material/styles/createTheme';
+import useTheme from '@mui/material/styles/useTheme';
+import ThemeProvider from '@mui/material/styles/ThemeProvider';
 import LaunchIcon from '@mui/icons-material/Launch';
 import dayjs from 'dayjs';
 import apiLocation from './apiLocation';

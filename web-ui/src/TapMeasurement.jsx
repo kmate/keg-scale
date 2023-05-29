@@ -1,6 +1,9 @@
 import * as React from 'react';
 
-import { Divider, FormControl, MenuItem, Select } from '@mui/material';
+import Divider from '@mui/material/Divider';
+import FormControl from '@mui/material/FormControl';
+import MenuItem from '@mui/material/MenuItem';
+import Select from '@mui/material/Select';
 import { volumeUnits } from './units';
 import TapEntryProperties from './TapEntryProperties';
 import TapChart from './TapChart';

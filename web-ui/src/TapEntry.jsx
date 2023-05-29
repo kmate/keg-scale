@@ -1,6 +1,9 @@
 import * as React from 'react';
 
-import { ListItemButton, ListItemIcon, ListItemText, Typography } from '@mui/material';
+import ListItemButton from '@mui/material/ListItemButton';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import ListItemText from '@mui/material/ListItemText';
+import Typography from '@mui/material/Typography';
 import BeerIcon from './BeerIcon';
 import srmToRgb from './srmToRgb';
 import TapEntryProperties from './TapEntryProperties';

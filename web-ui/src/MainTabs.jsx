@@ -1,7 +1,7 @@
 import * as React from 'react';
 import ReconnectingWebSocket from 'reconnecting-websocket';
 
-import { useTheme } from '@mui/material/styles';
+import useTheme from '@mui/material/styles/useTheme';
 import AppBar from '@mui/material/AppBar';
 import Stack from '@mui/material/Stack';
 import Tabs from '@mui/material/Tabs';
