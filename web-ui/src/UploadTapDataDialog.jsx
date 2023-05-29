@@ -2,7 +2,7 @@ import * as React from 'react';
 import { useDropzone } from 'react-dropzone'
 
 import useMediaQuery from '@mui/material/useMediaQuery';
-import { useTheme } from '@mui/material/styles';
+import useTheme from '@mui/material/styles/useTheme';
 import Alert from '@mui/material/Alert';
 import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';

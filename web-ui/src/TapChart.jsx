@@ -1,6 +1,6 @@
 import * as React from 'react';
 import useInterval from 'use-interval'
-import { useTheme } from '@mui/material/styles';
+import useTheme from '@mui/material/styles/useTheme';
 
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
