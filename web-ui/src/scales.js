@@ -71,6 +71,14 @@ class Scale {
       index: this.#index,
     });
   }
+
+  putRecordingEntry(recordingEntry) {
+    return this.#scales.sendCommand({
+      action: "putRecordingEntry",
+      index: this.#index,
+      recordingEntry: recordingEntry,
+    });
+  }
 }
 
 export default class Scales {

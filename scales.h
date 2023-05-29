@@ -67,6 +67,9 @@ private:
     } else if (action == "startRecording") {
       TapEntry *tapEntry = TapEntry::fromJson(command["tapEntry"].as<JsonObject>());
       scale->startRecording(tapEntry);
+    } else if (action == "putRecordingEntry") {
+      RecordingEntry *recordingEntry = RecordingEntry::fromJson(command["recordingEntry"].as<JsonObject>());
+      scale->startRecording(recordingEntry);
     } else if (action == "pauseRecording") {
       scale->pauseRecording();
     } else if (action == "continueRecording") {

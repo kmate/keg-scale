@@ -41,6 +41,10 @@ bool Scale::startRecorder(TapEntry *tapEntry) {
   return this->recorder.start(this->index, tapEntry, this->getAdcData());
 }
 
+bool Scale::putRecordingEntry(RecordingEntry *recordingEntry) {
+  return this->recorder.putEntry(this->index, recordingEntry);
+}
+
 void Scale::pauseRecorder() {
   this->recorder.pause(this->index);
 }
@@ -106,6 +110,11 @@ void Scale::calibrate(float knownMass) {
 void Scale::startRecording(TapEntry *tapEntry) {
   Logger.printf("[Scale] Recording on scale %d for batch %s.\n", this->index, tapEntry->name);
   this->setState(new RecordingScaleState(tapEntry));
+}
+
+void Scale::startRecording(RecordingEntry *recordingEntry) {
+  Logger.printf("[Scale] Recording on scale %d for batch %s.\n", this->index, recordingEntry->tapEntry.name);
+  this->setState(new RecordingScaleState(recordingEntry));
 }
 
 void Scale::pauseRecording() {

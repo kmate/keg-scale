@@ -4,6 +4,8 @@
 #include <ArduinoJson.h>
 #include <ESPDateTime.h>
 
+#include "recorder.h"
+
 #define LIVE_MEASUREMENT_REFRESH_SECONDS 1
 
 class Scale;
@@ -53,13 +55,17 @@ public:
 class RecordingScaleState : public OnlineScaleState {
 
   TapEntry *tapEntry;
+  RecordingEntry *recordingEntry;
 
 public:
-  // constructor to start recording
-  RecordingScaleState(TapEntry *_tapEntry) : tapEntry(_tapEntry) {};
+  // constructor to start new recording
+  RecordingScaleState(TapEntry *_tapEntry) : tapEntry(_tapEntry), recordingEntry(nullptr) {};
+
+  // constructor to start recording from an exported entry
+  RecordingScaleState(RecordingEntry *_recordingEntry) : tapEntry(nullptr), recordingEntry(_recordingEntry) {};
 
   // constructor to continue recording
-  RecordingScaleState() : tapEntry(nullptr) {};
+  RecordingScaleState() : tapEntry(nullptr), recordingEntry(nullptr) {};
 
   void enter(Scale *scale, ScaleState *prevState) override;
   bool update() override;

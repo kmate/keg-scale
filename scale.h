@@ -59,6 +59,7 @@ public:
   void tare();
   void calibrate(float knownMass);
   void startRecording(TapEntry *tapEntry);
+  void startRecording(RecordingEntry *recordingEntry);
   void pauseRecording();
   void continueRecording();
   void stopRecording();
@@ -66,6 +67,7 @@ public:
   // functions used by different scale states
   void setState(ScaleState *newState);
   bool startRecorder(TapEntry *tapEntry = nullptr);
+  bool putRecordingEntry(RecordingEntry *recordingEntry);
   void pauseRecorder();
   void stopRecorder();
   bool updateRecorder();

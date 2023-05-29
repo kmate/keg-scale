@@ -68,7 +68,15 @@ export default function UploadTapDataDialog({ scale, open, onClose }) {
   };
 
   const handleUpload = () => {
-    console.log("upload the file contents", scale.index, JSON.stringify(uploadedData));
+    scale.putRecordingEntry(uploadedData)
+      .then(() => {
+        setFeedback({ isOpen: true, message: 'Recording entry uploaded!', severity: 'success' });
+        onClose();
+        setUploadedData(null);
+      })
+      .catch(() => {
+        setFeedback({ isOpen: true, message: 'Uploading recording entry failed!', severity: 'error' });
+      });
   };
 
   const handleFeedbackClose = () => {

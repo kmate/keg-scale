@@ -79,6 +79,50 @@ struct RecordingEntry {
   // Each time we update the rawData field, we save the index here,
   // and we don't allow next time to fill larger indices than this.
   int latestValue;
+
+  void render(JsonObject &obj, bool isFull = true) {
+    obj["isPaused"] = this->isPaused;
+
+    if (isFull) {
+      obj["startDateTime"] = DateFormatter::format(DateFormatter::SIMPLE, this->startDateTime);
+      JsonObject tapEntry = obj.createNestedObject("tapEntry");
+      this->tapEntry.render(tapEntry);
+    }
+
+    time_t now = DateTime.now();
+    JsonObject data = obj.createNestedObject("data");
+    for (int i = 0; i < RECORDING_ENTRY_NUM_RAW_DATA_ITEMS; ++i) {
+      time_t timestamp = this->rawData[i];
+      if (timestamp != 0 && (isFull || now - timestamp < MAX_PARTIAL_RENDER_TIME_DELAY_SECONDS)) {
+        data[String(timestamp)] = ((float) i) / MEASURED_POINTS_IN_LITERS;
+      }
+    }
+  }
+
+  static RecordingEntry *fromJson(const JsonObject &obj) {
+    RecordingEntry *entry = new RecordingEntry;
+
+    TapEntry *tapEntry = TapEntry::fromJson(obj["tapEntry"]);
+    memcpy(&entry->tapEntry, tapEntry, sizeof(entry->tapEntry));
+    delete tapEntry;
+
+    struct tm startDateTimeTm = {0};
+    strptime(obj["startDateTime"], "%Y-%m-%d %H:%M:%S", &startDateTimeTm);
+    entry->startDateTime = mktime(&startDateTimeTm);
+
+    entry->isPaused = obj["isPaused"] | true;g
+
+    memset(entry->rawData, 0, sizeof(entry->rawData));
+    JsonObject data = obj["data"].as<JsonObject>();
+    for (JsonPair kv : data) {
+      int index = (int) round(kv.value().as<float>() * MEASURED_POINTS_IN_LITERS);
+      time_t timestamp = (time_t) atoi(kv.key().c_str());
+      entry->rawData[index] = timestamp;
+    }
+
+    entry->latestValue = RECORDING_ENTRY_NUM_RAW_DATA_ITEMS;
+    return entry;
+  }
 };
 
 class Recorder {
@@ -130,6 +174,17 @@ public:
     } else {
       Logger.printf("[Recorder] Unable to start or continue recording for scale %d.\n", index);
       return false;
+    }
+  }
+
+  bool putEntry(int index, RecordingEntry *recordingEntry) {
+    if (this->hasRecording(index)) {
+      Logger.printf("[Recorder] Unable to upload new recording data for scale %d.\n", index);
+      return false;
+    } else {
+      Logger.printf("[Recorder] Continue recording from upload for scale %d (%s).\n", index, recordingEntry->tapEntry.name);
+      this->entries[index] = recordingEntry;
+      return true;
     }
   }
 
@@ -193,22 +248,7 @@ public:
 
   void render(int index, JsonObject &obj, bool isFull) {
     RecordingEntry *entry = this->entries[index];
-    obj["isPaused"] = entry->isPaused;
-
-    if (isFull) {
-      obj["startDateTime"] = DateFormatter::format(DateFormatter::SIMPLE, entry->startDateTime);
-      JsonObject tapEntry = obj.createNestedObject("tapEntry");
-      entry->tapEntry.render(tapEntry);
-    }
-
-    time_t now = DateTime.now();
-    JsonObject data = obj.createNestedObject("data");
-    for (int i = 0; i < RECORDING_ENTRY_NUM_RAW_DATA_ITEMS; ++i) {
-      time_t timestamp = entry->rawData[i];
-      if (timestamp != 0 && (isFull || now - timestamp < MAX_PARTIAL_RENDER_TIME_DELAY_SECONDS)) {
-        data[String(timestamp)] = ((float) i) / MEASURED_POINTS_IN_LITERS;
-      }
-    }
+    entry->render(obj, isFull);
   }
 };
 

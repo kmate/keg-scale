@@ -52,7 +52,11 @@ void LiveMeasurementScaleState::render(JsonObject &state, bool isFull) const {
 
 void RecordingScaleState::enter(Scale *scale, ScaleState *prevState) {
   OnlineScaleState::enter(scale, prevState);
-  this->scale->startRecorder(this->tapEntry);
+  if (this->recordingEntry != nullptr) {
+    this->scale->putRecordingEntry(this->recordingEntry);
+  } else {
+    this->scale->startRecorder(this->tapEntry);
+  }
 }
 
 bool RecordingScaleState::update() {
