@@ -22,6 +22,8 @@ struct ScaleConfig {
   uint8_t dataPin;
   uint8_t gain;
   bool reverse;
+  unsigned long initMillis;
+  bool initTare;
 
   void render(JsonObject &obj) {
     obj["label"] = this->label;
@@ -29,6 +31,8 @@ struct ScaleConfig {
     obj["dataPin"] = this->dataPin;
     obj["gain"] = this->gain;
     obj["reverse"] = this->reverse;
+    obj["initMillis"] = this->initMillis;
+    obj["initTare"] = this->initTare;
   }
 };
 
@@ -55,16 +59,6 @@ struct CatalogConfig {
   BrewfatherCatalogConfig brewfather;
 };
 
-struct GithubGistRecorderConfig {
-  char userId[32];
-  char apiKey[65];
-  char rootNodeId[65];
-};
-
-struct RecorderConfig {
-  GithubGistRecorderConfig githubGist;
-};
-
 class Config {
 
 public:
@@ -72,7 +66,6 @@ public:
   uint16_t httpPort;
   std::vector<WiFiConfig> wifis;
   CatalogConfig catalog;
-  RecorderConfig recorder;
   OTAConfig ota;
   std::vector<ScaleConfig> scales;
   std::vector<Weight> weights;
@@ -103,10 +96,6 @@ public:
     strlcpy(this->catalog.brewfather.userId, doc["catalog"]["brewfather"]["userId"] | "", sizeof(this->catalog.brewfather.userId));
     strlcpy(this->catalog.brewfather.apiKey, doc["catalog"]["brewfather"]["apiKey"] | "", sizeof(this->catalog.brewfather.apiKey));
 
-    strlcpy(this->recorder.githubGist.userId, doc["recorder"]["githubGist"]["userId"] | "", sizeof(this->recorder.githubGist.userId));
-    strlcpy(this->recorder.githubGist.apiKey, doc["recorder"]["githubGist"]["apiKey"] | "", sizeof(this->recorder.githubGist.apiKey));
-    strlcpy(this->recorder.githubGist.rootNodeId, doc["recorder"]["githubGist"]["rootNodeId"] | "", sizeof(this->recorder.githubGist.rootNodeId));
-
     this->ota.port = doc["ota"]["port"] | 8266;
     strlcpy(this->ota.password, doc["ota"]["password"] | "", sizeof(this->ota.password));
 
@@ -118,6 +107,8 @@ public:
       currentScale.dataPin = doc["scales"][i]["dataPin"];
       currentScale.gain = doc["scales"][i]["gain"] | 128;
       currentScale.reverse = doc["scales"][i]["reverse"] | false;
+      currentScale.initMillis = doc["scales"][i]["initMillis"] | 5000;
+      currentScale.initTare = doc["scales"][i]["initTare"] | false;
       this->scales.push_back(currentScale);
     }
 

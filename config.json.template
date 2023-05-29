@@ -13,13 +13,6 @@
       "apiKey": "<brewfather-api-key>"
     }
   },
-  "recorder": {
-    "githubGist": {
-      "userId": "<github-user-id>",
-      "apiKey": "<github-api-key>",
-      "rootNodeId": "<node-id-of-root-gist>"
-    }
-  },
   "ota": {
     "port": 8266,
     "password": "<ota-password>"
@@ -30,14 +23,9 @@
       "clockPin": <clock-pin-for-scale-1>,
       "dataPin": <data-pin-for-scale-1>,
       "gain": <64 or 128>,
-      "reverse": <true or false>
-    },
-    {
-      "label", <label>,
-      "clockPin": <clock-pin-for-scale-2>,
-      "dataPin": <data-pin-for-scale-2>,
-      "gain": <64 or 128>,
-      "reverse": <true or false>
+      "reverse": <true or false>,
+      "initMillis": <init-timeout-in-milliseconds>,
+      "initTare": <true or false>
     }
   ],
   "weights": [

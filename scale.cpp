@@ -133,8 +133,7 @@ void Scale::stopRecording() {
 }
 
 void Scale::startAdc() {
-  // TODO should the timeout / tare flag come from config?
-  this->adc.startMultiple(5000, false);
+  this->adc.startMultiple(this->config.initMillis, this->config.initTare);
   this->adc.setTareOffset(this->calibration->tareOffset);
   this->adc.setCalFactor(this->calibration->calibrationFactor);
 }
