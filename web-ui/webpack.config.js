@@ -63,8 +63,13 @@ module.exports = {
     ],
     splitChunks: {
       cacheGroups: {
+        muiXVendor: {
+          test: /[\\/]node_modules[\\/]@mui[\\/]x/,
+          name: 'vendor-mui-x',
+          chunks: 'all',
+        },
         muiVendor: {
-          test: /[\\/]node_modules[\\/]@mui[\\/]/,
+          test: /[\\/]node_modules[\\/]@mui[\\/][^x]/,
           name: 'vendor-mui',
           chunks: 'all',
         },
