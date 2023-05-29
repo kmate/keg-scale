@@ -182,6 +182,7 @@ export default function TapChart({ data, isPaused, tapEntry, volumeUnit, height,
     }
   };
 
+  // FIXME this might not being drawn correctly on Safari when scrolled (upload looks OK, but not in scale view)
   const fixedYAxis = {
     id: "fixedYAxis",
     afterRender: (chart, _, opts) => {

@@ -277,7 +277,8 @@ export default class PourScale extends Scale {
   // @param value : the value to get the pixel for
   // @param [index] : index into the data array of the value
   getPixelForValue(_value, index) {
-    // TODO cache this data for better performance when generating ticks and pours
+    // FIXME - REALLY SLOW - cache this data for better performance when generating ticks and pours
+    // (actually re-think how the above computation could be done the cheapest way + reduce re-renders!)
     const timestamps = this.chart.data.labels;
     const timestamp = timestamps[index];
 
