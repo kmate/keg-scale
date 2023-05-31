@@ -9,8 +9,7 @@ html, body, #root {
 .scales-grid {
   --grid-layout-gap: 8px;
   --grid-column-count: 2;
-  /* FIXME this is too small for mobile use cases */
-  --grid-item--min-width: 450px;
+  --grid-item--min-width: 360px;
   --gap-count: calc(var(--grid-column-count) - 1);
   --total-gap-width: calc(var(--gap-count) * var(--grid-layout-gap));
   --grid-item--max-width: calc((100% - var(--total-gap-width)) / var(--grid-column-count));
