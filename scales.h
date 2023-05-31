@@ -96,6 +96,7 @@ public:
         }
       } else if (type == WS_EVT_DATA) {
         AwsFrameInfo *info = (AwsFrameInfo *) arg;
+        // FIXME for large uploads we'd need to support multi-frame messages?
         // it seems that up to 528 bytes the messages are single-frame
         if (info->final && info->index == 0 && info->len == len) {
           char *payload = (char *) data;
