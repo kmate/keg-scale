@@ -16,12 +16,13 @@ const char compiledAt[] = COMPILED_AT;
 
 class WebServer {
 
-  AsyncWebServer server;
   Config &config;
   PersistentConfig &persistentConfig;
   BrewfatherCatalog &catalog;
   Scales &scales;
   Recorder &recorder;
+
+  AsyncWebServer server;
 
   void addRootHandler() {
     this->server

@@ -16,6 +16,8 @@ protected:
   Scale *scale;
 
 public:
+  virtual ~ScaleState() {};
+
   virtual void enter(Scale *scale, ScaleState *prevState) = 0;
   virtual bool update() = 0;
   virtual void exit(ScaleState *nextState) = 0;

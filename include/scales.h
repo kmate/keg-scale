@@ -45,7 +45,7 @@ private:
 
   void processCommand(JsonObject &command, AsyncWebSocketClient *client) {
     String action = command["action"];
-    int index = command["index"];
+    size_t index = command["index"];
     Scale *scale = this->scales[index];
 
     if (index < 0 || index >= this->scales.size()) {
@@ -134,7 +134,7 @@ public:
   }
 
   void begin(Config &config, PersistentConfig &persistentConfig, Recorder &recorder) {
-    for (int i = 0; i < config.scales.size(); ++i) {
+    for (size_t i = 0; i < config.scales.size(); ++i) {
       Scale *scale = new Scale(i, config.scales[i], persistentConfig.getCalibrationForScale(i), recorder);
       this->scales.push_back(scale);
       scale->begin();
