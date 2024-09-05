@@ -56,6 +56,8 @@ const identity = (x) => x;
 
 const fromUTCDateTime = (dt) => new Date(dt.replace(" ", "T") + "Z").toLocaleString();
 
+const fromHTTPDateTime = (dt) => new Date(dt).toLocaleString();
+
 const integerPercentage = (p) => p + "%";
 
 const stats = {
@@ -127,6 +129,10 @@ const stats = {
     label: "IRAM heap fragmentation",
     show: integerPercentage
   },
+  lastModified: {
+    label: "Last modified",
+    show: fromHTTPDateTime
+  },
   totalBytes: {
     label: "Total bytes",
     show: formatBytes
@@ -142,10 +148,6 @@ const stats = {
   pageSize: {
     label: "Page size",
     show: formatBytes
-  },
-  lastModified: {
-    label: "Last modified",
-    show: identity // TODO format like the rest
   },
 }
 
@@ -181,7 +183,6 @@ function StatusContents({ data }) {
             <Divider />
             <List component="div" disablePadding>
               {Object.keys(data[group]).map((stat) => {
-                const Icon = stats[stat].icon;
                 return (
                   <React.Fragment key={group + "." + stat}>
                     <ListItem disablePadding>

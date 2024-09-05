@@ -2,7 +2,6 @@
 
 ## TODO
 
-- [ ] Change data stamp format? format time on ui! put into general section?
 - [ ] Check if EEPROM is still working / is it normal to get emptied when flashing
 
 ## Building
