@@ -4,7 +4,6 @@
 
 - [ ] Change data stamp format? format time on ui! put into general section?
 - [ ] Check if EEPROM is still working / is it normal to get emptied when flashing
-- [ ] Use zsh instead of bash in dev shell (goes recursive now)
 - [ ] Make OTA working for both firmware and FS
 
 ## Building

@@ -57,11 +57,9 @@
           pio-python
           platformio-core
         ]);
-        # NixOS/nixpkgs#263201, NixOS/nixpkgs#262775, NixOS/nixpkgs#262080
         runScript = ''
-          bash
+          zsh -c "export DIRENV_DISABLE=1; exec zsh"
           ${self.checks.${system}.pre-commit-check.shellHook}
-          export LD_LIBRARY_PATH=
         '';
       })
       .env;
