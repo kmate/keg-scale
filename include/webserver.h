@@ -120,11 +120,11 @@ class WebServer {
       JsonObject fs = doc.createNestedObject("fs");
       FSInfo fsInfo;
       LittleFS.info(fsInfo);
+      fs["lastModified"] = config.fsLastModified;
       fs["totalBytes"] = fsInfo.totalBytes;
       fs["freeBytes"] = fsInfo.totalBytes - fsInfo.usedBytes;
       fs["blockSize"] = fsInfo.blockSize;
       fs["pageSize"] = fsInfo.pageSize;
-      fs["lastModified"] = config.fsLastModified;
 
       JsonObject esp = doc.createNestedObject("esp");
       esp["chipId"] = ESP.getChipId();
