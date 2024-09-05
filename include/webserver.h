@@ -12,7 +12,7 @@
 #include <LittleFS.h>
 #include <umm_malloc/umm_heap_select.h>
 
-const char compiledAt[] = __DATE__ " " __TIME__;
+const char compiledAt[] = COMPILED_AT;
 
 class WebServer {
 
@@ -24,8 +24,10 @@ class WebServer {
   Recorder &recorder;
 
   void addRootHandler() {
-    // TODO add cache based on LittleFS upload date if possible
-    this->server.serveStatic("/", LittleFS, "/html/").setDefaultFile("index.html");
+    this->server
+      .serveStatic("/", LittleFS, "/html/")
+      .setLastModified(config.fsLastModified)
+      .setDefaultFile("index.html");
   }
 
   void addConfigHandler() {
@@ -122,6 +124,7 @@ class WebServer {
       fs["freeBytes"] = fsInfo.totalBytes - fsInfo.usedBytes;
       fs["blockSize"] = fsInfo.blockSize;
       fs["pageSize"] = fsInfo.pageSize;
+      fs["lastModified"] = config.fsLastModified;
 
       JsonObject esp = doc.createNestedObject("esp");
       esp["chipId"] = ESP.getChipId();
@@ -163,7 +166,7 @@ public:
         request->send(204);
       } else {
         request->send(404);
-     }
+      }
     });
     this->server.begin();
   }

@@ -5,7 +5,7 @@ const CopyWebpackPlugin = require('copy-webpack-plugin');
 const ESLintPlugin = require('eslint-webpack-plugin');
 const ReactRefreshWebpackPlugin = require('@pmmmwh/react-refresh-webpack-plugin');
 
-const outputPath = path.resolve(__dirname, '../data/html/');
+const outputPath = path.resolve(__dirname, '../../data/html/');
 const isDevelopment = process.env.NODE_ENV !== 'production';
 
 module.exports = {

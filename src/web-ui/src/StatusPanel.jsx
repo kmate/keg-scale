@@ -54,8 +54,6 @@ const groups = {
 
 const identity = (x) => x;
 
-const fromDateTime = (dt) => new Date(dt).toLocaleString();
-
 const fromUTCDateTime = (dt) => new Date(dt.replace(" ", "T") + "Z").toLocaleString();
 
 const integerPercentage = (p) => p + "%";
@@ -63,8 +61,7 @@ const integerPercentage = (p) => p + "%";
 const stats = {
   compiledAt: {
     label: "Compiled at",
-    // compilation date is expected to be in the same time zone as the user's device
-    show: fromDateTime
+    show: fromUTCDateTime
   },
   currentTime: {
     label: "Current time",
@@ -145,6 +142,10 @@ const stats = {
   pageSize: {
     label: "Page size",
     show: formatBytes
+  },
+  lastModified: {
+    label: "Last modified",
+    show: identity // TODO format like the rest
   },
 }
 

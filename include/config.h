@@ -69,6 +69,7 @@ public:
   OTAConfig ota;
   std::vector<ScaleConfig> scales;
   std::vector<Weight> weights;
+  char fsLastModified[32];
 
   bool load() {
     File configFile = LittleFS.open("/config.json", "r");
@@ -123,6 +124,14 @@ public:
     }
 
     configFile.close();
+
+    File stampFile = LittleFS.open("/stamp", "r");
+    if (!stampFile) {
+      return false;
+    }
+    strlcpy(this->fsLastModified, stampFile.readString().c_str(), sizeof(this->fsLastModified));
+    stampFile.close();
+
     return true;
   }
 };
