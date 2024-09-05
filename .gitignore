@@ -1,4 +1,5 @@
-data/
+data/*
+!data/.gitkeep
 .direnv
 .pio
 .pre-commit-config.yaml
