@@ -13,7 +13,6 @@
   };
 
   outputs = {
-    self,
     nixpkgs,
     pio-nixpkgs,
     pre-commit-hooks,
@@ -59,7 +58,6 @@
         ]);
         runScript = ''
           zsh -c "export DIRENV_DISABLE=1; exec zsh"
-          ${self.checks.${system}.pre-commit-check.shellHook}
         '';
       })
       .env;
