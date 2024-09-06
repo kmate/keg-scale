@@ -4,6 +4,7 @@
 
 - [ ] Check if EEPROM is still working - is it normal to get emptied when flashing?
 - [ ] Figure out how to enable `-pedantic-errors` without the libraries causing issues
+- [ ] Look for regex `TODO|FIXME` in the code base and resolve all remaining instances
 
 ## Building
 
