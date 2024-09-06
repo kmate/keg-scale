@@ -35,19 +35,17 @@ class WebServer {
     this->server.on("/config", HTTP_GET, [this](AsyncWebServerRequest *request) {
       AsyncResponseStream *response = request->beginResponseStream("application/json");
       DynamicJsonDocument doc(1536);
+      this->config.render(doc);
+      serializeJson(doc, *response);
+      request->send(response);
+    });
+  }
 
-      JsonArray jsc = doc.createNestedArray("scales");
-      for (ScaleConfig &sc : this->config.scales) {
-        JsonObject obj = jsc.createNestedObject();
-        sc.render(obj);
-      }
-
-      JsonArray jw = doc.createNestedArray("weights");
-      for (Weight &weight : this->config.weights) {
-        JsonObject obj = jw.createNestedObject();
-        weight.render(obj);
-      }
-
+  void addPersistentConfigHandler() {
+    this->server.on("/persistent-config", HTTP_GET, [this](AsyncWebServerRequest *request) {
+      AsyncResponseStream *response = request->beginResponseStream("application/json");
+      DynamicJsonDocument doc(1536);
+      this->persistentConfig.render(doc);
       serializeJson(doc, *response);
       request->send(response);
     });
@@ -153,6 +151,7 @@ public:
   void begin() {
     this->addRootHandler();
     this->addConfigHandler();
+    this->addPersistentConfigHandler();
     this->addPersistHandler();
     this->addCatalogHandlers();
     this->addScalesHandler();

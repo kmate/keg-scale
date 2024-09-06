@@ -134,6 +134,20 @@ public:
 
     return true;
   }
+
+  void render(JsonDocument &doc) {
+    JsonArray jsc = doc.createNestedArray("scales");
+    for (ScaleConfig &sc : this->scales) {
+      JsonObject obj = jsc.createNestedObject();
+      sc.render(obj);
+    }
+
+    JsonArray jw = doc.createNestedArray("weights");
+    for (Weight &weight : this->weights) {
+      JsonObject obj = jw.createNestedObject();
+      weight.render(obj);
+    }
+  }
 };
 
 #endif
