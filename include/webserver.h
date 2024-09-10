@@ -94,6 +94,7 @@ class WebServer {
       DynamicJsonDocument doc(768);
       JsonObject general = doc.createNestedObject("general");
       general["compiledAt"] = compiledAt;
+      general["fsLastModified"] = config.fsLastModified;
       general["currentTime"] = DateTime.toString();
       general["bootTime"] = DateFormatter::format(DateFormatter::SIMPLE, DateTime.getBootTime());
 
@@ -119,7 +120,6 @@ class WebServer {
       JsonObject fs = doc.createNestedObject("fs");
       FSInfo fsInfo;
       LittleFS.info(fsInfo);
-      fs["lastModified"] = config.fsLastModified;
       fs["totalBytes"] = fsInfo.totalBytes;
       fs["freeBytes"] = fsInfo.totalBytes - fsInfo.usedBytes;
       fs["blockSize"] = fsInfo.blockSize;

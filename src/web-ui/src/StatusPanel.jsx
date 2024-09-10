@@ -65,6 +65,10 @@ const stats = {
     label: "Compiled at",
     show: fromUTCDateTime
   },
+  fsLastModified: {
+    label: "File system last modified",
+    show: fromHTTPDateTime
+  },
   currentTime: {
     label: "Current time",
     show: fromUTCDateTime
@@ -128,10 +132,6 @@ const stats = {
   iramHeapFragmentation: {
     label: "IRAM heap fragmentation",
     show: integerPercentage
-  },
-  lastModified: {
-    label: "Last modified",
-    show: fromHTTPDateTime
   },
   totalBytes: {
     label: "Total bytes",
